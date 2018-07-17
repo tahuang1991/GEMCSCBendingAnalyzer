@@ -1,9 +1,14 @@
 # GEMCSCBendingAnalyzer
-cmsrel CMSSW_10_1_5  \n
+cmsrel CMSSW_10_1_5  
+
 cd CMSSW_10_1_5/src/
+
 cmsenv
+
 git cms-init
+
 git clone https://github.com/tahuang1991/GEMCSCBendingAnalyzer.git
+
 scram b -j 9
 
 
