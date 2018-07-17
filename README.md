@@ -1,5 +1,5 @@
 # GEMCSCBendingAnalyzer
-cmsrel CMSSW_10_1_5
+cmsrel CMSSW_10_1_5  \n
 cd CMSSW_10_1_5/src/
 cmsenv
 git cms-init
