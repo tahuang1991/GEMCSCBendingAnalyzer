@@ -454,13 +454,13 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
       /**** check gem reco hit used to build muon track and then propagate the track to nearby****/
-      if (muonTrack->hitPattern().numberOfValidMuonGEMHits()) {
+      /*if (muonTrack->hitPattern().numberOfValidMuonGEMHits()) {
         std::cout << "numberOfValidMuonGEMHits->size() " << muonTrack->hitPattern().numberOfValidMuonGEMHits()
                   << " recHitsSize " << muonTrack->recHitsSize()
                   << " pt " << muonTrack->pt()
                   <<std::endl;
         for (auto hit = muonTrack->recHitsBegin(); hit != muonTrack->recHitsEnd(); hit++) {
-          if ( (*hit)->geographicalId().det() == DetId::Detector::Muon && (*hit)->geographicalId().subdetId() == 4) {
+          if ( (*hit)->geographicalId().det() == DetId::Detector::Muon && (*hit)->geographicalId().subdetId() ==  MuonSubdetId::GEM) {
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             GEMDetId gemid((*hit)->geographicalId());
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
@@ -490,14 +490,14 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                  << endl;
           }
         }
-      }
+      }*/
       /**** end of checking gem reco hit used to build muon track and then propagating the track to nearby****/
      std::cout << "end of checking gem reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
 
 
 
       /**** check csc reco hit used to build muon track and then propagate the track to nearby****/
-      if (muonTrack->hitPattern().numberOfValidMuonCSCHits()) {
+      /*if (muonTrack->hitPattern().numberOfValidMuonCSCHits()) {
         std::cout << "numberOfValidMuonCSCHits->size() " << muonTrack->hitPattern().numberOfValidMuonCSCHits()
                   << " recHitsSize " << muonTrack->recHitsSize()
                   << " pt " << muonTrack->pt()
@@ -533,7 +533,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                  << endl;
           }
         }
-      }
+      }*/
       /**** end of checking csc reco hit used to build muon track and then propagating the track to nearby****/
       std::cout  <<" end of checking csc reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
 
