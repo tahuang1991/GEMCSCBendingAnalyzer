@@ -114,12 +114,12 @@ TTree* MuonData::book(TTree *t)
   t->Branch("endcap", &endcap);
   t->Branch("has_TightID", &has_TightID);
 
-  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]");
-  t->Branch("has_GE11", has_GE11, "has_GE11[2]");
-  t->Branch("has_ME11", has_ME11, "has_ME11[6]");
-  t->Branch("phi_GE11", phi_GE11, "phi_GE11[2]");
-  t->Branch("phiprop_GE11", phiprop_GE11, "phiprop_GE11[2]");
-  t->Branch("phi_ME11", phi_ME11, "phi_ME11[6]");
+  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/O");
+  t->Branch("has_GE11", has_GE11, "has_GE11[2]/O");
+  t->Branch("has_ME11", has_ME11, "has_ME11[6]/O");
+  t->Branch("phi_GE11", phi_GE11, "phi_GE11[2]/F");
+  t->Branch("phiprop_GE11", phiprop_GE11, "phiprop_GE11[2]/F");
+  t->Branch("phi_ME11", phi_ME11, "phi_ME11[6]/F");
 
   return t;
 }
