@@ -9,6 +9,7 @@
 <use name="SimDataFormats/Vertex"/>
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/MuonReco"/>
+<use name="DataFormats/DetId"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/PatCandidates"/>
