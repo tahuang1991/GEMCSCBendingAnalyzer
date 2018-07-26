@@ -171,13 +171,13 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muonendcap", &muonendcap);
   t->Branch("has_TightID", &has_TightID);
 
-  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]");
-  t->Branch("has_GE11", has_GE11, "has_GE11[2]");
-  t->Branch("has_ME11", has_ME11, "has_ME11[6]");
-  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]");
-  t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]");
-  t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]");
-  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]");
+  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/I");
+  t->Branch("has_GE11", has_GE11, "has_GE11[2]/I");
+  t->Branch("has_ME11", has_ME11, "has_ME11[6]/I");
+  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");
+  t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]/F");
+  t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
+  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
 
   return t;
 }
