@@ -279,14 +279,16 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   for (size_t i = 0; i < muons->size(); ++i) {
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
-    if (mu->pt() < 0) continue;
-    if (mu->isGEMMuon()) {
-      std::cout << "isGEMMuon " <<std::endl;
-    }
-
     const reco::Track* muonTrack = 0;
     if ( mu->globalTrack().isNonnull() ) muonTrack = mu->globalTrack().get();
     else if ( mu->outerTrack().isNonnull()  ) muonTrack = mu->outerTrack().get();
+    else 
+	continue;
+
+    if (mu->pt() < 0.0) continue;
+    if (mu->isGEMMuon()) {
+      std::cout << "isGEMMuon " <<std::endl;
+    }
 
 
     //focus on endcap muons
@@ -299,8 +301,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       data_.event = iEvent.id().event();
 
       data_.muon_nChamber = mu->numberOfChambersCSCorDT();
-      data_.muon_ntrackhit = mu->innerTrack()->hitPattern().trackerLayersWithMeasurement();
-      data_.muon_chi2 = mu->globalTrack()->normalizedChi2();
+      if (mu->innerTrack().isNonnull())
+	  data_.muon_ntrackhit = mu->innerTrack()->hitPattern().trackerLayersWithMeasurement();
+      if (mu->globalTrack().isNonnull())
+	  data_.muon_chi2 = mu->globalTrack()->normalizedChi2();
       ///muon position
       data_.muonPx = mu->px();
       data_.muonPy = mu->py();
