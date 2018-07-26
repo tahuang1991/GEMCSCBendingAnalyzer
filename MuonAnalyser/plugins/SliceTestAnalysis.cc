@@ -40,6 +40,7 @@
 
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TString.h"
@@ -48,6 +49,80 @@
 
 using namespace std;
 using namespace edm;
+
+// struct with relevant data
+struct MuonData
+{
+  void init(); // initialize to default values
+  TTree* book(TTree *t);
+
+  Int_t lumi;
+  Int_t run;
+  Int_t event;
+
+  double pt, eta, phi;
+  bool charge;
+  bool endcap;
+
+  bool has_TightID;
+  bool has_ME11[6];
+  bool has_GE11[2];
+  bool isGood_GE11[2];
+  double phi_ME11[6];
+  double phi_GE11[2];
+  double phiprop_GE11[2];
+};
+
+void MuonData::init()
+{
+  lumi = -99;
+  run = -99;
+  event = -99;
+
+  pt = 0.;
+  eta = -9.;
+  phi = -9.;
+  charge = -9;
+  endcap = -9;
+
+  has_TightID = 0;
+  for (int i=0; i<2; ++i){
+    has_GE11[i] = 0;
+    phi_GE11[i] = -9;
+    phiprop_GE11[i] = -9;
+    isGood_GE11[i] = 0;
+  }
+  for (int i=0; i<6; ++i){
+    has_ME11[i] = 0;
+    phi_ME11[i] = -9;
+  }
+}
+
+TTree* MuonData::book(TTree *t)
+{
+  edm::Service< TFileService > fs;
+  t = fs->make<TTree>("MuonData", "MuonData");
+
+  t->Branch("lumi", &lumi);
+  t->Branch("run", &run);
+  t->Branch("event", &event);
+
+  t->Branch("pt", &pt);
+  t->Branch("eta", &eta);
+  t->Branch("phi", &phi);
+  t->Branch("charge", &charge);
+  t->Branch("endcap", &endcap);
+  t->Branch("has_TightID", &has_TightID);
+
+  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/O");
+  t->Branch("has_GE11", has_GE11, "has_GE11[2]/O");
+  t->Branch("has_ME11", has_ME11, "has_ME11[6]/O");
+  t->Branch("phi_GE11", phi_GE11, "phi_GE11[2]/F");
+  t->Branch("phiprop_GE11", phiprop_GE11, "phiprop_GE11[2]/F");
+  t->Branch("phi_ME11", phi_ME11, "phi_ME11[6]/F");
+
+  return t;
+}
 
 class SliceTestAnalysis : public edm::EDAnalyzer {
 public:
@@ -71,9 +146,8 @@ private:
   edm::ESHandle<TransientTrackBuilder> ttrackBuilder_;
   edm::ESHandle<MagneticField> bField_;
 
-  TH2D* h_firstStrip[36][2];
-  TH2D* h_allStrips[36][2];
-  TH1D* h_clusterSize, *h_totalStrips, *h_bxtotal;
+  TTree * tree_data_;
+  MuonData data_;
 };
 
 SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
@@ -85,22 +159,8 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters);
 
-  h_clusterSize=fs->make<TH1D>(Form("clusterSize"),"clusterSize",100,0,100);
-  h_totalStrips=fs->make<TH1D>(Form("totalStrips"),"totalStrips",200,0,200);
-  h_bxtotal=fs->make<TH1D>(Form("bx"),"bx",31,-15,15);
-
-  //for (int ichamber=0; ichamber<36;++ichamber) {
-  for (int ichamber=27; ichamber<=30;++ichamber) {
-    for (int ilayer=0; ilayer<2;++ilayer) {
-      h_firstStrip[ichamber][ilayer] = fs->make<TH2D>(Form("firstStrip ch %i lay %i",ichamber, ilayer),"firstStrip",384,1,385,8,0.5,8.5);
-      h_firstStrip[ichamber][ilayer]->GetXaxis()->SetTitle("strip");
-      h_firstStrip[ichamber][ilayer]->GetYaxis()->SetTitle("iEta");
-
-      h_allStrips[ichamber][ilayer] = fs->make<TH2D>(Form("allStrips ch %i lay %i",ichamber, ilayer),"allStrips",384,1,385,8,0.5,8.5);
-      h_allStrips[ichamber][ilayer]->GetXaxis()->SetTitle("strip");
-      h_allStrips[ichamber][ilayer]->GetYaxis()->SetTitle("iEta");
-    }
-  }
+  // instantiate the tree
+  tree_data_ = data_.book(tree_data_);
 }
 
 void
@@ -133,6 +193,14 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     //    std::cout << "vertex->size() " << vertexCollection->size() <<std::endl;
   }
 
+  reco::Vertex goodVertex;
+  for (const auto& vertex : *vertexCollection.product()) {
+    if (vertex.isValid() && !vertex.isFake() && vertex.tracksSize() >= 2 && fabs(vertex.z()) < 24.) {
+      goodVertex = vertex;
+      break;
+    }
+  }
+
   Handle<View<reco::Muon> > muons;
   iEvent.getByToken(muons_, muons);
   //std::cout << "muons->size() " << muons->size() <<std::endl;
@@ -146,12 +214,27 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     const reco::Track* muonTrack = 0;
     if ( mu->globalTrack().isNonnull() ) muonTrack = mu->globalTrack().get();
     else if ( mu->outerTrack().isNonnull()  ) muonTrack = mu->outerTrack().get();
+
+
     if (muonTrack) {
+
+      data_.lumi = iEvent.id().luminosityBlock();
+      data_.run = iEvent.id().run();
+      data_.event = iEvent.id().event();
+
+      data_.pt = mu->pt();
+      data_.eta = mu->eta();
+      data_.phi = mu->phi();
+      data_.charge = mu->charge();
+      data_.endcap = mu->eta() > 0 ? 1 : -1 ;
+
+
+      data_.has_TightID = muon::isTightMuon(*mu, goodVertex);
 
       std::set<double> detLists;
 
       reco::TransientTrack ttTrack = ttrackBuilder_->build(muonTrack);
-      for (auto ch : GEMGeometry_->etaPartitions()) {
+      for (const auto& ch : GEMGeometry_->etaPartitions()) {
         //if ( !detLists.insert( ch->surface().position().z() ).second ) continue;
 
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
@@ -171,18 +254,21 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             if ( (*hit)->geographicalId().det() == 2 && (*hit)->geographicalId().subdetId() == 4) {
               if ((*hit)->rawId() == ch->id().rawId() ) {
                 GEMDetId gemid((*hit)->geographicalId());
-                auto etaPart = GEMGeometry_->etaPartition(gemid);
+                const auto& etaPart = GEMGeometry_->etaPartition(gemid);
                 cout << "found it "<< gemid
                      << " lp " << (*hit)->localPosition()
                      << " gp " << etaPart->toGlobal((*hit)->localPosition())
                      << endl;
+
+                data_.has_GE11[gemid.layer()-1] = 1;
+                data_.phi_GE11[gemid.layer()-1] = etaPart->toGlobal((*hit)->localPosition()).phi();
               }
             }
           }
         }
       }
 
-      for (auto ch : CSCGeometry_->layers()) {
+      for (const auto& ch : CSCGeometry_->layers()) {
 
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
         if (!tsos.isValid()) continue;
@@ -201,11 +287,13 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             if ((*hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
               if ((*hit)->rawId() == ch->id().rawId() ) {
                 CSCDetId cscid((*hit)->geographicalId());
-                auto layer = CSCGeometry_->layer(cscid);
+                const auto& layer = CSCGeometry_->layer(cscid);
                 cout << "found it "<< cscid
                      << " lp " << (*hit)->localPosition()
                      << " gp " << layer->toGlobal((*hit)->localPosition())
                      << endl;
+                data_.has_ME11[cscid.layer()-1] = 1;
+                data_.phi_ME11[cscid.layer()-1] = layer->toGlobal((*hit)->localPosition()).phi();
               }
             }
           }
@@ -221,7 +309,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
           if ( (*hit)->geographicalId().det() == 2 && (*hit)->geographicalId().subdetId() == 4) {
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             GEMDetId gemid((*hit)->geographicalId());
-            auto etaPart = GEMGeometry_->etaPartition(gemid);
+            const auto& etaPart = GEMGeometry_->etaPartition(gemid);
 
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),etaPart->surface());
             if (!tsos.isValid()) continue;
@@ -259,7 +347,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
           if ( (*hit)->geographicalId().det() == 2 && (*hit)->geographicalId().subdetId() == 4) {
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             CSCDetId cscid((*hit)->geographicalId());
-            auto layer = CSCGeometry_->layer(cscid);
+            const auto& layer = CSCGeometry_->layer(cscid);
 
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),layer->surface());
             if (!tsos.isValid()) continue;
@@ -288,35 +376,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
       }
     }
+    // fill the tree for each muon
+    tree_data_->Fill();
   }
-
-
-  // if (gemRecHits->size()) {
-  //   std::cout << "gemRecHits->size() " << gemRecHits->size() <<std::endl;
-  // }
-  int totalStrips = 0;
-
-  for (auto ch : GEMGeometry_->chambers()) {
-    for(auto roll : ch->etaPartitions()) {
-      GEMDetId rId = roll->id();
-      //std::cout << "rId " << rId <<std::endl;
-      auto recHitsRange = gemRecHits->get(rId);
-      auto gemRecHit = recHitsRange.first;
-      for ( auto hit = gemRecHit; hit != recHitsRange.second; ++hit ) {
-
-	h_firstStrip[rId.chamber()][rId.layer()-1]->Fill(hit->firstClusterStrip(), rId.roll());
-	h_clusterSize->Fill(hit->clusterSize());
-	h_bxtotal->Fill(hit->BunchX());
-	for (int nstrip = hit->firstClusterStrip(); nstrip < hit->firstClusterStrip()+hit->clusterSize(); ++nstrip) {
-	  totalStrips++;
-	  h_allStrips[rId.chamber()][rId.layer()-1]->Fill(nstrip, rId.roll());
-	}
-      }
-    }
-  }
-  h_totalStrips->Fill(totalStrips);
-
-
 }
 
 void SliceTestAnalysis::beginJob(){}
