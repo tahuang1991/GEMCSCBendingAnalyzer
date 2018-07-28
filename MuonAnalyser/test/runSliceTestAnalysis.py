@@ -16,7 +16,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-process.maxEvents.input = cms.untracked.int32(1000)
+process.maxEvents.input = cms.untracked.int32(100)
 # Input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 #process.source.skipEvents = cms.untracked.uint32(17601)
