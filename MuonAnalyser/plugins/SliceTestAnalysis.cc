@@ -174,10 +174,53 @@ TTree* MuonData::book(TTree *t)
   t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/I");
   t->Branch("has_GE11", has_GE11, "has_GE11[2]/I");
   t->Branch("has_ME11", has_ME11, "has_ME11[6]/I");
-  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");
+  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]/F");
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
+
+  //edited my mohit khurana need verfication
+  t->Branch("muonPx", &muonPx);
+  t->Branch("muonPy", &muonPy);
+  t->Branch("muonPz", &muonPz);
+  t->Branch("muondxy", &muondxy);
+  t->Branch("muondz", &muondz);
+  t->Branch("muon_ntrackhit", &muon_ntrackhit);
+  t->Branch("muon_nChameber", &muon_nChameber);  
+  t->Branch("muon_chi2", &muon_chi2);
+  t->Branch("muonPFIso", &muonPFIso);
+  t->Branch("muonTkIso", &muonTkIso);
+  t->Branch("muon_nChamber", &muon_nChamber);
+  t->Branch("has_MediumID", &has_MediumID);
+  t->Branch("has_LooseID", &has_LooseID);  
+  t->Branch("phipro_ME11", phipro_ME11, "phipro_ME11[6]/F");
+  t->Branch("rechit_eta_ME11", rechit_eta_ME11, "rechit_eta_ME11[6]/F");
+  t->Branch("rechit_x_ME11", rechit_x_ME11, "rechit_x_ME11[6]/F");
+  t->Branch("rechit_y_ME11", rechit_y_ME11, "rechit_y_ME11[6]/F");
+  t->Branch("rechit_r_ME11", rechit_r_ME11, "rechit_r_ME11[6]/F");
+  t->Branch("prop_eta_ME11", prop_eta_ME11, "prop_eta_ME11[6]/F");
+  t->Branch("prop_x_ME11", prop_x_ME11, "prop_x_ME11[6]/F");
+  t->Branch("prop_y_ME11", prop_y_ME11, "prop_y_ME11[6]/F");
+  t->Branch("prop_r_ME11", prop_r_ME11, "prop_r_ME11[6]/F");
+  t->Branch("rechit_prop_dR_ME11", rechit_prop_dR_ME11, "rechit_prop_dR_ME11[6]/F");
+  t->Branch("chamber_ME11", chamber_ME11, "chamber_ME11[6]/I");
+  t->Branch("roll_GE11", roll_GE11, "roll_GE11[2]/I");
+  t->Branch("chamber_GE11", chamber_GE11, "chamber_GE11[2]/I");
+  //  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "rechit_phi_GE11[2]/F");   // in doubt please check!!!
+  t->Branch("rechit_eta_GE11", rechit_eta_GE11, "rechit_eta_GE11[2]/F");
+  t->Branch("rechit_x_GE11", rechit_x_GE11, "rechit_x_GE11[2]/F");
+  t->Branch("rechit_y_GE11", rechit_y_GE11, "rechit_y_GE11[2]/F");
+  t->Branch("rechit_r_GE11", rechit_r_GE11, "rechit_r_GE11[2]/F");
+  t->Branch("prop_eta_GE11", prop_eta_GE11, "prop_eta_GE11[2]/F");
+  t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
+  t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
+  t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
+  t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
+  t->Branch("dphi_CSC_GE11", dphi_CSC_GE11, "dphi_CSC_GE11[2]/F");
+  t->Branch("dphi_keyCSC_GE11", dphi_keyCSC_GE11, "dphi_keyCSC_GE11[2]/F");
+  t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
+
+  //  the aboe is the new edited lines
 
   return t;
 }
