@@ -16,13 +16,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-process.maxEvents.input = cms.untracked.int32(10)
+process.maxEvents.input = cms.untracked.int32(1000)
 # Input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 #process.source.skipEvents = cms.untracked.uint32(17601)
 
 #process.source.fileNames.append('/store/data/Run2018B/Cosmics/AOD/PromptReco-v1/000/317/428/00000/E4BC1D7B-3F6A-E811-9E05-FA163E57A064.root')
-process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
+process.source.fileNames.append('file:/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/step3_080.root')
 
 #fname = 'singleMuon.txt'
 #f = open(fname)
