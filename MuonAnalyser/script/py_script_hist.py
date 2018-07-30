@@ -1,7 +1,7 @@
 import ROOT
 import os
-os.chdir("/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/test")
-
+#os.chdir("/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/test")
+os.chdir("/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/Output")
 F=ROOT.TFile.Open('histo.root');
 
 def plot_hist(branch_name):
@@ -10,10 +10,10 @@ def plot_hist(branch_name):
 	h.Draw(branch_name);
 	k=str(branch_name)+".png"
 	
-	os.chdir("/afs/cern.ch/user/m/mkhurana/private/Graphs_bendingangle")
+	os.chdir("/uscms/homes/m/mkhurana/Graphs")
 
 	c1.Print(k);
-	os.chdir("/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/test")
+	os.chdir("/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/Output")
 	
 
 branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muonendcap","has_TightID","isGood_GE11","has_GE11","has_ME11","rechit_phi_GE11",
