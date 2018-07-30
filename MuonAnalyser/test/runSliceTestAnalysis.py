@@ -16,7 +16,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-process.maxEvents.input = cms.untracked.int32(100)
+process.maxEvents.input = cms.untracked.int32(10)
 # Input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 #process.source.skipEvents = cms.untracked.uint32(17601)
@@ -33,11 +33,14 @@ for line in f:
 process.options = cms.untracked.PSet()
 
 process.TFileService = cms.Service("TFileService",fileName = cms.string("/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/Output/histo.root"))
+#process.TFileService = cms.Service("TFileService",fileName = cms.string("histo.root"))
 
 process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     process.MuonServiceProxy,
     gemRecHits = cms.InputTag("gemRecHits"),
     cscRecHits = cms.InputTag("csc2DRecHits"),
+    ##csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
+    cscSegments = cms.InputTag("cscSegments"),
     muons = cms.InputTag("muons"),
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
 )

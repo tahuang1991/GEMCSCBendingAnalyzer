@@ -203,7 +203,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
 
-  //edited my mohit khurana need verification
+  //edited my mohit khurana need verfication
   t->Branch("muonPx", &muonPx);
   t->Branch("muonPy", &muonPy);
   t->Branch("muonPz", &muonPz);
@@ -243,7 +243,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_keyCSC_GE11", dphi_keyCSC_GE11, "dphi_keyCSC_GE11[2]/F");
   t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
 
-  //  the above is the new edited lines
+  //  the aboe is the new edited lines
 
   return t;
 }
@@ -292,7 +292,7 @@ private:
 SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
 {
   cscRecHits_ = consumes<CSCRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("cscRecHits"));
-  csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
+  //csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
@@ -332,8 +332,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   iEvent.getByToken(cscRecHits_, cscRecHits);
 
-  edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
-  iEvent.getByToken(csclcts_, cscLcts);
+  //edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
+  //iEvent.getByToken(csclcts_, cscLcts);
   
 
   edm::Handle<reco::VertexCollection> vertexCollection;
@@ -573,11 +573,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             GEMDetId gemid((*hit)->geographicalId());
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),etaPart->surface());
             if (!tsos.isValid()) continue;
             GlobalPoint tsosGP = tsos.globalPosition();
-
             LocalPoint && tsos_localpos = tsos.localPosition();
             LocalError && tsos_localerr = tsos.localError().positionError();
             LocalPoint && dethit_localpos = (*hit)->localPosition();
@@ -588,7 +586,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
               std::sqrt(dethit_localerr.xx() + tsos_localerr.xx());
             auto pull_y = (dethit_localpos.y() - tsos_localpos.y()) /
               std::sqrt(dethit_localerr.yy() + tsos_localerr.yy());
-
             cout << "gem hit "<< gemid<< endl;
             cout << " gp " << etaPart->toGlobal((*hit)->localPosition())<< endl;
             cout << " tsosGP "<< tsosGP << endl;
@@ -620,11 +617,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             CSCDetId cscid((*hit)->geographicalId());
 	    std::cout <<"csc rect hit in det id "<< cscid <<" hit "<<  (*hit)->localPosition() << std::endl;
             const auto& layer = CSCGeometry_->layer(cscid);
-
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),layer->surface());
             if (!tsos.isValid()) continue;
             GlobalPoint tsosGP = tsos.globalPosition();
-
             LocalPoint && tsos_localpos = tsos.localPosition();
             LocalError && tsos_localerr = tsos.localError().positionError();
             LocalPoint && dethit_localpos = (*hit)->localPosition();
@@ -635,7 +630,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
               std::sqrt(dethit_localerr.xx() + tsos_localerr.xx());
             auto pull_y = (dethit_localpos.y() - tsos_localpos.y()) /
               std::sqrt(dethit_localerr.yy() + tsos_localerr.yy());
-
             cout << "csc hit "<< cscid<< endl;
             cout << " gp " << layer->toGlobal((*hit)->localPosition())<< endl;
             cout << " tsosGP "<< tsosGP << endl;
