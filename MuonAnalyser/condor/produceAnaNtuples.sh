@@ -32,6 +32,7 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 cd $cmssw_version/src/
 SCRAM_ARCH=slc6_amd64_gcc491
 eval `scramv1 runtime -sh`
+scramv1 b
 
 cd $workdir
 
