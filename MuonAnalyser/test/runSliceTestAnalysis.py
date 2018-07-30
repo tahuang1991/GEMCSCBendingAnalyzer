@@ -21,8 +21,8 @@ process.maxEvents.input = cms.untracked.int32(100)
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 #process.source.skipEvents = cms.untracked.uint32(17601)
 #file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/            #directory on LPC where all 555 files are placed
-#process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
-process.source.fileNames.append('file:/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/step3_080.root')
+process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
+#process.source.fileNames.append('file:/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/step3_080.root')
 
 #fname = 'singleMuon.txt'
 #f = open(fname)
@@ -37,6 +37,8 @@ process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     process.MuonServiceProxy,
     gemRecHits = cms.InputTag("gemRecHits"),
     cscRecHits = cms.InputTag("csc2DRecHits"),
+    ##csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
+    cscSegments = cms.InputTag("cscSegments"),
     muons = cms.InputTag("muons"),
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
 )

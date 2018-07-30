@@ -292,7 +292,7 @@ private:
 SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
 {
   cscRecHits_ = consumes<CSCRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("cscRecHits"));
-  csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
+  //csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
@@ -332,8 +332,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   iEvent.getByToken(cscRecHits_, cscRecHits);
 
-  edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
-  iEvent.getByToken(csclcts_, cscLcts);
+  //edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
+  //iEvent.getByToken(csclcts_, cscLcts);
   
 
   edm::Handle<reco::VertexCollection> vertexCollection;
