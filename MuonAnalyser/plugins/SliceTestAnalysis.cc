@@ -31,6 +31,7 @@
 #include "DataFormats/DetId/interface/DetId.h"
 
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include <DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h>
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 
@@ -101,6 +102,7 @@ struct MuonData
   double cscseg_x_st[4];
   double cscseg_y_st[4];
   double cscseg_z_st[4];
+  double cscseg_prop_dR_st[4];
   int cscseg_chamber_st[4];
   int cscseg_ring_st[4];
   //match LCT to recoMuon by projection
@@ -203,7 +205,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
 
-  //edited my mohit khurana need verfication
+  //edited my mohit khurana need verification
   t->Branch("muonPx", &muonPx);
   t->Branch("muonPy", &muonPy);
   t->Branch("muonPz", &muonPz);
@@ -243,7 +245,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_keyCSC_GE11", dphi_keyCSC_GE11, "dphi_keyCSC_GE11[2]/F");
   t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
 
-  //  the aboe is the new edited lines
+  //  the above is the new edited lines
 
   return t;
 }
@@ -261,6 +263,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::EDGetTokenT<CSCRecHit2DCollection> cscRecHits_;
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> csclcts_;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
@@ -274,7 +277,8 @@ private:
   //match CSC seg to recoMuon
 
   //match LCT to recoMuon
-  bool matchRecoMuonwithLCT(const LocalPoint muonlp, const CSCCorrelatedLCTDigiCollection& lcts, CSCDetId cscid, CSCCorrelatedLCTDigi &matchedLCT);
+  bool matchRecoMuonwithLCT(const LocalPoint muonlp, const CSCCorrelatedLCTDigiCollection& lcts, CSCDetId cscid, CSCCorrelatedLCTDigi &matchedLCT, float &mindR);
+  bool matchRecoMuonwithCSCSeg(const LocalPoint muonlp, edm::Handle<CSCSegmentCollection> cscSegments, CSCDetId cscid, CSCSegment &matchedSeg, float &mindR);
 
   
 
@@ -293,6 +297,7 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
 {
   cscRecHits_ = consumes<CSCRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("cscRecHits"));
   //csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
+  cscSegments_ = consumes<CSCSegmentCollection>(iConfig.getParameter<edm::InputTag>("cscSegments"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
@@ -331,6 +336,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   iEvent.getByToken(cscRecHits_, cscRecHits);
+
+  edm::Handle<CSCSegmentCollection> cscSegments;
+  iEvent.getByToken(cscSegments_, cscSegments);
 
   //edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
   //iEvent.getByToken(csclcts_, cscLcts);
@@ -418,26 +426,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
 
-      /*vector<const CSCSegment*> range = theMatcher->matchCSC(mu->standAloneMuon(),iEvent);
-      for (vector<const CSCSegment*>::iterator cscseg = range.begin(); cscseg != range.end(); ++cscseg) 
-      {
-          // Create the ChamberId
-          CSCDetId cscid((*cscseg)->geographicalId());
-	   
-	  GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
-	  data_.has_cscseg_st[cscid.station() - 1] = true;
-	  data_.cscseg_phi_st[cscid.station() - 1] = seggp.phi();
-	  data_.cscseg_eta_st[cscid.station() - 1] = seggp.eta();
-	  data_.cscseg_x_st[cscid.station() - 1] = (*cscseg)->localPosition().x();
-	  data_.cscseg_y_st[cscid.station() - 1] = (*cscseg)->localPosition().y();
-	  data_.cscseg_z_st[cscid.station() - 1] = (*cscseg)->localPosition().mag();
-	  data_.cscseg_chamber_st[cscid.station() - 1] = cscid.chamber();
-	  data_.cscseg_ring_st[cscid.station() - 1] = cscid.ring();
-      }*/
-
-
-
-
 
       reco::TransientTrack ttTrack = ttrackBuilder_->build(muonTrack);
 
@@ -517,8 +505,29 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
 	  //    cout << "projection to CSC, in layer "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
           //     <<  bps.bounds().inside(pos2D) <<endl;
+	  
 
 	  float mindR = 9999.0;
+	  if (ch->id().layer() == 3)//keylayer
+	  {
+	      CSCSegment matchedSeg;
+	      float mindR = 9999.0;
+	      bool hasCSsegment  = matchRecoMuonwithCSCSeg(pos, cscSegments, ch->id(), matchedSeg, mindR);
+	      if (hasCSsegment){
+		  data_.has_cscseg_st[ch->id().station() - 1] = hasCSsegment;
+		  //CSCDetId cscid((*cscseg)->geographicalId());
+		  //GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
+		  data_.cscseg_phi_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).phi();
+		  data_.cscseg_eta_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).eta();
+		  data_.cscseg_x_st[ch->id().station() - 1] = matchedSeg.localPosition().x();
+		  data_.cscseg_y_st[ch->id().station() - 1] = matchedSeg.localPosition().y();
+		  data_.cscseg_z_st[ch->id().station() - 1] = matchedSeg.localPosition().mag();
+		  data_.cscseg_prop_dR_st[ch->id().station() - 1] = mindR;
+		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
+		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
+		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) << std::endl;
+	      }
+	  }
 	  
 	  //use all CSC reco hit collection instead, because reco muon algorithm might be inefficiency in using CSC hits
           //for (auto hit = muonTrack->recHitsBegin(); hit != muonTrack->recHitsEnd(); hit++) {
@@ -554,6 +563,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             }
 	    
           }//end of csc rechit loop
+
         }
       }
 
@@ -650,6 +660,44 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     // fill the tree for each muon
   }// end of loop over reco muons
 }
+
+
+
+bool SliceTestAnalysis::matchRecoMuonwithCSCSeg(const LocalPoint muonlp, edm::Handle<CSCSegmentCollection> cscSegments, CSCDetId idCSC, CSCSegment &matchedSeg, float &mindR){
+
+  float deltaCSCR = 9999.;
+  bool matched = false;
+  for(CSCSegmentCollection::const_iterator segIt=cscSegments->begin(); segIt != cscSegments->end(); segIt++) {
+    CSCDetId id  = (CSCDetId)(*segIt).cscDetId();
+    if(idCSC.endcap() != id.endcap())continue;
+    if(idCSC.station() != id.station())continue;
+    if(idCSC.chamber() != id.chamber())continue;
+      
+    Bool_t ed1 = (idCSC.station() == 1) && ((idCSC.ring() == 1 || idCSC.ring() == 4) && (id.ring() == 1 || id.ring() == 4));
+    Bool_t ed2 = (idCSC.station() == 1) && ((idCSC.ring() == 2 && id.ring() == 2) || (idCSC.ring() == 3 && id.ring() == 3));
+    Bool_t ed3 = (idCSC.station() != 1) && (idCSC.ring() == id.ring());
+    Bool_t TMCSCMatch = (ed1 || ed2 || ed3);
+    if(! TMCSCMatch)continue;
+    
+    //TrajectoryStateOnSurface TrajSuf_ = surfExtrapTrkSam(trackRef, cscchamber->toGlobal( (*segIt).localPosition() ).z());
+
+
+    float deltaR_local = std::sqrt(std::pow((*segIt).localPosition().x() - muonlp.x(), 2) + std::pow((*segIt).localPosition().y() -muonlp.y(), 2));
+    std::cout << " Seg mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
+
+    if ( deltaR_local < deltaCSCR  ){
+      matched = true;
+      deltaCSCR = deltaR_local;
+      mindR = deltaR_local;
+      matchedSeg = *segIt;
+    }
+  }//loop over segments
+  return matched;
+
+}
+//////////////  Get the matching with CSC-sgements...
+
+
 
 void SliceTestAnalysis::beginJob(){}
 void SliceTestAnalysis::endJob(){}
