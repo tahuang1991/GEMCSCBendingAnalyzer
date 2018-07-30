@@ -17,6 +17,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+//#include "RecoMuon/TrackingTools/interface/MuonSegmentMatcher.h"
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -30,6 +31,7 @@
 #include "DataFormats/DetId/interface/DetId.h"
 
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
+#include <DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h>
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 
 #include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h"
@@ -78,7 +80,7 @@ struct MuonData
   bool has_ME11[6];
   bool has_GE11[2];
 
-  double phipro_ME11[6];
+  //Muon position at ME11
   double rechit_phi_ME11[6];//phi at each layer, from CSC rechit
   double rechit_eta_ME11[6];
   double rechit_x_ME11[6];
@@ -92,6 +94,28 @@ struct MuonData
   double rechit_prop_dR_ME11[6];
   int chamber_ME11[6];
 
+  //CSC segment matched to recoMuon
+  bool has_cscseg_st[4];
+  double cscseg_phi_st[4];
+  double cscseg_eta_st[4];
+  double cscseg_x_st[4];
+  double cscseg_y_st[4];
+  double cscseg_z_st[4];
+  int cscseg_chamber_st[4];
+  int cscseg_ring_st[4];
+  //match LCT to recoMuon by projection
+  bool has_csclct_st[4];
+  double csclct_phi_st[4];
+  double csclct_eta_st[4];
+  double csclct_x_st[4];
+  double csclct_y_st[4];
+  double csclct_r_st[4];
+  int    csclct_chamber_st[4];
+  int    csclct_ring_st[4];
+
+  //Muon position at GE11
+
+  //Muon position at GE11
   bool isGood_GE11[2];
   int roll_GE11[2];
   int chamber_GE11[2];
@@ -193,7 +217,6 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muon_nChamber", &muon_nChamber);
   t->Branch("has_MediumID", &has_MediumID);
   t->Branch("has_LooseID", &has_LooseID);  
-  t->Branch("phipro_ME11", phipro_ME11, "phipro_ME11[6]/F");
   t->Branch("rechit_eta_ME11", rechit_eta_ME11, "rechit_eta_ME11[6]/F");
   t->Branch("rechit_x_ME11", rechit_x_ME11, "rechit_x_ME11[6]/F");
   t->Branch("rechit_y_ME11", rechit_y_ME11, "rechit_y_ME11[6]/F");
@@ -238,6 +261,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::EDGetTokenT<CSCRecHit2DCollection> cscRecHits_;
+  edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> csclcts_;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
   edm::Service<TFileService> fs;
@@ -246,6 +270,13 @@ private:
   edm::ESHandle<Propagator> propagator_;
   edm::ESHandle<TransientTrackBuilder> ttrackBuilder_;
   edm::ESHandle<MagneticField> bField_;
+
+  //match CSC seg to recoMuon
+
+  //match LCT to recoMuon
+  bool matchRecoMuonwithLCT(const LocalPoint muonlp, const CSCCorrelatedLCTDigiCollection& lcts, CSCDetId cscid, CSCCorrelatedLCTDigi &matchedLCT);
+
+  
 
 
   float maxMuonEta_, minMuonEta_;
@@ -261,6 +292,7 @@ private:
 SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
 {
   cscRecHits_ = consumes<CSCRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("cscRecHits"));
+  csclcts_ = consumes<CSCCorrelatedLCTDigiCollection>(iConfig.getParameter<edm::InputTag>("csclcts"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
@@ -268,6 +300,9 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   minMuonEta_ =  iConfig.getUntrackedParameter<double>("minMuonEta", 1.4);
   maxMuonEta_ =  iConfig.getUntrackedParameter<double>("maxMuonEta", 2.5);
   theService_ = new MuonServiceProxy(serviceParameters);
+  //edm::ParameterSet matchParameters = iConfig.getParameter<edm::ParameterSet>("MatchParameters");
+  //edm::ConsumesCollector iC  = consumesCollector();
+  //theMatcher = new MuonSegmentMatcher(matchParameters, iC);
 
   // instantiate the tree
   tree_data_ = data_.book(tree_data_);
@@ -297,6 +332,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   iEvent.getByToken(cscRecHits_, cscRecHits);
 
+  edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
+  iEvent.getByToken(csclcts_, cscLcts);
+  
+
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken( vertexCollection_, vertexCollection );
   if(vertexCollection.isValid()) {
@@ -313,7 +352,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     }
   }
 
-  Handle<View<reco::Muon> > muons;
+  edm::Handle<View<reco::Muon> > muons;
   iEvent.getByToken(muons_, muons);
   //std::cout << "muons->size() " << muons->size() <<std::endl;
   //
@@ -333,6 +372,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       std::cout << "isGEMMuon " <<std::endl;
     }
 
+    if (not mu->standAloneMuon()) continue;//not standalone muon
 
     //focus on endcap muons
     if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_) {
@@ -376,6 +416,29 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       /**** trigger and reco muon match ****/
       /**** end of trigger and reco muon match ****/
 
+
+
+      /*vector<const CSCSegment*> range = theMatcher->matchCSC(mu->standAloneMuon(),iEvent);
+      for (vector<const CSCSegment*>::iterator cscseg = range.begin(); cscseg != range.end(); ++cscseg) 
+      {
+          // Create the ChamberId
+          CSCDetId cscid((*cscseg)->geographicalId());
+	   
+	  GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
+	  data_.has_cscseg_st[cscid.station() - 1] = true;
+	  data_.cscseg_phi_st[cscid.station() - 1] = seggp.phi();
+	  data_.cscseg_eta_st[cscid.station() - 1] = seggp.eta();
+	  data_.cscseg_x_st[cscid.station() - 1] = (*cscseg)->localPosition().x();
+	  data_.cscseg_y_st[cscid.station() - 1] = (*cscseg)->localPosition().y();
+	  data_.cscseg_z_st[cscid.station() - 1] = (*cscseg)->localPosition().mag();
+	  data_.cscseg_chamber_st[cscid.station() - 1] = cscid.chamber();
+	  data_.cscseg_ring_st[cscid.station() - 1] = cscid.ring();
+      }*/
+
+
+
+
+
       reco::TransientTrack ttTrack = ttrackBuilder_->build(muonTrack);
 
 
@@ -394,8 +457,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
         if (bps.bounds().inside(pos2D)) {
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
-	      cout << "projection to GEM, in chamber "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
-               <<  bps.bounds().inside(pos2D) <<endl;
+	  //    cout << "projection to GEM, in chamber "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
+          //     <<  bps.bounds().inside(pos2D) <<endl;
 
 	  float mindR = 9999.0;
 	  //use all GEM reco hit collection instead, because reco muon algorithm might be inefficiency in using GEM hits
@@ -452,8 +515,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
         if (bps.bounds().inside(pos2D)) {
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
-	      cout << "projection to CSC, in layer "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
-               <<  bps.bounds().inside(pos2D) <<endl;
+	  //    cout << "projection to CSC, in layer "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
+          //     <<  bps.bounds().inside(pos2D) <<endl;
 
 	  float mindR = 9999.0;
 	  
@@ -498,10 +561,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       std::cout <<"end of propagating track to CSC station and then associating csc reco hit to track" << std::endl;
 
 
-
-
       /**** check gem reco hit used to build muon track and then propagate the track to nearby****/
-      /*if (muonTrack->hitPattern().numberOfValidMuonGEMHits()) {
+      /*
+      if (muonTrack->hitPattern().numberOfValidMuonGEMHits()) {
         std::cout << "numberOfValidMuonGEMHits->size() " << muonTrack->hitPattern().numberOfValidMuonGEMHits()
                   << " recHitsSize " << muonTrack->recHitsSize()
                   << " pt " << muonTrack->pt()
@@ -539,20 +601,24 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
       }*/
       /**** end of checking gem reco hit used to build muon track and then propagating the track to nearby****/
-     std::cout << "end of checking gem reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
+     //std::cout << "end of checking gem reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
 
 
 
       /**** check csc reco hit used to build muon track and then propagate the track to nearby****/
-      /*if (muonTrack->hitPattern().numberOfValidMuonCSCHits()) {
+     /*
+      if (muonTrack->hitPattern().numberOfValidMuonCSCHits()) {
         std::cout << "numberOfValidMuonCSCHits->size() " << muonTrack->hitPattern().numberOfValidMuonCSCHits()
                   << " recHitsSize " << muonTrack->recHitsSize()
                   << " pt " << muonTrack->pt()
                   <<std::endl;
         for (auto hit = muonTrack->recHitsBegin(); hit != muonTrack->recHitsEnd(); hit++) {
           if ( (*hit)->geographicalId().det() == DetId::Detector::Muon && (*hit)->geographicalId().subdetId() == MuonSubdetId::CSC) {
+	    std::cout <<" hit detid "<< (*hit)->rawId() << std::endl;
+	     
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             CSCDetId cscid((*hit)->geographicalId());
+	    std::cout <<"csc rect hit in det id "<< cscid <<" hit "<<  (*hit)->localPosition() << std::endl;
             const auto& layer = CSCGeometry_->layer(cscid);
 
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),layer->surface());
@@ -582,7 +648,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
       }*/
       /**** end of checking csc reco hit used to build muon track and then propagating the track to nearby****/
-      std::cout  <<" end of checking csc reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
+      //std::cout  <<" end of checking csc reco hit used to build muon track and then propagating the track to nearby "<< std::endl;
+      
 
        tree_data_->Fill();
     } //end of valid muontrack
