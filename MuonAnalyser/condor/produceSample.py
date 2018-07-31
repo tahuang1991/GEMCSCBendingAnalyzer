@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 import os
 import sys
@@ -37,8 +38,8 @@ parser.add_argument("-i", "--indir", dest="indir", default="/eos/uscms/store/use
 args = parser.parse_args()
 
 script = "produceAnaNtuples.sh"
-workdir_cmssw = "/uscms_data/d3/tahuang/GEMCSCBending/"
-eosdir = "/eos/uscms/store/user/tahuang/"
+workdir_cmssw = "/uscms_data/d3/mkhurana/"
+eosdir = "/eos/uscms/store/user/mkhurana/"
 
 allfiles = useInputDir([args.indir])
 
@@ -72,7 +73,7 @@ use_x509userproxy       = true
 x509userproxy           = $X509_USER_PROXY
 initialdir              = {jobdir}
 Should_Transfer_Files   = YES
-transfer_input_files    = {workdir}/{cfg}
+transfer_input_files    = {workdir}/{cfg} , /uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/plugins/SliceTestAnalysis.cc
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF
@@ -98,10 +99,11 @@ cd  $currentpath
 for ijob in range(len(allfiles)) :
 	subscript.write("""
 ./{jobdir}/submit_{num}.sh
-sleep 0.1
+sleep 0.0005
 """.format(jobdir=args.jobdir,num=ijob)
 	)
 
 subscript.close()
 os.system("chmod +x "+submitall)
 #os.system("source "+submitall)
+

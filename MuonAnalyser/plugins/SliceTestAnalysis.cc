@@ -211,7 +211,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
 
-  //edited my mohit khurana need verfication
+  //edited my mohit khurana need verification
   t->Branch("muonPx", &muonPx);
   t->Branch("muonPy", &muonPy);
   t->Branch("muonPz", &muonPz);
@@ -251,7 +251,32 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_keyCSC_GE11", dphi_keyCSC_GE11, "dphi_keyCSC_GE11[2]/F");
   t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
 
-  //  the aboe is the new edited lines
+
+  t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/I");
+  t->Branch("cscseg_phi_st", cscseg_phi_st, "cscseg_phi_st[4]/F");
+  t->Branch("cscseg_eta_st", cscseg_eta_st, "cscseg_eta_st[4]/F");
+  t->Branch("cscseg_x_st", cscseg_x_st, "cscseg_x_st[4]/F");
+  t->Branch("cscseg_y_st", cscseg_y_st, "cscseg_y_st[4]/F");
+  t->Branch("cscseg_z_st", cscseg_z_st, "cscseg_z_st[4]/F");
+  t->Branch("cscseg_prop_dR_st", cscseg_prop_dR_st, "cscseg_prop_dR_st[4]/F");
+  t->Branch("cscseg_chamber_st", cscseg_chamber_st, "cscseg_chamber_st[4]/I");
+  t->Branch("cscseg_ring_st", cscseg_ring_st, "cscseg_ring_st[4]/I");
+  t->Branch("has_csclct_st", has_csclct_st, "has_csclct_st[4]/I");
+  t->Branch("csclct_phi_st", csclct_phi_st, "csclct_phi_st[4]/F");
+  t->Branch("csclct_eta_st", csclct_eta_st, "csclct_eta_st[4]/F");
+  t->Branch("csclct_x_st", csclct_x_st, "csclct_x_st[4]/F");
+  t->Branch("csclct_y_st", csclct_y_st, "csclct_y_st[4]/F");
+  t->Branch("csclct_r_st", csclct_r_st, "csclct_r_st[4]/F");
+  t->Branch("csclct_chamber_st", csclct_chamber_st, "csclct_chamber_st[4]/I");
+  t->Branch("csclct_ring_st", csclct_ring_st, "csclct_ring_st[4]/I");
+
+  t->Branch("csclct_prop_dR_st", csclct_prop_dR_st, "csclct_prop_dR_st[4]/F");
+  t->Branch("csclct_keyStrip_st", csclct_keyStrip_st, "csclct_keyStrip_st[4]/I");
+  t->Branch("csclct_keyWG_st", csclct_keyWG_st, "csclct_keyWG_st[4]/I");
+  t->Branch("csclct_matchWin_st", csclct_matchWin_st, "csclct_matchWin_st[4]/I");
+  t->Branch("csclct_pattern_st", csclct_pattern_st, "csclct_pattern_st[4]/I");
+
+  //  the above is the new edited lines
 
   return t;
 }
@@ -628,11 +653,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             //if ((*hit)->rawId() == ch->id().rawId() ) {
             GEMDetId gemid((*hit)->geographicalId());
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),etaPart->surface());
             if (!tsos.isValid()) continue;
             GlobalPoint tsosGP = tsos.globalPosition();
-
             LocalPoint && tsos_localpos = tsos.localPosition();
             LocalError && tsos_localerr = tsos.localError().positionError();
             LocalPoint && dethit_localpos = (*hit)->localPosition();
@@ -643,7 +666,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
               std::sqrt(dethit_localerr.xx() + tsos_localerr.xx());
             auto pull_y = (dethit_localpos.y() - tsos_localpos.y()) /
               std::sqrt(dethit_localerr.yy() + tsos_localerr.yy());
-
             cout << "gem hit "<< gemid<< endl;
             cout << " gp " << etaPart->toGlobal((*hit)->localPosition())<< endl;
             cout << " tsosGP "<< tsosGP << endl;
@@ -675,11 +697,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
             CSCDetId cscid((*hit)->geographicalId());
 	    std::cout <<"csc rect hit in det id "<< cscid <<" hit "<<  (*hit)->localPosition() << std::endl;
             const auto& layer = CSCGeometry_->layer(cscid);
-
             TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),layer->surface());
             if (!tsos.isValid()) continue;
             GlobalPoint tsosGP = tsos.globalPosition();
-
             LocalPoint && tsos_localpos = tsos.localPosition();
             LocalError && tsos_localerr = tsos.localError().positionError();
             LocalPoint && dethit_localpos = (*hit)->localPosition();
@@ -690,7 +710,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
               std::sqrt(dethit_localerr.xx() + tsos_localerr.xx());
             auto pull_y = (dethit_localpos.y() - tsos_localpos.y()) /
               std::sqrt(dethit_localerr.yy() + tsos_localerr.yy());
-
             cout << "csc hit "<< cscid<< endl;
             cout << " gp " << layer->toGlobal((*hit)->localPosition())<< endl;
             cout << " tsosGP "<< tsosGP << endl;
