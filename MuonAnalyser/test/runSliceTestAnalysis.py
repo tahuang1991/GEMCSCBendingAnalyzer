@@ -37,9 +37,10 @@ process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     process.MuonServiceProxy,
     gemRecHits = cms.InputTag("gemRecHits"),
     cscRecHits = cms.InputTag("csc2DRecHits"),
-    ##csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
+    csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
     cscSegments = cms.InputTag("cscSegments"),
     muons = cms.InputTag("muons"),
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
+    matchMuonwithLCT = cms.untracked.bool(False),
 )
 process.p = cms.Path(process.SliceTestAnalysis)
