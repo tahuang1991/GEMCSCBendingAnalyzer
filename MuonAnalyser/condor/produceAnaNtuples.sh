@@ -30,9 +30,11 @@ ls -l
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 cd $cmssw_version/src/
-SCRAM_ARCH=slc6_amd64_gcc491
+echo `pwd`
+ls -l 
+scramv1 b ProjectRename
+SCRAM_ARCH=slc6_amd64_gcc630
 eval `scramv1 runtime -sh`
-scramv1 b
 
 cd $workdir
 
