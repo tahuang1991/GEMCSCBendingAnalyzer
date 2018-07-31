@@ -1,19 +1,20 @@
-cmswn1894.fnal.gov
-/storage/local/data1/condor/execute/dir_759846
-workdir: /storage/local/data1/condor/execute/dir_759846
-Starting job on  Tue Jul 31 08:33:35 CDT 2018
-Running on: Linux cmswn1894.fnal.gov 2.6.32-696.30.1.el6.x86_64 #1 SMP Mon May 21 17:39:00 CDT 2018 x86_64 x86_64 x86_64 GNU/Linux
+cmswn1666.fnal.gov
+/storage/local/data1/condor/execute/dir_835116
+workdir: /storage/local/data1/condor/execute/dir_835116
+Starting job on  Tue Jul 31 08:50:46 CDT 2018
+Running on: Linux cmswn1666.fnal.gov 2.6.32-696.30.1.el6.x86_64 #1 SMP Mon May 21 17:39:00 CDT 2018 x86_64 x86_64 x86_64 GNU/Linux
 System software: Scientific Linux Fermi release 6.9 (Ramsey)
 args: runSliceTestAnalysis_condor.py step3_281.root /eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/ /eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/ out_ana_281.root -1 CMSSW_10_1_5 mkhurana
-total 24
-drwxr-xr-x 16 mkhurana us_cms 4096 Jul 31 05:49 CMSSW_10_1_5
--rw-r--r--  1 mkhurana us_cms    0 Jul 31 08:33 _condor_stderr
--rw-r--r--  1 mkhurana us_cms  565 Jul 31 08:33 _condor_stdout
--rwxr-xr-x  1 mkhurana us_cms 1703 Jul 31 08:33 condor_exec.exe
--rw-r--r--  1 mkhurana us_cms 1941 Jul 31 08:33 runSliceTestAnalysis_condor.py
--rw-------  1 mkhurana us_cms 5286 Jul 31 08:33 x509up_u54546
+total 60
+drwxr-xr-x 16 mkhurana us_cms  4096 Jul 31 05:49 CMSSW_10_1_5
+-rw-r--r--  1 mkhurana us_cms 35509 Jul 31 08:50 SliceTestAnalysis.cc
+-rw-r--r--  1 mkhurana us_cms     0 Jul 31 08:50 _condor_stderr
+-rw-r--r--  1 mkhurana us_cms   565 Jul 31 08:50 _condor_stdout
+-rwxr-xr-x  1 mkhurana us_cms  1703 Jul 31 08:50 condor_exec.exe
+-rw-r--r--  1 mkhurana us_cms  1941 Jul 31 08:50 runSliceTestAnalysis_condor.py
+-rw-------  1 mkhurana us_cms  5286 Jul 31 08:50 x509up_u54546
 Resetting caches
-**** ERROR: You have moved/renamed this project area "/storage/local/data1/condor/execute/dir_759846/CMSSW_10_1_5" from "/uscms_data/d3/mkhurana/CMSSW_10_1_5"
+**** ERROR: You have moved/renamed this project area "/storage/local/data1/condor/execute/dir_835116/CMSSW_10_1_5" from "/uscms_data/d3/mkhurana/CMSSW_10_1_5"
 gmake: *** [There are compilation/build errors. Please see the detail log above.] Error 2
 copy input file from root://cmseos.fnal.gov//store/group/lpcgem/SingleMuon_Run2017G_v1_RECO//step3_281.root
 Singletons:

@@ -110,3 +110,48 @@
 	   Disk (KB)            :  6541460 10000000  15634228
 	   Memory (MB)          :       70     2100      2100
 ...
+000 (223038.000.000) 07/31 08:49:55 Job submitted from host: <131.225.189.232:9618?addrs=131.225.189.232-9618&noUDP&sock=8982_aaf4_3>
+...
+001 (223038.000.000) 07/31 08:50:52 Job executing on host: <131.225.204.36:9074?addrs=131.225.204.36-9074>
+...
+006 (223038.000.000) 07/31 08:51:02 Image size of job updated: 2
+	3  -  MemoryUsage of job (MB)
+	2424  -  ResidentSetSize of job (KB)
+...
+006 (223038.000.000) 07/31 08:52:02 Image size of job updated: 447524
+	69  -  MemoryUsage of job (MB)
+	70324  -  ResidentSetSize of job (KB)
+...
+006 (223038.000.000) 07/31 08:55:02 Image size of job updated: 447524
+	69  -  MemoryUsage of job (MB)
+	70336  -  ResidentSetSize of job (KB)
+...
+006 (223038.000.000) 07/31 08:56:02 Image size of job updated: 447524
+	69  -  MemoryUsage of job (MB)
+	70340  -  ResidentSetSize of job (KB)
+...
+006 (223038.000.000) 07/31 08:57:03 Image size of job updated: 590360
+	265  -  MemoryUsage of job (MB)
+	270436  -  ResidentSetSize of job (KB)
+...
+006 (223038.000.000) 07/31 08:57:22 Image size of job updated: 772788
+	265  -  MemoryUsage of job (MB)
+	270436  -  ResidentSetSize of job (KB)
+...
+005 (223038.000.000) 07/31 08:57:24 Job terminated.
+	(1) Normal termination (return value 65)
+		Usr 0 00:00:13, Sys 0 00:00:15  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:13, Sys 0 00:00:15  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	30518  -  Run Bytes Sent By Job
+	44439  -  Run Bytes Received By Job
+	30518  -  Total Bytes Sent By Job
+	44439  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated
+	   Cpus                 :                 1         1
+	   Disk (KB)            :  6541320 10000000  10310256
+	   Memory (MB)          :      265     2100      2100
+...
+000 (223593.000.000) 07/31 09:06:24 Job submitted from host: <131.225.189.232:9618?addrs=131.225.189.232-9618&noUDP&sock=8982_aaf4_3>
+...

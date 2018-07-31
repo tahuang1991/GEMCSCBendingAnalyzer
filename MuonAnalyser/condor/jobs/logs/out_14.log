@@ -118,3 +118,46 @@
 	   Disk (KB)            :  6167678 10000000  10382640
 	   Memory (MB)          :      482     2100      2100
 ...
+000 (222734.000.000) 07/31 08:49:38 Job submitted from host: <131.225.189.232:9618?addrs=131.225.189.232-9618&noUDP&sock=8982_aaf4_3>
+...
+001 (222734.000.000) 07/31 08:49:51 Job executing on host: <131.225.206.234:37922?addrs=131.225.206.234-37922>
+...
+006 (222734.000.000) 07/31 08:49:59 Image size of job updated: 447524
+	71  -  MemoryUsage of job (MB)
+	72372  -  ResidentSetSize of job (KB)
+...
+006 (222734.000.000) 07/31 08:53:30 Image size of job updated: 742064
+	71  -  MemoryUsage of job (MB)
+	72372  -  ResidentSetSize of job (KB)
+...
+005 (222734.000.000) 07/31 08:53:30 Job terminated.
+	(1) Normal termination (return value 65)
+		Usr 0 00:00:11, Sys 0 00:00:22  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:11, Sys 0 00:00:22  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	19836  -  Run Bytes Sent By Job
+	44439  -  Run Bytes Received By Job
+	19836  -  Total Bytes Sent By Job
+	44439  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated
+	   Cpus                 :                 1         1
+	   Disk (KB)            :  5961907 10000000  11549244
+	   Memory (MB)          :       71     2100      2100
+...
+000 (223289.000.000) 07/31 09:06:09 Job submitted from host: <131.225.189.232:9618?addrs=131.225.189.232-9618&noUDP&sock=8982_aaf4_3>
+...
+001 (223289.000.000) 07/31 09:08:25 Job executing on host: <131.225.204.24:47840?addrs=131.225.204.24-47840>
+...
+006 (223289.000.000) 07/31 09:08:34 Image size of job updated: 69508
+	9  -  MemoryUsage of job (MB)
+	8424  -  ResidentSetSize of job (KB)
+...
+006 (223289.000.000) 07/31 09:09:35 Image size of job updated: 447532
+	70  -  MemoryUsage of job (MB)
+	71356  -  ResidentSetSize of job (KB)
+...
+006 (223289.000.000) 07/31 09:10:36 Image size of job updated: 799700
+	495  -  MemoryUsage of job (MB)
+	506400  -  ResidentSetSize of job (KB)
+...

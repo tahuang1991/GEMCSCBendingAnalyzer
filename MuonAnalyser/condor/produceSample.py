@@ -72,7 +72,7 @@ use_x509userproxy       = true
 x509userproxy           = $X509_USER_PROXY
 initialdir              = {jobdir}
 Should_Transfer_Files   = YES
-transfer_input_files    = {workdir}/{cfg}
+transfer_input_files    = {workdir}/{cfg} , /uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/plugins/SliceTestAnalysis.cc
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF

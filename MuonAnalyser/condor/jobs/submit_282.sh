@@ -12,7 +12,7 @@ use_x509userproxy       = true
 x509userproxy           = $X509_USER_PROXY
 initialdir              = jobs
 Should_Transfer_Files   = YES
-transfer_input_files    = ${CMSSW_BASE}/runSliceTestAnalysis_condor.py
+transfer_input_files    = ${CMSSW_BASE}/runSliceTestAnalysis_condor.py , /uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/plugins/SliceTestAnalysis.cc
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF
