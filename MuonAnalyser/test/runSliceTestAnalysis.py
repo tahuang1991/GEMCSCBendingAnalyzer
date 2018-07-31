@@ -16,34 +16,31 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-process.maxEvents.input = cms.untracked.int32(10)
+process.maxEvents.input = cms.untracked.int32(100)
 # Input source
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 #process.source.skipEvents = cms.untracked.uint32(17601)
 #file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/            #directory on LPC where all 555 files are placed
 process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
 #process.source.fileNames.append('file:/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/step3_080.root')
-#os.chdir('/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/script'
-#fname = '/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/script/data_files_names_all.txt'
+
+#fname = 'singleMuon.txt'
 #f = open(fname)
 #for line in f:
-#    print line
-
 #    process.source.fileNames.append(line)
 
-#print process.source.fileNames
 process.options = cms.untracked.PSet()
 
-process.TFileService = cms.Service("TFileService",fileName = cms.string("/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/Output/histo.root"))
-#process.TFileService = cms.Service("TFileService",fileName = cms.string("histo.root"))
+process.TFileService = cms.Service("TFileService",fileName = cms.string("histo.root"))
 
 process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     process.MuonServiceProxy,
     gemRecHits = cms.InputTag("gemRecHits"),
     cscRecHits = cms.InputTag("csc2DRecHits"),
-    ##csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
+    csclcts = cms.InputTag("muonCSCDigis", "MuonCSCCorrelatedLCTDigi"),
     cscSegments = cms.InputTag("cscSegments"),
     muons = cms.InputTag("muons"),
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
+    matchMuonwithLCT = cms.untracked.bool(False),
 )
 process.p = cms.Path(process.SliceTestAnalysis)
