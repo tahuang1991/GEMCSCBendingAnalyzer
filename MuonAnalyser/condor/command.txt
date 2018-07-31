@@ -1,3 +1,4 @@
+
 step1: initialize your grid certificate by grid-proxy-init -debug -verify
 
 step2: run following command to create the scripts to submit condor jobs
