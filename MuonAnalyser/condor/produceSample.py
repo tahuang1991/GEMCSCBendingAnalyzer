@@ -98,7 +98,7 @@ cd  $currentpath
 for ijob in range(len(allfiles)) :
 	subscript.write("""
 ./{jobdir}/submit_{num}.sh
-sleep 0.1
+sleep 0.0005
 """.format(jobdir=args.jobdir,num=ijob)
 	)
 
