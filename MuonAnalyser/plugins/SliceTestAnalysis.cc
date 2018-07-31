@@ -211,7 +211,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
 
-  //edited my mohit khurana need verfication
+  //edited my mohit khurana need verification
   t->Branch("muonPx", &muonPx);
   t->Branch("muonPy", &muonPy);
   t->Branch("muonPz", &muonPz);
@@ -268,11 +268,15 @@ TTree* MuonData::book(TTree *t)
   t->Branch("csclct_y_st", csclct_y_st, "csclct_y_st[4]/F");
   t->Branch("csclct_r_st", csclct_r_st, "csclct_r_st[4]/F");
   t->Branch("csclct_chamber_st", csclct_chamber_st, "csclct_chamber_st[4]/I");
-  t->Branch("csclct_ring_st", csclct_ring_st, "csclct_ring_st[4]/F");
-  
+  t->Branch("csclct_ring_st", csclct_ring_st, "csclct_ring_st[4]/I");
 
+  t->Branch("csclct_prop_dR_st", csclct_prop_dR_st, "csclct_prop_dR_st[4]/F");
+  t->Branch("csclct_keyStrip_st", csclct_keyStrip_st, "csclct_keyStrip_st[4]/I");
+  t->Branch("csclct_keyWG_st", csclct_keyWG_st, "csclct_keyWG_st[4]/I");
+  t->Branch("csclct_matchWin_st", csclct_matchWin_st, "csclct_matchWin_st[4]/I");
+  t->Branch("csclct_pattern_st", csclct_pattern_st, "csclct_pattern_st[4]/I");
 
-  //  the aboe is the new edited lines
+  //  the above is the new edited lines
 
   return t;
 }
