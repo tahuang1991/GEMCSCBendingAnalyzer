@@ -37,8 +37,8 @@ parser.add_argument("-i", "--indir", dest="indir", default="/eos/uscms/store/use
 args = parser.parse_args()
 
 script = "produceAnaNtuples.sh"
-workdir_cmssw = "/uscms_data/d3/tahuang/GEMCSCBending/"
-eosdir = "/eos/uscms/store/user/tahuang/"
+workdir_cmssw = "/uscms_data/d3/mkhurana/"
+eosdir = "/eos/uscms/store/user/mkhurana/"
 
 allfiles = useInputDir([args.indir])
 

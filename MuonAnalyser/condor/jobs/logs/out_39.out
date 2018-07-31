@@ -1,0 +1,42 @@
+cmswn1536.fnal.gov
+/storage/local/data1/condor/execute/dir_2941113
+workdir: /storage/local/data1/condor/execute/dir_2941113
+Starting job on  Tue Jul 31 07:11:51 CDT 2018
+Running on: Linux cmswn1536.fnal.gov 2.6.32-696.30.1.el6.x86_64 #1 SMP Mon May 21 17:39:00 CDT 2018 x86_64 x86_64 x86_64 GNU/Linux
+System software: Scientific Linux Fermi release 6.9 (Ramsey)
+args: runSliceTestAnalysis_condor.py step3_039.root /eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/ /eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/ out_ana_39.root -1 CMSSW_10_1_5 mkhurana
+total 24
+drwxr-xr-x 16 mkhurana us_cms 4096 Jul 31 05:49 CMSSW_10_1_5
+-rw-r--r--  1 mkhurana us_cms    0 Jul 31 07:11 _condor_stderr
+-rw-r--r--  1 mkhurana us_cms  566 Jul 31 07:11 _condor_stdout
+-rwxr-xr-x  1 mkhurana us_cms 1703 Jul 31 07:11 condor_exec.exe
+-rw-r--r--  1 mkhurana us_cms 1941 Jul 31 07:11 runSliceTestAnalysis_condor.py
+-rw-------  1 mkhurana us_cms 5286 Jul 31 07:11 x509up_u54546
+Resetting caches
+**** ERROR: You have moved/renamed this project area "/storage/local/data1/condor/execute/dir_2941113/CMSSW_10_1_5" from "/uscms_data/d3/mkhurana/CMSSW_10_1_5"
+gmake: *** [There are compilation/build errors. Please see the detail log above.] Error 2
+copy input file from root://cmseos.fnal.gov//store/group/lpcgem/SingleMuon_Run2017G_v1_RECO//step3_039.root
+Singletons:
+  filePrepend        : 
+                     - String to prepend location of all files
+  maxEvents          : -1
+                     - Number of events to process (-1 for all)
+  nEvents            : -1
+                     - Number of events
+  outputFile         : out_ana_39.root
+                     - Name of output file (if needed)
+  secondaryOutputFile: 
+                     - Name of second output file (if needed)
+  section            : 0
+                     - This section (from 1..totalSections inclusive)
+  tag                : 
+                     - tag to add to output filename
+  totalSections      : 0
+                     - Total number of sections
+Lists:
+  inputFiles         : ['file:step3_039.root']
+                     - Files to process
+  secondaryInputFiles: []
+                     - Second group of files to process (if needed)
+
+Status = 65
