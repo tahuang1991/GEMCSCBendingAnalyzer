@@ -67,12 +67,12 @@ struct MuonData
 
   double muonPx, muonPy, muonPz;
   double muondxy, muondz;
-  int muon_ntrackhit, muon_nChameber, muon_chi2;
+  int muon_ntrackhit, muon_chi2, muon_nChamber;
   double muonpt, muoneta, muonphi;
   bool muoncharge;
   bool muonendcap;
   double muonPFIso, muonTkIso;
-  int muon_nChamber;
+  
   
 
   bool has_TightID;
@@ -181,9 +181,66 @@ void MuonData::init()
     rechit_y_GE11[i] = 0.0;
     rechit_r_GE11[i] = 0.0;
     isGood_GE11[i] = 0;
+	roll_GE11[i] = 0;
+	chamber_GE11[i] = 0;
+	prop_phi_GE11[i] = 0;
+	prop_eta_GE11[i] = 0;
+	prop_x_GE11[i] = 0;
+	prop_y_GE11[i] = 0;
+	prop_r_GE11[i] = 0;
+	rechit_prop_dR_GE11[i] = 9999;
+	dphi_CSC_GE11[i] = -9;
+	dphi_keyCSC_GE11[i] = -9;
+	dphi_fitCSC_GE11[i] =-9;
+
+
   }
   for (int i=0; i<6; ++i){
     has_ME11[i] = 0;
+	rechit_phi_ME11[i]=-9;
+	rechit_eta_ME11[i] = -9;
+	rechit_x_ME11[i] = 0.0;
+	rechit_y_ME11[i] = 0.0;
+	rechit_r_ME11[i] = 0.0;
+
+	prop_phi_ME11[i] = 0.0;
+	prop_eta_ME11[i] = 0.0;
+	prop_x_ME11[i] = 0.0;
+	prop_y_ME11[i] = 0.0;
+	prop_r_ME11[i] = 0.0;
+	rechit_prop_dR_ME11[i] = 9999;
+	chamber_ME11[i] = 0;
+
+
+  }
+  for (int i = 0; i<4; ++i) {
+	  has_cscseg_st[i] = 0;
+	  cscseg_phi_st[i] = -9;
+	  cscseg_eta_st[i] = -9;
+	  cscseg_x_st[i] = 0.0;
+	  cscseg_y_st[i] = 0.0;
+	  cscseg_z_st[i] = 0.0;
+
+	  cscseg_prop_dR_st[i] = 0.0;
+	  cscseg_chamber_st[i] = -1;
+	  cscseg_ring_st[i] = -1;
+	  has_csclct_st[i] = 0.0;
+	  csclct_phi_st[i] = 0.0;
+	  csclct_eta_st[i] = 0.0;
+	  csclct_x_st[i] = 0;
+
+	  csclct_y_st[i] = 0.0;
+	  csclct_r_st[i] = 0.0;
+	  csclct_prop_dR_st[i] = 9999;
+	  csclct_chamber_st[i] = 0;
+
+	  csclct_ring_st[i] = 0.0;
+	  csclct_keyStrip_st[i] = -1;
+	  csclct_keyWG_st[i] = -1;
+	  csclct_matchWin_st[i] = 0;
+	  csclct_pattern_st[i] = -1;
+
+
   }
 }
 
@@ -203,9 +260,9 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muonendcap", &muonendcap);
   t->Branch("has_TightID", &has_TightID);
 
-  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/I");
-  t->Branch("has_GE11", has_GE11, "has_GE11[2]/I");
-  t->Branch("has_ME11", has_ME11, "has_ME11[6]/I");
+  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/B");
+  t->Branch("has_GE11", has_GE11, "has_GE11[2]/B");
+  t->Branch("has_ME11", has_ME11, "has_ME11[6]/B");
   t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]/F");
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
@@ -218,7 +275,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muondxy", &muondxy);
   t->Branch("muondz", &muondz);
   t->Branch("muon_ntrackhit", &muon_ntrackhit);
-  t->Branch("muon_nChameber", &muon_nChameber);  
+   
   t->Branch("muon_chi2", &muon_chi2);
   t->Branch("muonPFIso", &muonPFIso);
   t->Branch("muonTkIso", &muonTkIso);
@@ -252,7 +309,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
 
 
-  t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/I");
+  t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/B");
   t->Branch("cscseg_phi_st", cscseg_phi_st, "cscseg_phi_st[4]/F");
   t->Branch("cscseg_eta_st", cscseg_eta_st, "cscseg_eta_st[4]/F");
   t->Branch("cscseg_x_st", cscseg_x_st, "cscseg_x_st[4]/F");
@@ -261,7 +318,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("cscseg_prop_dR_st", cscseg_prop_dR_st, "cscseg_prop_dR_st[4]/F");
   t->Branch("cscseg_chamber_st", cscseg_chamber_st, "cscseg_chamber_st[4]/I");
   t->Branch("cscseg_ring_st", cscseg_ring_st, "cscseg_ring_st[4]/I");
-  t->Branch("has_csclct_st", has_csclct_st, "has_csclct_st[4]/I");
+  t->Branch("has_csclct_st", has_csclct_st, "has_csclct_st[4]/B");
   t->Branch("csclct_phi_st", csclct_phi_st, "csclct_phi_st[4]/F");
   t->Branch("csclct_eta_st", csclct_eta_st, "csclct_eta_st[4]/F");
   t->Branch("csclct_x_st", csclct_x_st, "csclct_x_st[4]/F");
