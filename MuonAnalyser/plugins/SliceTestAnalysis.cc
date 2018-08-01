@@ -210,14 +210,14 @@ void MuonData::init()
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
-	roll_propGE11[i] = 0;
-	chamber_propGE11[i] = 0;
-	dphi_CSCL1_GE11L1[i] = 0;
-	dphi_fitCSCL1_GE11L1[i] = 0;
-	dphi_CSCSeg_GE11Rechit[i] = 0;
-	dphi_keyCSCRechit_GE11Rechit[i] = 0;
-	dphi_CSCRechits_GE11Rechit[i] = 0;
-	dphi_propCSC_propGE11[i] = 0;
+    roll_propGE11[i] = 0;
+    chamber_propGE11[i] = 0;
+    dphi_CSCL1_GE11L1[i] = 0;
+    dphi_fitCSCL1_GE11L1[i] = 0;
+    dphi_CSCSeg_GE11Rechit[i] = 0;
+    dphi_keyCSCRechit_GE11Rechit[i] = 0;
+    dphi_CSCRechits_GE11Rechit[i] = 0;
+    dphi_propCSC_propGE11[i] = 0;
 
 
   }
@@ -236,10 +236,10 @@ void MuonData::init()
     prop_r_ME11[i] = 0.0;
     rechit_prop_dR_ME11[i] = 9999;
     chamber_ME11[i] = 0;
-	has_propME11[i] = 0;
-	ring_ME11[i] = 0;
-	chamber_propME11[i] = 0;
-	ring_propME11[i] = 0;
+    has_propME11[i] = 0;
+    ring_ME11[i] = 0;
+    chamber_propME11[i] = 0;
+    ring_propME11[i] = 0;
 
 
 
