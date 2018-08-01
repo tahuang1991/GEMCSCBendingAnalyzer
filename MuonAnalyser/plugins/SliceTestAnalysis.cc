@@ -210,6 +210,7 @@ void MuonData::init()
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
+
     roll_propGE11[i] = 0;
     chamber_propGE11[i] = 0;
     dphi_CSCL1_GE11L1[i] = 0;
@@ -220,6 +221,7 @@ void MuonData::init()
     dphi_propCSC_propGE11[i] = 0;
 
 
+
   }
   for (int i=0; i<6; ++i){
     has_ME11[i] = 0;
@@ -228,6 +230,7 @@ void MuonData::init()
     rechit_x_ME11[i] = 0.0;
     rechit_y_ME11[i] = 0.0;
     rechit_r_ME11[i] = 0.0;
+
 
     prop_phi_ME11[i] = 0.0;
     prop_eta_ME11[i] = 0.0;
