@@ -558,6 +558,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         if (!tsos.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
+	if (tsosGP.eta() * mu->eta() < 0.0) continue;
+
         const LocalPoint pos = ch->toLocal(tsosGP);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
         const BoundPlane& bps(ch->surface());
@@ -622,6 +624,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         if (!tsos.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
+	if (tsosGP.eta() * mu->eta() < 0.0) continue;
 	
         const LocalPoint pos = ch->toLocal(tsosGP);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
@@ -645,7 +648,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		for (unsigned int i =0; i<2; i++){
 		    if (data_.has_propGE11[i]){
 			data_.dphi_propCSC_propGE11[i] = reco::deltaPhi(data_.prop_phi_ME11[ch->id().layer()-1], data_.prop_phi_GE11[i]);
-			std::cout <<" ME11-GE11, deltaPhi(propME11, propGE11) GEMlayeri "<<i <<" "<< data_.dphi_propCSC_propGE11[i] <<" ME11 phi "<< data_.prop_phi_ME11[ch->id().layer()-1] <<" GE11 phi "<< data_.prop_phi_GE11[i] << std::endl;
+			std::cout <<" ME11-GE11, deltaPhi(propME11, propGE11) GEMlayeri "<<i <<" "<< data_.dphi_propCSC_propGE11[i] <<" ME11 phi "<< data_.prop_phi_ME11[ch->id().layer()-1] <<" GE11 phi "<< data_.prop_phi_GE11[i] <<" CSCid "<< ch->id() <<" GEM chamber "<< data_.chamber_propGE11[i] <<" roll "<< data_.roll_propGE11[i] << std::endl;
 		    }
 		}
 	    }//ME11-GE11, deltaPhi(propME11, propGE11)
@@ -870,7 +873,7 @@ bool SliceTestAnalysis::matchRecoMuonwithCSCSeg(const LocalPoint muonlp, edm::Ha
 
 
     float deltaR_local = std::sqrt(std::pow((*segIt).localPosition().x() - muonlp.x(), 2) + std::pow((*segIt).localPosition().y() -muonlp.y(), 2));
-    std::cout << " Seg mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
+    //std::cout << " Seg mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
 
     if ( deltaR_local < deltaCSCR  ){
       matched = true;
