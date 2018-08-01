@@ -211,6 +211,16 @@ void MuonData::init()
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
 
+    roll_propGE11[i] = 0;
+    chamber_propGE11[i] = 0;
+    dphi_CSCL1_GE11L1[i] = 0;
+    dphi_fitCSCL1_GE11L1[i] = 0;
+    dphi_CSCSeg_GE11Rechit[i] = 0;
+    dphi_keyCSCRechit_GE11Rechit[i] = 0;
+    dphi_CSCRechits_GE11Rechit[i] = 0;
+    dphi_propCSC_propGE11[i] = 0;
+
+
 
   }
   for (int i=0; i<6; ++i){
@@ -221,6 +231,7 @@ void MuonData::init()
     rechit_y_ME11[i] = 0.0;
     rechit_r_ME11[i] = 0.0;
 
+
     prop_phi_ME11[i] = 0.0;
     prop_eta_ME11[i] = 0.0;
     prop_x_ME11[i] = 0.0;
@@ -228,6 +239,12 @@ void MuonData::init()
     prop_r_ME11[i] = 0.0;
     rechit_prop_dR_ME11[i] = 9999;
     chamber_ME11[i] = 0;
+    has_propME11[i] = 0;
+    ring_ME11[i] = 0;
+    chamber_propME11[i] = 0;
+    ring_propME11[i] = 0;
+
+
 
 
   }
@@ -350,6 +367,24 @@ TTree* MuonData::book(TTree *t)
   t->Branch("csclct_keyWG_st", csclct_keyWG_st, "csclct_keyWG_st[4]/I");
   t->Branch("csclct_matchWin_st", csclct_matchWin_st, "csclct_matchWin_st[4]/I");
   t->Branch("csclct_pattern_st", csclct_pattern_st, "csclct_pattern_st[4]/I");
+  t->Branch("has_propME11", has_propME11, "has_propME11[6]/B");
+  t->Branch("ring_ME11", ring_ME11, "ring_ME11[6]/I");
+  t->Branch("chamber_propME11", chamber_propME11, "chamber_propME11[6]/I");
+  t->Branch("ring_propME11", ring_propME11, "ring_propME11[6]/I");
+
+
+  t->Branch("has_propGE11", has_propGE11, "has_propGE11[2]/B");
+  t->Branch("roll_propGE11", roll_propGE11, "roll_propGE11[2]/I");
+  t->Branch("chamber_propGE11", chamber_propGE11, "chamber_propGE11[2]/I");
+
+
+  t->Branch("dphi_CSCL1_GE11L1", dphi_CSCL1_GE11L1, "dphi_CSCL1_GE11L1[2]/F");
+  t->Branch("dphi_fitCSCL1_GE11L1", dphi_fitCSCL1_GE11L1, "dphi_fitCSCL1_GE11L1[2]/F");
+  t->Branch("dphi_CSCSeg_GE11Rechit", dphi_CSCSeg_GE11Rechit, "dphi_CSCSeg_GE11Rechit[2]/F");
+  t->Branch("dphi_keyCSCRechit_GE11Rechit", dphi_keyCSCRechit_GE11Rechit, "dphi_keyCSCRechit_GE11Rechit[2]/F");
+  t->Branch("dphi_CSCRechits_GE11Rechit", dphi_CSCRechits_GE11Rechit, "dphi_CSCRechits_GE11Rechit[2]/F");
+  t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
+ 
 
   //  the above is the new edited lines
 
