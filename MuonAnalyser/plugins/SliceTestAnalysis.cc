@@ -222,8 +222,8 @@ void MuonData::init()
 	  cscseg_z_st[i] = 0.0;
 
 	  cscseg_prop_dR_st[i] = 0.0;
-	  cscseg_chamber_st[i] = 0.0;
-	  cscseg_ring_st[i] = 0.0;
+	  cscseg_chamber_st[i] = -1;
+	  cscseg_ring_st[i] = -1;
 	  has_csclct_st[i] = 0.0;
 	  csclct_phi_st[i] = 0.0;
 	  csclct_eta_st[i] = 0.0;
@@ -235,10 +235,10 @@ void MuonData::init()
 	  csclct_chamber_st[i] = 0;
 
 	  csclct_ring_st[i] = 0.0;
-	  csclct_keyStrip_st[i] = 0.0;
-	  csclct_keyWG_st[i] = 0.0;
+	  csclct_keyStrip_st[i] = -1;
+	  csclct_keyWG_st[i] = -1;
 	  csclct_matchWin_st[i] = 0;
-	  csclct_pattern_st[i] = 0;
+	  csclct_pattern_st[i] = -1;
 
 
   }
