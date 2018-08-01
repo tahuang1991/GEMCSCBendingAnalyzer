@@ -4,7 +4,7 @@ import os
 def plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
 
     F=ROOT.TFile.Open(filename);
-    c1=ROOT.TCanvas("c1","New Graph",0,0 600,800);
+    c1=ROOT.TCanvas("c1","New Graph",0,0, 600,800);
     #h=F.Get("SliceTestAnalysis/MuonData");
     tree=F.Get(treename);
     hist = ROOT.TH1F("hist","hist_title", nbins, xmin, xmax)
@@ -13,7 +13,9 @@ def plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax
     tree.Draw(branch_name + ">> hist", cut);## plot hist with cut
     hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017")
     hist.GetXaxis().SetTitle(xtitle)
-    outplot = os.path.join(plotname, str(branch_name))
+#    outplot = os.path.join(plotname, str(branch_name))
+
+    outplot = os.path.join(os.getcwd(), str(branch_name))
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
 
@@ -34,14 +36,24 @@ def plot_tree_2D(filename, treename, branch_name_x, branch_name_y, cut, xtitle, 
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
 
-
-
-
-plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
-
-
 branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muonendcap","has_TightID","isGood_GE11","has_GE11","has_ME11","rechit_phi_GE11",
 "prop_phi_GE11","rechit_phi_ME11","prop_phi_ME11"]
+
+
+filename1='/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/histo.root'
+treename1='SliceTestAnalysis/MuonData'
+branch_list_t=["lumi","run"]
+for branch_name1 in branch_list_t:
+    xtitle1=branch_name1
+    cut1="muonpt>=10"
+    nbins1=10
+    xmin1=0
+    xmax1=5
+    plotname1=branch_name1
+    plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
+#plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
+
+
 
 #for name in branch_list:
 #	plot_hist(name);
