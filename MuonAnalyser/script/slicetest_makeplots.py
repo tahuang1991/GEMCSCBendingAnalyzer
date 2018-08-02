@@ -56,13 +56,14 @@ root_file_name='ana_0'
 #for root_file_name in output_file_names:
 for branch_name1 in branch_list:
     	treename1='SliceTestAnalysis/MuonData'	
-	cut1="muonpt>10"
+	
+	print branch_name1
 
 ##
-	if branch_name1 == "rechit_phi_GE11"
+	if branch_name1 == "rechit_phi_GE11":
 		cut1="has_GE11==1"
-	else 
-		continue	
+	else :
+		cut1="muonpt>10"	
 
 ##	
 	xtitle1=branch_name1+cut1;
