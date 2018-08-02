@@ -1,5 +1,6 @@
 import ROOT
 import os
+import time
 os.chdir('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/Graphs')
 def plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
 
@@ -48,29 +49,26 @@ branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muo
 "chamber_propME11","ring_propME11","has_propGE11","roll_propGE11","chamber_propGE11",  "dphi_CSCL1_GE11L1",
 "dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"]
 
-filename1='/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_0.root'
-#filename1='/uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/histo.root'
-#branch_list_t=branch_list
-root_file_name='ana_0'
-#output_file_names=filename1
-#for root_file_name in output_file_names:
-for branch_name1 in branch_list:
-    	treename1='SliceTestAnalysis/MuonData'	
-	cut1="muonpt>10"
+for number in range(555):
 
+	filename1='/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_'+str(number)+'.root'
+	for branch_name1 in branch_list:
+    		treename1='SliceTestAnalysis/MuonData'		
+		print branch_name1
 ##
-	if branch_name == "rechit_phi_GE11"
-		cut="has_GE11==1"
-	else 
-		continue	
-
-##	
-	xtitle1=branch_name1+cut1;
-	nbins1=10
-	xmin1=0
-	xmax1=5
-    	plotname1=branch_name1+root_file_name
-    	plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
+#	if branch_name1 == "rechit_phi_GE11":
+#		cut1="has_GE11=1"
+#	else :
+		cut1="muonpt>10"	
+		xtitle1=branch_name1+' '+cut1;
+		nbins1=10
+		xmin1=0
+		xmax1=5
+    		plotname1=branch_name1+'_'+'out_ana_'+str(number)
+    		plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
+	print ('##################################################\n\n\n')
+	print('#########################################################')
+	time.sleep(.1)
 #plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
 
 
