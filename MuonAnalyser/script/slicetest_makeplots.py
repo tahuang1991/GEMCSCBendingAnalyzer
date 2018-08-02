@@ -2,12 +2,11 @@ import ROOT
 import os
 import time
 os.chdir('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/Graphs')
-def plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
+def plot_tree_1D(tree, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
 
-    F=ROOT.TFile.Open(filename);
+   
     c1=ROOT.TCanvas("c1","New Graph",0,0, 600,800);
     #h=F.Get("SliceTestAnalysis/MuonData");
-    tree=F.Get(treename);
     hist = ROOT.TH1F("hist","hist_title", nbins, xmin, xmax)
     
     ##cut = "muonpt>10"
@@ -48,10 +47,9 @@ branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muo
 "csclct_prop_dR_st", "csclct_keyStrip_st", "csclct_keyWG_st","csclct_matchWin_st","csclct_pattern_st", "has_propME11", "ring_ME11",
 "chamber_propME11","ring_propME11","has_propGE11","roll_propGE11","chamber_propGE11",  "dphi_CSCL1_GE11L1",
 "dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"]
-
-for number in range(555):
-
-	filename1='/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_'+str(number)+'.root'
+chain = ROOT.TChain("SliceTestAnalysis/MuonData")
+chain.Add('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_*.root')
+for number in range(0,1):
 	for branch_name1 in branch_list:
     		treename1='SliceTestAnalysis/MuonData'		
 		print branch_name1
@@ -61,14 +59,13 @@ for number in range(555):
 #	else :
 		cut1="muonpt>10"	
 		xtitle1=branch_name1+' '+cut1;
-		nbins1=10
-		xmin1=0
+		nbins1=10##why always 10bins?
+		xmin1=0## why range goes from [0.0, 5]?
 		xmax1=5
     		plotname1=branch_name1+'_'+'out_ana_'+str(number)
     		plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
 	print ('##################################################\n\n\n')
 	print('#########################################################')
-	time.sleep(.1)
 #plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
 
 
