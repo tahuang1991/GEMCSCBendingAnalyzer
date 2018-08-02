@@ -66,13 +66,13 @@ struct MuonData
   Int_t run;
   Int_t event;
 
-  double muonPx, muonPy, muonPz;
-  double muondxy, muondz;
+  float muonPx, muonPy, muonPz;
+  float muondxy, muondz;
   int muon_ntrackhit, muon_chi2, muon_nChamber;
-  double muonpt, muoneta, muonphi;
+  float muonpt, muoneta, muonphi;
   bool muoncharge;
   bool muonendcap;
-  double muonPFIso, muonTkIso;
+  float muonPFIso, muonTkIso;
   
   
 
@@ -84,19 +84,19 @@ struct MuonData
   bool has_GE11[2];
 
   //Muon position at ME11
-  double rechit_phi_ME11[6];//phi at each layer, from CSC rechit
-  double rechit_eta_ME11[6];
-  double rechit_x_ME11[6];
-  double rechit_y_ME11[6];
-  double rechit_r_ME11[6];
+  float rechit_phi_ME11[6];//phi at each layer, from CSC rechit
+  float rechit_eta_ME11[6];
+  float rechit_x_ME11[6];
+  float rechit_y_ME11[6];
+  float rechit_r_ME11[6];
 
   bool has_propME11[6];
-  double prop_phi_ME11[6];//projected position in ME11
-  double prop_eta_ME11[6];//projected position in ME11
-  double prop_x_ME11[6];//projected position in ME11
-  double prop_y_ME11[6];
-  double prop_r_ME11[6];
-  double rechit_prop_dR_ME11[6];
+  float prop_phi_ME11[6];//projected position in ME11
+  float prop_eta_ME11[6];//projected position in ME11
+  float prop_x_ME11[6];//projected position in ME11
+  float prop_y_ME11[6];
+  float prop_r_ME11[6];
+  float rechit_prop_dR_ME11[6];
   int chamber_ME11[6];
   int ring_ME11[6];
   int chamber_propME11[6];
@@ -104,22 +104,22 @@ struct MuonData
 
   //CSC segment matched to recoMuon
   bool has_cscseg_st[4];
-  double cscseg_phi_st[4];
-  double cscseg_eta_st[4];
-  double cscseg_x_st[4];
-  double cscseg_y_st[4];
-  double cscseg_z_st[4];
-  double cscseg_prop_dR_st[4];
+  float cscseg_phi_st[4];
+  float cscseg_eta_st[4];
+  float cscseg_x_st[4];
+  float cscseg_y_st[4];
+  float cscseg_r_st[4];
+  float cscseg_prop_dR_st[4];
   int cscseg_chamber_st[4];
   int cscseg_ring_st[4];
   //match LCT to recoMuon by projection
   bool has_csclct_st[4];
-  double csclct_phi_st[4];
-  double csclct_eta_st[4];
-  double csclct_x_st[4];
-  double csclct_y_st[4];
-  double csclct_r_st[4];
-  double csclct_prop_dR_st[4];
+  float csclct_phi_st[4];
+  float csclct_eta_st[4];
+  float csclct_x_st[4];
+  float csclct_y_st[4];
+  float csclct_r_st[4];
+  float csclct_prop_dR_st[4];
   int    csclct_chamber_st[4];
   int    csclct_ring_st[4];
   int    csclct_keyStrip_st[4];
@@ -133,32 +133,32 @@ struct MuonData
   bool isGood_GE11[2];
   int roll_GE11[2];
   int chamber_GE11[2];
-  double rechit_phi_GE11[2];//phi,eta from GE11 rechits
-  double rechit_eta_GE11[2];
-  double rechit_x_GE11[2];//rechit position in GE11
-  double rechit_y_GE11[2];
-  double rechit_r_GE11[2];
+  float rechit_phi_GE11[2];//phi,eta from GE11 rechits
+  float rechit_eta_GE11[2];
+  float rechit_x_GE11[2];//rechit position in GE11
+  float rechit_y_GE11[2];
+  float rechit_r_GE11[2];
 
   bool has_propGE11[2];
   int roll_propGE11[2];
   int chamber_propGE11[2];
-  double prop_phi_GE11[2];//phi,eta from GE11 rechits
-  double prop_eta_GE11[2];
-  double prop_x_GE11[2];//projected position in GE11
-  double prop_y_GE11[2];
-  double prop_r_GE11[2];
-  double rechit_prop_dR_GE11[2];
+  float prop_phi_GE11[2];//phi,eta from GE11 rechits
+  float prop_eta_GE11[2];
+  float prop_x_GE11[2];//projected position in GE11
+  float prop_y_GE11[2];
+  float prop_r_GE11[2];
+  float rechit_prop_dR_GE11[2];
   
   //online
-  double dphi_CSCL1_GE11L1[2];//average CSC phi - GEM phi for each GEM layer
-  double dphi_fitCSCL1_GE11L1[2];// CSC phi from fit - GEM phi for each GEM layer
+  float dphi_CSCL1_GE11L1[2];//average CSC phi - GEM phi for each GEM layer
+  float dphi_fitCSCL1_GE11L1[2];// CSC phi from fit - GEM phi for each GEM layer
   //offline
-  double dphi_CSCSeg_GE11Rechit[2];//average CSC phi - GEM phi for each GEM layer
-  double dphi_keyCSCRechit_GE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
-  double dphi_CSCRechits_GE11Rechit[2];// CSC phi from fit - GEM phi for each GEM layer
+  float dphi_CSCSeg_GE11Rechit[2];//average CSC phi - GEM phi for each GEM layer
+  float dphi_keyCSCRechit_GE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
+  float dphi_CSCRechits_GE11Rechit[2];// CSC phi from fit - GEM phi for each GEM layer
   
   //propagation
-  double dphi_propCSC_propGE11[2];//average CSC phi - GEM phi for each GEM layer
+  float dphi_propCSC_propGE11[2];//average CSC phi - GEM phi for each GEM layer
   
 };
 
@@ -201,8 +201,8 @@ void MuonData::init()
     isGood_GE11[i] = 0;
     roll_GE11[i] = 0;
     chamber_GE11[i] = 0;
-    prop_phi_GE11[i] = 0;
-    prop_eta_GE11[i] = 0;
+    prop_phi_GE11[i] = -9.0;
+    prop_eta_GE11[i] = -9.0;
     prop_x_GE11[i] = 0;
     prop_y_GE11[i] = 0;
     prop_r_GE11[i] = 0;
@@ -211,14 +211,14 @@ void MuonData::init()
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
 
-    roll_propGE11[i] = 0;
-    chamber_propGE11[i] = 0;
-    dphi_CSCL1_GE11L1[i] = 0;
-    dphi_fitCSCL1_GE11L1[i] = 0;
-    dphi_CSCSeg_GE11Rechit[i] = 0;
-    dphi_keyCSCRechit_GE11Rechit[i] = 0;
-    dphi_CSCRechits_GE11Rechit[i] = 0;
-    dphi_propCSC_propGE11[i] = 0;
+    roll_propGE11[i] = -1;
+    chamber_propGE11[i] = -1;
+    dphi_CSCL1_GE11L1[i] = -9.0;
+    dphi_fitCSCL1_GE11L1[i] = -9.;
+    dphi_CSCSeg_GE11Rechit[i] = -9.;
+    dphi_keyCSCRechit_GE11Rechit[i] = -9.0;
+    dphi_CSCRechits_GE11Rechit[i] = -9.;
+    dphi_propCSC_propGE11[i] = -9.0;
 
 
 
@@ -232,17 +232,17 @@ void MuonData::init()
     rechit_r_ME11[i] = 0.0;
 
 
-    prop_phi_ME11[i] = 0.0;
-    prop_eta_ME11[i] = 0.0;
+    prop_phi_ME11[i] = -9.0;
+    prop_eta_ME11[i] = -9.0;
     prop_x_ME11[i] = 0.0;
     prop_y_ME11[i] = 0.0;
     prop_r_ME11[i] = 0.0;
     rechit_prop_dR_ME11[i] = 9999;
-    chamber_ME11[i] = 0;
-    has_propME11[i] = 0;
-    ring_ME11[i] = 0;
-    chamber_propME11[i] = 0;
-    ring_propME11[i] = 0;
+    chamber_ME11[i] = -1;
+    has_propME11[i] = false;
+    ring_ME11[i] = -1;
+    chamber_propME11[i] = -1;
+    ring_propME11[i] = -1;
 
 
 
@@ -254,22 +254,22 @@ void MuonData::init()
     cscseg_eta_st[i] = -9;
     cscseg_x_st[i] = 0.0;
     cscseg_y_st[i] = 0.0;
-    cscseg_z_st[i] = 0.0;
+    cscseg_r_st[i] = 0.0;
 
-    cscseg_prop_dR_st[i] = 0.0;
+    cscseg_prop_dR_st[i] =  99999;
     cscseg_chamber_st[i] = -1;
     cscseg_ring_st[i] = -1;
-    has_csclct_st[i] = 0.0;
-    csclct_phi_st[i] = 0.0;
-    csclct_eta_st[i] = 0.0;
+    has_csclct_st[i] =false;
+    csclct_phi_st[i] = -9.0;
+    csclct_eta_st[i] = -9.0;
     csclct_x_st[i] = 0;
 
     csclct_y_st[i] = 0.0;
     csclct_r_st[i] = 0.0;
     csclct_prop_dR_st[i] = 9999;
-    csclct_chamber_st[i] = 0;
+    csclct_chamber_st[i] = -1;
 
-    csclct_ring_st[i] = 0.0;
+    csclct_ring_st[i] = -1;
     csclct_keyStrip_st[i] = -1;
     csclct_keyWG_st[i] = -1;
     csclct_matchWin_st[i] = 0;
@@ -349,7 +349,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("cscseg_eta_st", cscseg_eta_st, "cscseg_eta_st[4]/F");
   t->Branch("cscseg_x_st", cscseg_x_st, "cscseg_x_st[4]/F");
   t->Branch("cscseg_y_st", cscseg_y_st, "cscseg_y_st[4]/F");
-  t->Branch("cscseg_z_st", cscseg_z_st, "cscseg_z_st[4]/F");
+  t->Branch("cscseg_r_st", cscseg_r_st, "cscseg_r_st[4]/F");
   t->Branch("cscseg_prop_dR_st", cscseg_prop_dR_st, "cscseg_prop_dR_st[4]/F");
   t->Branch("cscseg_chamber_st", cscseg_chamber_st, "cscseg_chamber_st[4]/I");
   t->Branch("cscseg_ring_st", cscseg_ring_st, "cscseg_ring_st[4]/I");
@@ -429,7 +429,7 @@ private:
   
 
 
-  float maxMuonEta_, minMuonEta_;
+  double maxMuonEta_, minMuonEta_;
   bool matchMuonwithLCT_;
 
   //find it out later 
@@ -574,7 +574,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
       std::cout <<"muon pt "<< mu->pt() <<" eta "<< mu->eta() <<" phi "<< mu->phi() <<" charge "<< mu->charge() << std::endl;
 
-      std::set<double> detLists;
+      std::set<float> detLists;
       
       /**** trigger and reco muon match ****/
       /**** end of trigger and reco muon match ****/
@@ -610,9 +610,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.chamber_propGE11[ch->id().layer()-1] = ch->id().chamber();
 		data_.prop_phi_GE11[ch->id().layer()-1] = tsosGP.phi();
 		data_.prop_eta_GE11[ch->id().layer()-1] = tsosGP.eta();
-		data_.prop_x_GE11[ch->id().layer()-1] = pos.x();
-		data_.prop_y_GE11[ch->id().layer()-1] = pos.y();
-		data_.prop_r_GE11[ch->id().layer()-1] = pos.mag();
+		data_.prop_x_GE11[ch->id().layer()-1] = tsosGP.x();
+		data_.prop_y_GE11[ch->id().layer()-1] = tsosGP.y();
+		data_.prop_r_GE11[ch->id().layer()-1] = tsosGP.mag();
 	  }
 
 	  float mindR = 9999.0;
@@ -639,9 +639,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = mindR;
 		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
-		    data_.rechit_x_GE11[gemid.layer()-1] = (hit)->localPosition().x();
-		    data_.rechit_y_GE11[gemid.layer()-1] = (hit)->localPosition().y();
-		    data_.rechit_r_GE11[gemid.layer()-1] = (hit)->localPosition().mag();
+		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
+		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
+		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
 
 		}
               }
@@ -676,9 +676,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	    data_.ring_propME11[ch->id().station() - 1] = ch->id().ring();
 	    data_.prop_phi_ME11[ch->id().layer()-1] = tsosGP.phi();
 	    data_.prop_eta_ME11[ch->id().layer()-1] = tsosGP.eta();
-	    data_.prop_x_ME11[ch->id().layer()-1] = pos.x();
-	    data_.prop_y_ME11[ch->id().layer()-1] = pos.y();
-	    data_.prop_r_ME11[ch->id().layer()-1] = pos.mag();
+	    data_.prop_x_ME11[ch->id().layer()-1] = tsosGP.x();
+	    data_.prop_y_ME11[ch->id().layer()-1] = tsosGP.y();
+	    data_.prop_r_ME11[ch->id().layer()-1] = tsosGP.mag();
 	    if(ch->id().layer() == 3){
 		for (unsigned int i =0; i<2; i++){
 		    if (data_.has_propGE11[i]){
@@ -701,13 +701,13 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  //GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
 		  data_.cscseg_phi_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).phi();
 		  data_.cscseg_eta_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).eta();
-		  data_.cscseg_x_st[ch->id().station() - 1] = matchedSeg.localPosition().x();
-		  data_.cscseg_y_st[ch->id().station() - 1] = matchedSeg.localPosition().y();
-		  data_.cscseg_z_st[ch->id().station() - 1] = matchedSeg.localPosition().mag();
+		  data_.cscseg_x_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).x();
+		  data_.cscseg_y_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).y();
+		  data_.cscseg_r_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).mag();
 		  data_.cscseg_prop_dR_st[ch->id().station() - 1] = mindR;
 		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
-		  //std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) << std::endl;
+		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) << std::endl;
 		  if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)){
 		      for(unsigned int i=0; i<2; i++){
 			  if (data_.has_GE11[i]){
@@ -730,9 +730,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  //GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
 		  data_.csclct_phi_st[ch->id().station() - 1] = ch->toGlobal(lctlp).phi();
 		  data_.csclct_eta_st[ch->id().station() - 1] = ch->toGlobal(lctlp).eta();
-		  data_.csclct_x_st[ch->id().station() - 1] = lctlp.x();
-		  data_.csclct_y_st[ch->id().station() - 1] = lctlp.y();
-		  data_.csclct_r_st[ch->id().station() - 1] = lctlp.mag();
+		  data_.csclct_x_st[ch->id().station() - 1] = ch->toGlobal(lctlp).x();
+		  data_.csclct_y_st[ch->id().station() - 1] = ch->toGlobal(lctlp).y();
+		  data_.csclct_r_st[ch->id().station() - 1] = ch->toGlobal(lctlp).mag();
 		  data_.csclct_prop_dR_st[ch->id().station() - 1] = mindR;
 		  data_.csclct_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.csclct_ring_st[ch->id().station() - 1] = ch->id().ring();
@@ -772,9 +772,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_prop_dR_ME11[cscid.layer()-1] = mindR;
 		    data_.rechit_phi_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).phi();
 		    data_.rechit_eta_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).eta();
-		    data_.rechit_x_ME11[cscid.layer()-1] = (hit)->localPosition().x();
-		    data_.rechit_y_ME11[cscid.layer()-1] = (hit)->localPosition().y();
-		    data_.rechit_r_ME11[cscid.layer()-1] = (hit)->localPosition().mag();
+		    data_.rechit_x_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).x();
+		    data_.rechit_y_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).y();
+		    data_.rechit_r_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).mag();
 		    if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4) and cscid.layer() == 3){//keylayer
 		        for(unsigned int i=0; i<2; i++){
 		            if (data_.has_GE11[i]){
