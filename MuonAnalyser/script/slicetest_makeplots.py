@@ -1,39 +1,42 @@
 import ROOT
 import os
 import time
-os.chdir('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/Graphs')
 def plot_tree_1D(tree, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
 
    
-    c1=ROOT.TCanvas("c1","New Graph",0,0, 600,800);
+    c1=ROOT.TCanvas("c1","New Graph",0,0, 800,600);
     #h=F.Get("SliceTestAnalysis/MuonData");
     hist = ROOT.TH1F("hist","hist_title", nbins, xmin, xmax)
     
     ##cut = "muonpt>10"
     tree.Draw(branch_name + ">> hist", cut);## plot hist with cut
-    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017")
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017G")
     hist.GetXaxis().SetTitle(xtitle)
+    #hist.SetStat(0)
+    print "todraw ", branch_name, " cut ",cut
 #    outplot = os.path.join(plotname, str(branch_name))
     
-    outplot = os.path.join(os.getcwd(), str(plotname))
+    #outplot = os.path.join(os.getcwd(), str(plotname))
+    outplot = plotname
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
 
 
-def plot_tree_2D(filename, treename, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, xmax,  ytitle, ynbins, ymin, ymax, plotname):
+def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, xmax,  ytitle, ynbins, ymin, ymax, plotname):
 
-    F=ROOT.TFile.Open(filename);
-    c1=ROOT.TCanvas("c1","New Graph",0,0,600,800);
+    c1=ROOT.TCanvas("c1","New Graph",0,0,800,600);
     #h=F.Get("SliceTestAnalysis/MuonData");
-    tree=F.Get(treename);
     hist = ROOT.TH2F("hist","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
     
+    todraw = branch_name_y +":"+branch_name_x
     ##cut = "muonpt>10"
-    tree.Draw(branch_name + ">> hist", cut);## plot hist with cut
-    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017")
+    tree.Draw(todraw + ">> hist", cut);## plot hist with cut
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017G")
     hist.GetXaxis().SetTitle(xtitle)
     hist.GetYaxis().SetTitle(ytitle)
-    outplot = os.path.join(plotname, str(branch_name))
+    #hist.SetStat(0)
+    #outplot = os.path.join(plotname, str(branch_name))
+    outplot = plotname
 
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
@@ -48,45 +51,96 @@ branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muo
 "chamber_propME11","ring_propME11","has_propGE11","roll_propGE11","chamber_propGE11",  "dphi_CSCL1_GE11L1",
 "dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"]
 chain = ROOT.TChain("SliceTestAnalysis/MuonData")
-chain.Add('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_*.root')
-for number in range(0,1):
-	for branch_name1 in branch_list:
-    		treename1='SliceTestAnalysis/MuonData'		
-		print branch_name1
-#
-#	if branch_name1 == "rechit_phi_GE11":
-#		cut1="has_GE11=1"
-#	else :
-		cut1="muonpt>10"	
-		xtitle1=branch_name1+' '+cut1;
-		nbins1=10##why always 10bins?
-		xmin1=0## why range goes from [0.0, 5]?
-		xmax1=5
-    		plotname1=branch_name1+'_'+'out_ana_'+str(number)
-    		plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
-	print ('##################################################\n\n\n')
-	print('#########################################################')
+chain.Add('/eos/uscms/store/user/mkhurana/GEMCSCBending_2017G/out_ana_10*.root')
+#for branch_name1 in branch_list:
+#	treename1='SliceTestAnalysis/MuonData'		
+#	print branch_name1
+##
+##	if branch_name1 == "rechit_phi_GE11":
+##		cut1="has_GE11=1"
+##	else :
+#	cut1="muonpt>10"	
+#	xtitle1=branch_name1+' '+cut1;
+#	nbins1=10##why always 10bins?
+#	xmin1=0## why range goes from [0.0, 5]?
+#	xmax1=5
+#	plotname1=branch_name1+'_'+'out_ana_'+str(number)
+#	plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
+#print ('##################################################\n\n\n')
+#print('#########################################################')
 #plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
+plotdir = "GEMCSCBending_2017G/"
+#os.system("mkdir -p "+plotdir)
+def plotmuons(chain, cut, plotdir):
+    todrawlist = ["muonpt", "muoneta","muonphi","muonendcap"]
+    xbinlist = [[50, 0, 200.0], [40, 1.5, 2.5], [60, -3.14, 3.14], [3, -1.5, 1.5]]
+    for i, todraw in enumerate(todrawlist):
+	xbins = xbinlist[i]
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_"+todraw)
+	plot_tree_1D(chain, todraw, cut, todraw, xbins[0], xbins[1], xbins[2], plotname)
+
+#plotmuons(chain, "has_TightID", plotdir)
+
+
+def plotdeltaR(chain, cut, plotdir):
+    todraws_ME11 = "rechit_prop_dR_ME11"
+    for i in range(0, 6):#6layers for CSC
+        todraw = todraws_ME11+"[%d]"%i
+        thiscut = cut + "&& has_ME11[%d]"%i
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_rechit_prop_dR_ME11_CSClayer%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 40.0, plotname)
+
+    todraws_GE11 = "rechit_prop_dR_GE11"
+    for i in range(0, 2):#2layers for GEM
+        todraw = todraws_GE11+"[%d]"%i
+        thiscut = cut + "&& has_GE11[%d]"%i
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_rechit_prop_dR_GE11_GEMlayer%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 40.0, plotname)
+
+    todraws_seg = "cscseg_prop_dR_st"
+    for i in range(0, 4):#4 station CSCs 
+        todraw = todraws_seg+"[%d]"%i
+        thiscut = cut + " && has_cscseg_st[%d]"%i
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_cscseg_prop_dR_st%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 40.0, plotname)
+
+plotdeltaR(chain, "has_TightID && muonpt>10", plotdir)
 
 
 
-#for name in branch_list:
-#	plot_hist(name);
-	
+def plotCSCHits(chain, cut, plotdir):
+    todrawX_seg = "cscseg_x_st"
+    todrawY_seg = "cscseg_y_st"
+    for i in range(0, 4):
+	todrawX = todrawX_seg + "[%d]"%i
+	todrawY = todrawY_seg + "[%d]"%i
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_CSCsegment_x_y_st%d"%i)
+	thiscut = cut + " && has_cscseg_st[%d] && cscseg_prop_dR_st[%d] < 1.0"%(i, i) 
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "CSC Segment X", 100, -1000.0, 1000.0,  "CSC segment Y", 100, -1000.0, 1000.0, plotname)
+plotCSCHits(chain, "has_TightID && muonpt>10", plotdir)
 
 
-#print(h.Print());
-#for bname in branch_list:
-#	print bname
-#print(len(branch_list))
-#h.MakeClass("my class")
-#k=h.GetListOfBranches()
-#print(k.Print());
-#c1.Divide(4,4);
-#c1.cd(2);
-#h.Draw("has_ME11");
-#c1.cd(3);
-#h.Draw("muonphi");
-#c1.cd(4);
-#h.Draw("muonpt");
-#c1.Print("output_hist.png")
+
+def plotGEMHits(chain, cut, plotdir):
+    todrawX_gem = "rechit_x_GE11"
+    todrawY_gem = "rechit_y_GE11"
+    for i in range(0, 2):
+	todrawX = todrawX_gem + "[%d]"%i
+	todrawY = todrawY_gem + "[%d]"%i
+	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_GEMRechit_x_y_gemlayer%d"%i)
+	thiscut = cut + " && has_GE11[%d] && rechit_prop_dR_GE11[%d] < 1.0"%(i, i) 
+        plot_tree_2D(tree, todrawX, todrawX, thiscut, "GEM Rechit X", 100, -1000.0, 1000.0,  "GEM Rechit Y", 100, -1000.0, 1000.0, plotname)
+
+plotGEMHits(chain, "has_TightID && muonpt>10", plotdir)
+
+
+def plotdeltaPhi(chain, cut, plotdir):
+    todrawlist  = ["dphi_CSCSeg_GE11Rechit", "dphi_keyCSCRechit_GE11Rechit", "dphi_propCSC_propGE11"]
+    for i, todraw in enumerate(todrawlist):
+	for layer in range(0,2):
+	    todraw_dphi = todraw + "[%d]"%layer
+	    plotname = os.path.join(plotdir, "2017G_GEMCSCbending_%s_gemlayer%d"%(todraw, layer))
+	    cut = cut + " &&  has_GE11[%d] && has_propGE11[%d] && has_ME11[2] "%(layer, layer)
+	    plot_tree_1D(chain, todraw, cut, todraw_dphi, 60, -0.30, 0.3, plotname)
+
+plotdeltaPhi(chain, "has_TightID && muonpt>10", plotdir)
