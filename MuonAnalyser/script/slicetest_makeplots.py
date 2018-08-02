@@ -19,7 +19,7 @@ def plot_tree_1D(tree, branch_name, cut, xtitle, nbins, xmin, xmax, text, plotna
     txt.SetNDC()
     txt.SetTextFont(42)
     txt.SetTextFont(42)
-    txt.SetTextSize(.4)
+    txt.SetTextSize(.04)
     txt.Draw("same")
     
     #outplot = os.path.join(os.getcwd(), str(plotname))
@@ -47,7 +47,7 @@ def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, 
     txt = ROOT.TLatex(.15, .8, text)
     txt.SetNDC()
     txt.SetTextFont(42)
-    txt.SetTextSize(.4)
+    txt.SetTextSize(.04)
     txt.Draw("same")
 
     c1.SaveAs(outplot + ".png")
@@ -120,7 +120,7 @@ def plotdeltaR(chain, cut, text, plotdir):
 	plotname = os.path.join(plotdir, "2017G_GEMCSCbending_cscseg_prop_dR_st%d"%i)
 	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 20.0, text,plotname)
 
-#plotdeltaR(chain, "has_TightID && muonpt>5","muon p_{T}> 5, tight ID", plotdir)
+plotdeltaR(chain, "has_TightID && muonpt>10","muon p_{T}> 10, tight ID", plotdir)
 
 
 
@@ -143,7 +143,7 @@ def plotCSCHits(chain, cut, text, plotdir):
 	thiscut = cut + " && has_ME11[%d]>0 && rechit_prop_dR_ME11[%d] < 5.0"%(i, i) 
         plot_tree_2D(chain, todrawX, todrawY, thiscut, "CSC Rechit X", 100, -600.0, 600.0,  "CSC Rechit Y", 600, -600.0, 600.0,text, plotname)
 
-plotCSCHits(chain, "has_TightID && muonpt>10", "muon p_{T}> 10, tight ID",plotdir)
+#plotCSCHits(chain, "has_TightID && muonpt>10", "muon p_{T}> 10, tight ID",plotdir)
 
 
 
@@ -157,7 +157,7 @@ def plotGEMHits(chain, cut, text, plotdir):
 	thiscut = cut + " && has_GE11[%d]>0 && rechit_prop_dR_GE11[%d] < 5.0"%(i, i) 
         plot_tree_2D(chain, todrawX, todrawY, thiscut, "GEM Rechit X", 100, -600.0, 600.0,  "GEM Rechit Y", 100, -600.0, 600.0, text, plotname)
 
-plotGEMHits(chain, "has_TightID && muonpt>10", "muon p_{T}> 10, tight ID",plotdir)
+#plotGEMHits(chain, "has_TightID && muonpt>10", "muon p_{T}> 10, tight ID",plotdir)
 
 
 def plotdeltaPhi(chain, cut, text, plotdir):
