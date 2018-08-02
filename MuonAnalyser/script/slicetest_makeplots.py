@@ -59,8 +59,8 @@ for branch_name1 in branch_list:
 	cut1="muonpt>10"
 
 ##
-	if branch_name == "rechit_phi_GE11"
-		cut="has_GE11==1"
+	if branch_name1 == "rechit_phi_GE11"
+		cut1="has_GE11==1"
 	else 
 		continue	
 
