@@ -18,11 +18,18 @@ process.maxEvents = cms.untracked.PSet(
 )
 process.maxEvents.input = cms.untracked.int32(100)
 # Input source
-process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
+process.source = cms.Source("PoolSource", 
+	fileNames = cms.untracked.vstring(),
+	inputCommands = cms.untracked.vstring(
+	    "keep *",
+	    "drop TotemTimingDigiedmDetSetVector_totemTimingRawToDigi_TotemTiming_reRECO",
+	    "drop TotemTimingRecHitedmDetSetVector_totemTimingRecHits__reRECO"
+	    )
+	)
 #process.source.skipEvents = cms.untracked.uint32(17601)
 #file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/            #directory on LPC where all 555 files are placed
-process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
-#process.source.fileNames.append('file:/afs/cern.ch/user/m/mkhurana/CMSSW_10_1_5/src/step3_080.root')
+#process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/step3_313.root')
+process.source.fileNames.append('file:/eos/uscms/store/user/mkhurana/2018C_data_files/step3_152.root')
 
 #fname = 'singleMuon.txt'
 #f = open(fname)
@@ -31,7 +38,7 @@ process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_R
 
 process.options = cms.untracked.PSet()
 
-process.TFileService = cms.Service("TFileService",fileName = cms.string("histo.root"))
+process.TFileService = cms.Service("TFileService",fileName = cms.string("slicetest_ana.root"))
 
 process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     process.MuonServiceProxy,
