@@ -61,9 +61,9 @@ Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = {runscript}
 Arguments               = {Nstart} {Nend}
-Output                  = logs/out_{num}.out
-Error                   = logs/out_{num}.err
-Log                     = logs/out_{num}.log
+Output                  = {jobdir}/logs/out_{num}.out
+Error                   = {jobdir}/logs/out_{num}.err
+Log                     = {jobdir}/logs/out_{num}.log
 use_x509userproxy       = true
 x509userproxy           = $X509_USER_PROXY
 Should_Transfer_Files   = YES
@@ -73,7 +73,7 @@ EOF
 
 condor_submit submit_{num}.cmd;
 rm submit_{num}.cmd""".format(
-			runscript=script, Nstart = Nstart, Nend = Nend, num = ijob
+			runscript=script, Nstart = Nstart, Nend = Nend, num = ijob, jobdir = args.jobdir
 			))
 	jobscript.close()
 	os.system("chmod +x %s/submit_%d.sh" % (args.jobdir, ijob))

@@ -89,6 +89,7 @@ struct MuonData
   float rechit_x_ME11[6];
   float rechit_y_ME11[6];
   float rechit_r_ME11[6];
+  int nrechit_ME11;
 
   bool has_propME11[6];
   float prop_phi_ME11[6];//projected position in ME11
@@ -97,6 +98,7 @@ struct MuonData
   float prop_y_ME11[6];
   float prop_r_ME11[6];
   float rechit_prop_dR_ME11[6];
+  float rechit_prop_dphi_ME11[6];
   int chamber_ME11[6];
   int ring_ME11[6];
   int chamber_propME11[6];
@@ -110,8 +112,10 @@ struct MuonData
   float cscseg_y_st[4];
   float cscseg_r_st[4];
   float cscseg_prop_dR_st[4];
+  float cscseg_prop_dphi_st[4];
   int cscseg_chamber_st[4];
   int cscseg_ring_st[4];
+  int ncscseg;
   //match LCT to recoMuon by projection
   bool has_csclct_st[4];
   float csclct_phi_st[4];
@@ -120,12 +124,14 @@ struct MuonData
   float csclct_y_st[4];
   float csclct_r_st[4];
   float csclct_prop_dR_st[4];
+  float csclct_prop_dphi_st[4];
   int    csclct_chamber_st[4];
   int    csclct_ring_st[4];
   int    csclct_keyStrip_st[4];
   int    csclct_keyWG_st[4];
   int    csclct_matchWin_st[4];
   int    csclct_pattern_st[4];
+  int ncscLct;
 
   //Muon position at GE11
 
@@ -138,6 +144,7 @@ struct MuonData
   float rechit_x_GE11[2];//rechit position in GE11
   float rechit_y_GE11[2];
   float rechit_r_GE11[2];
+  int nrechit_GE11;
 
   bool has_propGE11[2];
   int roll_propGE11[2];
@@ -148,6 +155,7 @@ struct MuonData
   float prop_y_GE11[2];
   float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
+  float rechit_prop_dphi_GE11[2];
   
   //online
   float dphi_CSCL1_GE11L1[2];//average CSC phi - GEM phi for each GEM layer
@@ -189,6 +197,10 @@ void MuonData::init()
   has_MediumID = 0;
   has_LooseID = 0;
 
+  nrechit_GE11 = 0;
+  nrechit_ME11 = 0;
+  ncscseg = 0;
+  ncscLct = 0;
 
   for (int i=0; i<2; ++i){
     has_GE11[i] = 0;
@@ -219,6 +231,8 @@ void MuonData::init()
     dphi_keyCSCRechit_GE11Rechit[i] = -9.0;
     dphi_CSCRechits_GE11Rechit[i] = -9.;
     dphi_propCSC_propGE11[i] = -9.0;
+    
+    rechit_prop_dphi_GE11[i]=-9;
 
 
 
@@ -230,6 +244,8 @@ void MuonData::init()
     rechit_x_ME11[i] = 0.0;
     rechit_y_ME11[i] = 0.0;
     rechit_r_ME11[i] = 0.0;
+
+    rechit_prop_dphi_ME11[i]=-9;
 
 
     prop_phi_ME11[i] = -9.0;
@@ -274,6 +290,10 @@ void MuonData::init()
     csclct_keyWG_st[i] = -1;
     csclct_matchWin_st[i] = 0;
     csclct_pattern_st[i] = -1;
+    
+    cscseg_prop_dphi_st[i]=-9;
+    csclct_prop_dphi_st[i]=-9;
+
 
 
   }
@@ -386,6 +406,15 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
  
 
+  t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
+  t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
+  t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
+  t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
+
+  t->Branch("nrechit_ME11", &nrechit_ME11);
+  t->Branch("ncscseg", &ncscseg);
+  t->Branch("ncscLct", &ncscLct);
+  t->Branch("nrechit_GE11", &nrechit_GE11);
   //  the above is the new edited lines
 
   return t;
@@ -433,8 +462,10 @@ private:
   bool matchMuonwithLCT_;
 
   //find it out later 
-  float GEMResolution = 10.0;//in term of local R from local x,y
-  float CSCResolution = 10.0;// 
+  float GEMRechit_muon_deltaR_ = 15.0;//cm
+  float CSCRechit_muon_deltaR_ = 8.0;//cm
+  float CSCSegment_muon_deltaR_ = 2.0;//cm
+  float CSCLCT_muon_deltaR_ = 4.0;//cm
 
   TTree * tree_data_;
   MuonData data_;
@@ -625,6 +656,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                 const auto& etaPart = GEMGeometry_->etaPartition(gemid);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 
+		if (deltaR_local < GEMRechit_muon_deltaR_ and not data_.has_GE11[gemid.layer()-1])
+		    data_.nrechit_GE11 += 1;
+
 		if (ch->id().station() == 1 and ch->id().ring() == 1 and deltaR_local < mindR){
 		    /*
 		    cout << "found hit at GEM detector "<< gemid
@@ -642,6 +676,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
 		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
 		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
+		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
 
 		}
               }
@@ -695,6 +730,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	      CSCSegment matchedSeg;
 	      float mindR = 9999.0;
 	      bool hasCSCsegment  = matchRecoMuonwithCSCSeg(pos, cscSegments, ch->id(), matchedSeg, mindR);
+
+	      if (mindR < CSCSegment_muon_deltaR_ and not data_.has_cscseg_st[ch->id().station() -1])
+		  data_.ncscseg += 1;
 	      if (hasCSCsegment){
 		  data_.has_cscseg_st[ch->id().station() - 1] = hasCSCsegment;
 		  //CSCDetId cscid((*cscseg)->geographicalId());
@@ -705,6 +743,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  data_.cscseg_y_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).y();
 		  data_.cscseg_r_st[ch->id().station() - 1] = ch->toGlobal(matchedSeg.localPosition()).mag();
 		  data_.cscseg_prop_dR_st[ch->id().station() - 1] = mindR;
+		  data_.cscseg_prop_dphi_st[ch->id().station() - 1] = reco::deltaPhi(tsosGP.phi(), data_.cscseg_phi_st[ch->id().station() - 1]);
 		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
 		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) << std::endl;
@@ -724,6 +763,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	      LocalPoint lctlp;
 	      float mindR = 9999.0;
 	      bool hasCSCLct  = matchRecoMuonwithCSCLCT(pos, cscLcts, ch->id(), matchedLCT, lctlp, mindR);
+	      if (mindR < CSCLCT_muon_deltaR_ and not data_.has_csclct_st[ch->id().station() -1])
+		  data_.ncscLct += 1;
 	      if (hasCSCLct){
 		  data_.has_csclct_st[ch->id().station() - 1] = hasCSCLct;
 		  //CSCDetId cscid((*cscseg)->geographicalId());
@@ -734,6 +775,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  data_.csclct_y_st[ch->id().station() - 1] = ch->toGlobal(lctlp).y();
 		  data_.csclct_r_st[ch->id().station() - 1] = ch->toGlobal(lctlp).mag();
 		  data_.csclct_prop_dR_st[ch->id().station() - 1] = mindR;
+		  data_.csclct_prop_dphi_st[ch->id().station() - 1] = reco::deltaPhi(tsosGP.phi(), data_.csclct_phi_st[ch->id().station() - 1]);
 		  data_.csclct_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.csclct_ring_st[ch->id().station() - 1] = ch->id().ring();
 		  data_.csclct_keyStrip_st[ch->id().station() - 1] = matchedLCT.getStrip();
@@ -759,6 +801,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                 CSCDetId cscid((hit)->geographicalId());
                 const auto& layer = CSCGeometry_->layer(cscid);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
+	        if (mindR < CSCRechit_muon_deltaR_ and not data_.has_ME11[cscid.layer() -1])
+		    data_.nrechit_ME11 += 1;
 
 		if (ch->id().station() == 1 and (ch->id().ring()==1 or ch->id().ring() ==4) and deltaR_local < mindR){
 		    /*cout << "found hit ME11 CSC detector "<< cscid
@@ -775,6 +819,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_x_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).x();
 		    data_.rechit_y_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).y();
 		    data_.rechit_r_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).mag();
+		    data_.rechit_prop_dphi_ME11[cscid.layer()-1] = reco::deltaPhi(tsosGP.phi(),  data_.rechit_phi_ME11[cscid.layer()-1]);
 		    if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4) and cscid.layer() == 3){//keylayer
 		        for(unsigned int i=0; i<2; i++){
 		            if (data_.has_GE11[i]){
