@@ -1,7 +1,7 @@
 import ROOT
 import os
 import time
-os.chdir('/eos/uscms/store/user/mkhurana/Graphs_merged')
+os.chdir('/eos/uscms/store/user/mkhurana/Graphs_2018C')
 def plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname):
 
     F=ROOT.TFile.Open(filename);
@@ -31,7 +31,7 @@ def plot_tree_2D(filename, treename, branch_name_x, branch_name_y, cut, xtitle, 
     
     ##cut = "muonpt>10"
     tree.Draw(branch_name + ">> hist", cut);## plot hist with cut
-    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2017")
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
     hist.GetXaxis().SetTitle(xtitle)
     hist.GetYaxis().SetTitle(ytitle)
     outplot = os.path.join(plotname, str(branch_name))
@@ -48,10 +48,10 @@ branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muo
 "csclct_prop_dR_st", "csclct_keyStrip_st", "csclct_keyWG_st","csclct_matchWin_st","csclct_pattern_st", "has_propME11", "ring_ME11",
 "chamber_propME11","ring_propME11","has_propGE11","roll_propGE11","chamber_propGE11",  "dphi_CSCL1_GE11L1",
 "dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"
-,"rechit_prop_dphi_ME11","cscseg_prop_dphi_st","csclct_prop_dphi_st,rechit_prop_dphi_GE11","nrechit_ME11","ncscseg","ncscLct","nrechit_GE11"]
+,"rechit_prop_dphi_ME11","cscseg_prop_dphi_st","csclct_prop_dphi_st","rechit_prop_dphi_GE11","nrechit_ME11","ncscseg","ncscLct","nrechit_GE11"]
 
 
-filename1='/eos/uscms/store/user/mkhurana/out_ana_allv2.root'
+filename1='/eos/uscms/store/user/mkhurana/out_ana_all_2018C.root'
 for branch_name1 in branch_list:
 	treename1='SliceTestAnalysis/MuonData'		
         print branch_name1
@@ -59,11 +59,11 @@ for branch_name1 in branch_list:
 	if branch_name1 == "rechit_phi_GE11":
 		cut1="has_GE11"
 	else :
-            cut1="muonpt>10"	
+            cut1="muonpt>10 & has_TightID"	
 	xtitle1=branch_name1+' '+cut1;
 	nbins1=20
-	xmin1=-5
-	xmax1=5
+	xmin1=-20
+	xmax1=20
     	plotname1=branch_name1
     	plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
 
