@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
