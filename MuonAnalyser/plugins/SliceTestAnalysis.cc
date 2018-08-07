@@ -231,6 +231,8 @@ void MuonData::init()
     dphi_keyCSCRechit_GE11Rechit[i] = -9.0;
     dphi_CSCRechits_GE11Rechit[i] = -9.;
     dphi_propCSC_propGE11[i] = -9.0;
+    
+    rechit_prop_dphi_GE11[i]=-9;
 
 
 
@@ -242,6 +244,8 @@ void MuonData::init()
     rechit_x_ME11[i] = 0.0;
     rechit_y_ME11[i] = 0.0;
     rechit_r_ME11[i] = 0.0;
+
+    rechit_prop_dphi_ME11[i]=-9;
 
 
     prop_phi_ME11[i] = -9.0;
@@ -286,6 +290,10 @@ void MuonData::init()
     csclct_keyWG_st[i] = -1;
     csclct_matchWin_st[i] = 0;
     csclct_pattern_st[i] = -1;
+    
+    cscseg_prop_dphi_st[i]=-9;
+    csclct_prop_dphi_st[i]=-9;
+
 
 
   }
@@ -398,6 +406,15 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
  
 
+  t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
+  t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
+  t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
+  t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
+
+  t->Branch("nrechit_ME11", &nrechit_ME11);
+  t->Branch("ncscseg", &ncscseg);
+  t->Branch("ncscLct", &ncscLct);
+  t->Branch("nrechit_GE11", &nrechit_GE11);
   //  the above is the new edited lines
 
   return t;

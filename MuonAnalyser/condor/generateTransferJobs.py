@@ -43,7 +43,7 @@ os.system("mkdir -p %s/logs" % args.jobdir)
 #	os.system("mkdir -p %s" % args.outdir)
 file_per_job = 1
 Jobid_start = 0
-Jobid_end = 642
+Jobid_end = 99
 NJobs = (Jobid_end-Jobid_start)/file_per_job + 1
 print "Nstart ",Jobid_start, " end ", Jobid_end, " Total jobs ",NJobs
 #for ijob in range(args.numjobs) :
