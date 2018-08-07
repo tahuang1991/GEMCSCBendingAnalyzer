@@ -38,8 +38,8 @@ parser.add_argument("-i", "--indir", dest="indir", default="/eos/uscms/store/use
 args = parser.parse_args()
 
 script = "produceAnaNtuples.sh"
-workdir_cmssw = "/uscms_data/d3/mkhurana/"
-eosdir = "/eos/uscms/store/user/mkhurana/"
+workdir_cmssw = "/uscms_data/d3/tahuang/GEMCSCBending/"
+eosdir = "/eos/uscms/store/user/tahuang/"
 
 allfiles = useInputDir([args.indir])
 
@@ -73,7 +73,7 @@ use_x509userproxy       = true
 x509userproxy           = $X509_USER_PROXY
 initialdir              = {jobdir}
 Should_Transfer_Files   = YES
-transfer_input_files    = {workdir}/{cfg} , /uscms_data/d3/mkhurana/CMSSW_10_1_5/src/GEMCSCBendingAnalyzer/MuonAnalyser/plugins/SliceTestAnalysis.cc
+transfer_input_files    = {workdir}/{cfg}
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF

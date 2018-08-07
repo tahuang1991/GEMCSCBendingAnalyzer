@@ -411,10 +411,10 @@ TTree* MuonData::book(TTree *t)
   t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
 
-  t->Branch("nrechit_ME11", &nrechit_ME11);
-  t->Branch("ncscseg", &ncscseg);
-  t->Branch("ncscLct", &ncscLct);
-  t->Branch("nrechit_GE11", &nrechit_GE11);
+  t->Branch("nrechit_ME11", &nrechit_ME11, "nrechit_ME11/I");
+  t->Branch("ncscseg", &ncscseg, "ncscseg/I");
+  t->Branch("ncscLct", &ncscLct, "ncscLct/I");
+  t->Branch("nrechit_GE11", &nrechit_GE11, "nrechit_GE11/I");
   //  the above is the new edited lines
 
   return t;
@@ -801,7 +801,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
                 CSCDetId cscid((hit)->geographicalId());
                 const auto& layer = CSCGeometry_->layer(cscid);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
-	        if (mindR < CSCRechit_muon_deltaR_ and not data_.has_ME11[cscid.layer() -1])
+	        if (deltaR_local < CSCRechit_muon_deltaR_ and not data_.has_ME11[cscid.layer() -1])
 		    data_.nrechit_ME11 += 1;
 
 		if (ch->id().station() == 1 and (ch->id().ring()==1 or ch->id().ring() ==4) and deltaR_local < mindR){
