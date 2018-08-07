@@ -47,7 +47,8 @@ branch_list=["lumi","run","event","muonpt","muoneta","muonphi","muoncharge","muo
 "cscseg_chamber_st","cscseg_ring_st","has_csclct_st","csclct_phi_st","csclct_eta_st","csclct_x_st", "csclct_y_st", "csclct_r_st","csclct_chamber_st","csclct_ring_st",
 "csclct_prop_dR_st", "csclct_keyStrip_st", "csclct_keyWG_st","csclct_matchWin_st","csclct_pattern_st", "has_propME11", "ring_ME11",
 "chamber_propME11","ring_propME11","has_propGE11","roll_propGE11","chamber_propGE11",  "dphi_CSCL1_GE11L1",
-"dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"]
+"dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit","dphi_keyCSCRechit_GE11Rechit","dphi_CSCRechits_GE11Rechit","dphi_propCSC_propGE11"
+,"rechit_prop_dphi_ME11","cscseg_prop_dphi_st","csclct_prop_dphi_st,rechit_prop_dphi_GE11","nrechit_ME11","ncscseg","ncscLct","nrechit_GE11"]
 
 
 filename1='/eos/uscms/store/user/mkhurana/out_ana_allv2.root'
