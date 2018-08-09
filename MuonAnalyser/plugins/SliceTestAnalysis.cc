@@ -238,6 +238,10 @@ void MuonData::init()
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
+    rechit_used_GE11[i] = false;
+    rechit_BX_GE11[i] = false;//-1
+    rechit_firstClusterStrip_GE11[i] = false;//-1
+    rechit_clusterSize_GE11[i] = false;//-1
 
     roll_propGE11[i] = -1;
     chamber_propGE11[i] = -1;
@@ -247,10 +251,9 @@ void MuonData::init()
     dphi_keyCSCRechit_GE11Rechit[i] = -9.0;
     dphi_CSCRechits_GE11Rechit[i] = -9.;
     dphi_propCSC_propGE11[i] = -9.0;
+    dphi_keyCSCRechitL1_GE11Rechit[i] = -9.0;
     
     rechit_prop_dphi_GE11[i]=-9;
-
-
 
   }
   for (int i=0; i<6; ++i){
@@ -275,8 +278,14 @@ void MuonData::init()
     ring_ME11[i] = -1;
     chamber_propME11[i] = -1;
     ring_propME11[i] = -1;
-
-
+    rechit_used_ME11[i] = false;
+    rechit_hitWire_ME11[i] = -1;
+    rechit_centralStrip_ME11[i] = -1;
+    rechit_nStrips_ME11[i] = 0; 
+    rechit_halfstrip_ME11[i] = -1; //-1
+    rechit_WG_ME11[i] = -1; // -1
+    rechit_L1eta_ME11[i] = -9;// -9
+    rechit_L1phi_ME11[i] = -9; //-9
 
 
   }
@@ -329,55 +338,69 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muonphi", &muonphi);
   t->Branch("muoncharge", &muoncharge);
   t->Branch("muonendcap", &muonendcap);
-  t->Branch("has_TightID", &has_TightID);
-
-  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/B");
-  t->Branch("has_GE11", has_GE11, "has_GE11[2]/B");
-  t->Branch("has_ME11", has_ME11, "has_ME11[6]/B");
-  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
-  t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]/F");
-  t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
-  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
-
-  //edited my mohit khurana need verification
   t->Branch("muonPx", &muonPx);
   t->Branch("muonPy", &muonPy);
   t->Branch("muonPz", &muonPz);
   t->Branch("muondxy", &muondxy);
   t->Branch("muondz", &muondz);
   t->Branch("muon_ntrackhit", &muon_ntrackhit);
-   
   t->Branch("muon_chi2", &muon_chi2);
   t->Branch("muonPFIso", &muonPFIso);
   t->Branch("muonTkIso", &muonTkIso);
   t->Branch("muon_nChamber", &muon_nChamber);
   t->Branch("has_MediumID", &has_MediumID);
   t->Branch("has_LooseID", &has_LooseID);  
+  t->Branch("has_TightID", &has_TightID);
+
+
+  t->Branch("has_ME11", has_ME11, "has_ME11[6]/B");
+  t->Branch("chamber_ME11", chamber_ME11, "chamber_ME11[6]/I");
+  t->Branch("has_propME11", has_propME11, "has_propME11[6]/B");
+  t->Branch("ring_ME11", ring_ME11, "ring_ME11[6]/I");
+  t->Branch("chamber_propME11", chamber_propME11, "chamber_propME11[6]/I");
+  t->Branch("ring_propME11", ring_propME11, "ring_propME11[6]/I");
+  t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("rechit_eta_ME11", rechit_eta_ME11, "rechit_eta_ME11[6]/F");
+  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
   t->Branch("rechit_x_ME11", rechit_x_ME11, "rechit_x_ME11[6]/F");
   t->Branch("rechit_y_ME11", rechit_y_ME11, "rechit_y_ME11[6]/F");
   t->Branch("rechit_r_ME11", rechit_r_ME11, "rechit_r_ME11[6]/F");
+  t->Branch("rechit_L1eta_ME11", rechit_L1eta_ME11, "rechit_L1eta_ME11[6]/F");
+  t->Branch("rechit_L1phi_ME11", rechit_L1phi_ME11, "rechit_L1phi_ME11[6]/F");
+  t->Branch("rechit_hitWire_ME11", rechit_hitWire_ME11, "rechit_hitWire_ME11[6]/I");
+  t->Branch("rechit_WG_ME11", rechit_WG_ME11, "rechit_WG_ME11[6]/I");
+  t->Branch("rechit_used_ME11", rechit_used_ME11, "rechit_used_ME11[6]/B");
   t->Branch("prop_eta_ME11", prop_eta_ME11, "prop_eta_ME11[6]/F");
   t->Branch("prop_x_ME11", prop_x_ME11, "prop_x_ME11[6]/F");
   t->Branch("prop_y_ME11", prop_y_ME11, "prop_y_ME11[6]/F");
   t->Branch("prop_r_ME11", prop_r_ME11, "prop_r_ME11[6]/F");
   t->Branch("rechit_prop_dR_ME11", rechit_prop_dR_ME11, "rechit_prop_dR_ME11[6]/F");
-  t->Branch("chamber_ME11", chamber_ME11, "chamber_ME11[6]/I");
+  t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
+
+
+  t->Branch("isGood_GE11", isGood_GE11, "isGood_GE11[2]/B");
+  t->Branch("has_GE11", has_GE11, "has_GE11[2]/B");
   t->Branch("roll_GE11", roll_GE11, "roll_GE11[2]/I");
   t->Branch("chamber_GE11", chamber_GE11, "chamber_GE11[2]/I");
-  //  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "rechit_phi_GE11[2]/F");   // in doubt please check!!!
+  t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("rechit_eta_GE11", rechit_eta_GE11, "rechit_eta_GE11[2]/F");
   t->Branch("rechit_x_GE11", rechit_x_GE11, "rechit_x_GE11[2]/F");
   t->Branch("rechit_y_GE11", rechit_y_GE11, "rechit_y_GE11[2]/F");
   t->Branch("rechit_r_GE11", rechit_r_GE11, "rechit_r_GE11[2]/F");
+  t->Branch("rechit_used_GE11", rechit_r_GE11, "rechit_used_GE11[2]/B");
+  t->Branch("rechit_BX_GE11", rechit_BX_GE11, "rechit_BX_GE11[2]/I");
+  t->Branch("rechit_firstClusterStrip_GE11", rechit_firstClusterStrip_GE11, "rechit_firstClusterStrip_GE11[2]/I");
+  t->Branch("rechit_clusterSize_GE11", rechit_clusterSize_GE11, "rechit_clusterSize_GE11[2]/I");
+  t->Branch("has_propGE11", has_propGE11, "has_propGE11[2]/B");
+  t->Branch("roll_propGE11", roll_propGE11, "roll_propGE11[2]/I");
+  t->Branch("chamber_propGE11", chamber_propGE11, "chamber_propGE11[2]/I");
+  t->Branch("prop_phi_GE11", prop_phi_GE11, "prop_phi_GE11[2]/F");
   t->Branch("prop_eta_GE11", prop_eta_GE11, "prop_eta_GE11[2]/F");
   t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
   t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
-  //t->Branch("dphi_CSC_GE11", dphi_CSC_GE11, "dphi_CSC_GE11[2]/F");
-  //t->Branch("dphi_keyCSC_GE11", dphi_keyCSC_GE11, "dphi_keyCSC_GE11[2]/F");
-  //t->Branch("dphi_fitCSC_GE11", dphi_fitCSC_GE11, "dphi_fitCSC_GE11[2]/F");
+  t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
 
 
   t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/B");
@@ -397,21 +420,12 @@ TTree* MuonData::book(TTree *t)
   t->Branch("csclct_r_st", csclct_r_st, "csclct_r_st[4]/F");
   t->Branch("csclct_chamber_st", csclct_chamber_st, "csclct_chamber_st[4]/I");
   t->Branch("csclct_ring_st", csclct_ring_st, "csclct_ring_st[4]/I");
-
   t->Branch("csclct_prop_dR_st", csclct_prop_dR_st, "csclct_prop_dR_st[4]/F");
   t->Branch("csclct_keyStrip_st", csclct_keyStrip_st, "csclct_keyStrip_st[4]/I");
   t->Branch("csclct_keyWG_st", csclct_keyWG_st, "csclct_keyWG_st[4]/I");
   t->Branch("csclct_matchWin_st", csclct_matchWin_st, "csclct_matchWin_st[4]/I");
   t->Branch("csclct_pattern_st", csclct_pattern_st, "csclct_pattern_st[4]/I");
-  t->Branch("has_propME11", has_propME11, "has_propME11[6]/B");
-  t->Branch("ring_ME11", ring_ME11, "ring_ME11[6]/I");
-  t->Branch("chamber_propME11", chamber_propME11, "chamber_propME11[6]/I");
-  t->Branch("ring_propME11", ring_propME11, "ring_propME11[6]/I");
 
-
-  t->Branch("has_propGE11", has_propGE11, "has_propGE11[2]/B");
-  t->Branch("roll_propGE11", roll_propGE11, "roll_propGE11[2]/I");
-  t->Branch("chamber_propGE11", chamber_propGE11, "chamber_propGE11[2]/I");
 
 
   t->Branch("dphi_CSCL1_GE11L1", dphi_CSCL1_GE11L1, "dphi_CSCL1_GE11L1[2]/F");
@@ -420,9 +434,9 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_keyCSCRechit_GE11Rechit", dphi_keyCSCRechit_GE11Rechit, "dphi_keyCSCRechit_GE11Rechit[2]/F");
   t->Branch("dphi_CSCRechits_GE11Rechit", dphi_CSCRechits_GE11Rechit, "dphi_CSCRechits_GE11Rechit[2]/F");
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
+  t->Branch("dphi_keyCSCRechitL1_GE11Rechit", dphi_keyCSCRechitL1_GE11Rechit, "dphi_keyCSCRechitL1_GE11Rechit[2]/F");
  
 
-  t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
   t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
   t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
@@ -578,7 +592,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     else 
 	continue;
 
-    if (mu->pt() < 0.0) continue;
+    if (mu->pt() < 5.0) continue;//ignore low pt muon
     if (mu->isGEMMuon()) {
       std::cout << "isGEMMuon " <<std::endl;
     }
@@ -586,7 +600,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     if (not mu->standAloneMuon()) continue;//not standalone muon
 
     //focus on endcap muons
-    if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_) {
+    if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ ) {
 	 
       data_.init();
 
@@ -678,7 +692,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
 		    if ( (*muonhit)->rawId() == ch->id().rawId() ) {
 			float deltaX_hitmatch = (hit)->localPosition().x() - (*muonhit)->localPosition().x();
-			cout <<"muonhit GEMid "<< GEMDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << endl;
+			//cout <<"muonhit GEMid "<< GEMDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << endl;
 			if (fabs(deltaX_hitmatch) < 0.01) // deltaX should be just 0.0
 			    rechit_used = true;
 		    }
@@ -689,13 +703,14 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.nrechit_GE11 += 1;
 
 		if (ch->id().station() == 1 and ch->id().ring() == 1 and deltaX_local < mindX){
-		    cout << "found hit at GEM detector "<< gemid
+		    /*cout << "found hit at GEM detector "<< gemid
 			 << " lp " << (hit)->localPosition()
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
 			 << " "<< (*hit)
 			 << (rechit_used ? "used by muon track":"not used by muon track")
 			 << endl;
+			 */
 		    
 		    mindX = deltaX_local;
 		    data_.has_GE11[gemid.layer()-1] = 1;
@@ -782,7 +797,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  data_.cscseg_prop_dphi_st[ch->id().station() - 1] = reco::deltaPhi(tsosGP.phi(), data_.cscseg_phi_st[ch->id().station() - 1]);
 		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
-		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg << std::endl;
+		  //std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg << std::endl;
 		  if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)){
 		      for(unsigned int i=0; i<2; i++){
 			  if (data_.has_GE11[i]){
@@ -844,7 +859,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
 		    if ( (*muonhit)->rawId() == ch->id().rawId() ) {
 			float deltaX_hitmatch = (hit)->localPosition().x() - (*muonhit)->localPosition().x();
-			cout <<"muonhit GEMid "<< CSCDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << endl;
+			//cout <<"muonhit CSCid "<< CSCDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << endl;
 			if (fabs(deltaX_hitmatch) < 0.01) // deltaX should be just 0.0
 			    rechit_used = true;
 		    }
