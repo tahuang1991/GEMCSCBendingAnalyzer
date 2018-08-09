@@ -369,6 +369,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_L1phi_ME11", rechit_L1phi_ME11, "rechit_L1phi_ME11[6]/F");
   t->Branch("rechit_hitWire_ME11", rechit_hitWire_ME11, "rechit_hitWire_ME11[6]/I");
   t->Branch("rechit_WG_ME11", rechit_WG_ME11, "rechit_WG_ME11[6]/I");
+  t->Branch("rechit_nStrips_ME11", rechit_nStrips_ME11, "rechit_nStrips_ME11[6]/i");
+  t->Branch("rechit_centralStrip_ME11", rechit_centralStrip_ME11, "rechit_centralStrip_ME11[6]/I");
   t->Branch("rechit_used_ME11", rechit_used_ME11, "rechit_used_ME11[6]/B");
   t->Branch("prop_eta_ME11", prop_eta_ME11, "prop_eta_ME11[6]/F");
   t->Branch("prop_x_ME11", prop_x_ME11, "prop_x_ME11[6]/F");
@@ -702,7 +704,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		if (deltaX_local < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
 		    data_.nrechit_GE11 += 1;
 
-		if (ch->id().station() == 1 and ch->id().ring() == 1 and deltaX_local < mindX){
+		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local) < mindX){
 		    /*cout << "found hit at GEM detector "<< gemid
 			 << " lp " << (hit)->localPosition()
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
@@ -886,6 +888,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_centralStrip_ME11[cscid.layer()-1] = centralStrip;
 		    data_.rechit_halfstrip_ME11[cscid.layer()-1] = (hit->positionWithinStrip()<0.0)? 2*(centralStrip-1):2*(centralStrip-1)+1;
 		    data_.rechit_WG_ME11[cscid.layer()-1] = layer->geometry()->wireGroup(hit->hitWire());
+		    std::cout <<"WG "<< data_.rechit_WG_ME11[cscid.layer()-1] <<" wire "<< hit->hitWire() << std::endl;
 		    if (hit->nStrips() > 0 and hit->hitWire() >=0){
 			GlobalPoint rechit_L1_gp = layer->toGlobal(layer->geometry()->stripWireGroupIntersection(centralStrip, data_.rechit_WG_ME11[cscid.layer()-1]));
 			data_.rechit_L1phi_ME11[cscid.layer()-1] = rechit_L1_gp.phi();
