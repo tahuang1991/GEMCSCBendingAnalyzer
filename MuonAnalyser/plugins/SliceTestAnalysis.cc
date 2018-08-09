@@ -348,6 +348,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("muonPFIso", &muonPFIso);
   t->Branch("muonTkIso", &muonTkIso);
   t->Branch("muon_nChamber", &muon_nChamber);
+
   t->Branch("has_MediumID", &has_MediumID);
   t->Branch("has_LooseID", &has_LooseID);  
   t->Branch("has_TightID", &has_TightID);
@@ -403,6 +404,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
   t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
+  t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
+
 
 
   t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/B");
@@ -412,6 +415,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("cscseg_y_st", cscseg_y_st, "cscseg_y_st[4]/F");
   t->Branch("cscseg_r_st", cscseg_r_st, "cscseg_r_st[4]/F");
   t->Branch("cscseg_prop_dR_st", cscseg_prop_dR_st, "cscseg_prop_dR_st[4]/F");
+  t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
   t->Branch("cscseg_chamber_st", cscseg_chamber_st, "cscseg_chamber_st[4]/I");
   t->Branch("cscseg_ring_st", cscseg_ring_st, "cscseg_ring_st[4]/I");
   t->Branch("has_csclct_st", has_csclct_st, "has_csclct_st[4]/B");
@@ -423,6 +427,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("csclct_chamber_st", csclct_chamber_st, "csclct_chamber_st[4]/I");
   t->Branch("csclct_ring_st", csclct_ring_st, "csclct_ring_st[4]/I");
   t->Branch("csclct_prop_dR_st", csclct_prop_dR_st, "csclct_prop_dR_st[4]/F");
+  t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
   t->Branch("csclct_keyStrip_st", csclct_keyStrip_st, "csclct_keyStrip_st[4]/I");
   t->Branch("csclct_keyWG_st", csclct_keyWG_st, "csclct_keyWG_st[4]/I");
   t->Branch("csclct_matchWin_st", csclct_matchWin_st, "csclct_matchWin_st[4]/I");
@@ -438,10 +443,6 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
   t->Branch("dphi_keyCSCRechitL1_GE11Rechit", dphi_keyCSCRechitL1_GE11Rechit, "dphi_keyCSCRechitL1_GE11Rechit[2]/F");
  
-
-  t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
-  t->Branch("csclct_prop_dphi_st", csclct_prop_dphi_st, "csclct_prop_dphi_st[4]/F");
-  t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
 
   t->Branch("nrechit_ME11", &nrechit_ME11, "nrechit_ME11/I");
   t->Branch("ncscseg", &ncscseg, "ncscseg/I");
@@ -684,8 +685,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
           //for (auto hit = muonTrack->recHitsBegin(); hit != muonTrack->recHitsEnd(); hit++) {
 	  for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
             if ( (hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
-              if ((hit)->rawId() == ch->id().rawId() ) {
-                GEMDetId gemid((hit)->geographicalId());
+              GEMDetId gemid((hit)->geographicalId());
+              if (gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and (gemid.roll() - ch->id().roll()) <= 1) {
                 const auto& etaPart = GEMGeometry_->etaPartition(gemid);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 		float deltaX_local = (hit)->localPosition().x() -pos.x();
@@ -861,9 +862,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
 		    if ( (*muonhit)->rawId() == ch->id().rawId() ) {
 			float deltaX_hitmatch = (hit)->localPosition().x() - (*muonhit)->localPosition().x();
-			//cout <<"muonhit CSCid "<< CSCDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << endl;
 			if (fabs(deltaX_hitmatch) < 0.01) // deltaX should be just 0.0
 			    rechit_used = true;
+			cout <<"muonhit CSCid "<< CSCDetId((*muonhit)->geographicalId()) <<" lp "<< (*muonhit)->localPosition() <<" deltaX_hitmatch "<< deltaX_hitmatch << (rechit_used ? "matched":"notmatched")<< endl;
 		    }
 		}
 
@@ -887,10 +888,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			centralStrip = hit->channels(hit->nStrips()/2);
 		    data_.rechit_centralStrip_ME11[cscid.layer()-1] = centralStrip;
 		    data_.rechit_halfstrip_ME11[cscid.layer()-1] = (hit->positionWithinStrip()<0.0)? 2*(centralStrip-1):2*(centralStrip-1)+1;
-		    data_.rechit_WG_ME11[cscid.layer()-1] = layer->geometry()->wireGroup(hit->hitWire());
-		    std::cout <<"WG "<< data_.rechit_WG_ME11[cscid.layer()-1] <<" wire "<< hit->hitWire() << std::endl;
+		    //data_.rechit_WG_ME11[cscid.layer()-1] = layer->geometry()->wireGroup(hit->hitWire());
+		    //std::cout <<"WG "<< data_.rechit_WG_ME11[cscid.layer()-1] <<" wire "<< hit->hitWire() << std::endl;
 		    if (hit->nStrips() > 0 and hit->hitWire() >=0){
-			GlobalPoint rechit_L1_gp = layer->toGlobal(layer->geometry()->stripWireGroupIntersection(centralStrip, data_.rechit_WG_ME11[cscid.layer()-1]));
+			GlobalPoint rechit_L1_gp = layer->toGlobal(layer->geometry()->stripWireGroupIntersection(centralStrip, hit->hitWire()));
 			data_.rechit_L1phi_ME11[cscid.layer()-1] = rechit_L1_gp.phi();
 			data_.rechit_L1eta_ME11[cscid.layer()-1] = rechit_L1_gp.eta();
 		    }//use resolution at L1
