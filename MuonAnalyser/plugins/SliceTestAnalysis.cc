@@ -702,7 +702,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		}
 
 
-		if (deltaX_local < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
+		if (fabs(deltaX_local) < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
 		    data_.nrechit_GE11 += 1;
 
 		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local) < mindX){
@@ -715,7 +715,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			 << endl;
 			 */
 		    
-		    mindX = deltaX_local;
+		    mindX = fabs(deltaX_local);
 		    data_.has_GE11[gemid.layer()-1] = 1;
 		    data_.roll_GE11[gemid.layer()-1] = ch->id().roll();
 		    data_.rechit_firstClusterStrip_GE11[gemid.layer()-1] = hit->firstClusterStrip();
@@ -724,7 +724,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_used_GE11[gemid.layer()-1] = rechit_used;
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
 		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local;
-		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = mindX;
+		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local;
 		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
 		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
