@@ -235,6 +235,8 @@ void MuonData::init()
     prop_y_GE11[i] = 0;
     prop_r_GE11[i] = 0;
     rechit_prop_dR_GE11[i] = 9999;
+    rechit_prop_dX_GE11[i] = 9999;
+    rechit_prop_dphi_GE11[i] = -9;
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
@@ -253,7 +255,6 @@ void MuonData::init()
     dphi_propCSC_propGE11[i] = -9.0;
     dphi_keyCSCRechitL1_GE11Rechit[i] = -9.0;
     
-    rechit_prop_dphi_GE11[i]=-9;
 
   }
   for (int i=0; i<6; ++i){
@@ -706,14 +707,14 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.nrechit_GE11 += 1;
 
 		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local) < mindX){
-		    /*cout << "found hit at GEM detector "<< gemid
+		    cout << "found hit at GEM detector "<< gemid
 			 << " lp " << (hit)->localPosition()
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
 			 << " "<< (*hit)
 			 << (rechit_used ? "used by muon track":"not used by muon track")
+			 <<" deltaX_local "<< deltaX_local
 			 << endl;
-			 */
 		    
 		    mindX = fabs(deltaX_local);
 		    data_.has_GE11[gemid.layer()-1] = 1;
