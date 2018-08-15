@@ -17,7 +17,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register ('nEvents',
-                      -1,
+                -1,
+                         # 10000,
                   VarParsing.multiplicity.singleton,
                   VarParsing.varType.int,
                   "Number of events")

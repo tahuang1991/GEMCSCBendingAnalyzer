@@ -468,6 +468,17 @@ TTree* MuonData::book(TTree *t)
   t->Branch("ncscseg", &ncscseg, "ncscseg/I");
   t->Branch("ncscLct", &ncscLct, "ncscLct/I");
   t->Branch("nrechit_GE11", &nrechit_GE11, "nrechit_GE11/I");
+
+  t->Branch("rechit_localx_ME11",&rechit_localx_ME11,"rechit_localx_ME11[6]/F");
+  t->Branch("rechit_localy_ME11",&rechit_localy_ME11,"rechit_localy_ME11[6]/F");
+  t->Branch("prop_localx_ME11",&prop_localx_ME11,"prop_localx_ME11[6]/F");
+  t->Branch("prop_localy_ME11",&prop_localy_ME11,"prop_localy_ME11[6]/F");
+  t->Branch("rechit_localx_GE11",&rechit_localx_GE11,"rechit_localx_GE11[2]/F");
+  t->Branch("rechit_localy_GE11",&rechit_localy_GE11,"rechit_localy_GE11[2]/F");
+  t->Branch("prop_localx_GE11",&prop_localx_GE11,"prop_localx_GE11[2]/F");
+  t->Branch("prop_localy_GE11",&prop_localy_GE11,"prop_localy_GE11[2]/F");
+
+
   //  the above is the new edited lines
 
   return t;
@@ -588,7 +599,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.getByToken( vertexCollection_, vertexCollection );
   if(vertexCollection.isValid()) {
     vertexCollection->size();
-    //    std::cout << "vertex->size() " << vertexCollection->size() <<std::endl;
+   //     std::cout << "vertex->size() " << vertexCollection->size() <<std::endl;
   }
 
 
@@ -602,9 +613,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   edm::Handle<View<reco::Muon> > muons;
   iEvent.getByToken(muons_, muons);
-  //std::cout << "muons->size() " << muons->size() <<std::endl;
-  //
-  //
+ // std::cout << "muons->size() " << muons->size() <<std::endl;
+  
 
   for (size_t i = 0; i < muons->size(); ++i) {
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
@@ -626,12 +636,13 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ ) {
 	 
       data_.init();
-
+      
       data_.lumi = iEvent.id().luminosityBlock();
       data_.run = iEvent.id().run();
       data_.event = iEvent.id().event();
-
+      cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run; //edited by mohit
       data_.muon_nChamber = mu->numberOfChambersCSCorDT();
+     
       if (mu->innerTrack().isNonnull())
 	  data_.muon_ntrackhit = mu->innerTrack()->hitPattern().trackerLayersWithMeasurement();
       if (mu->globalTrack().isNonnull())
@@ -642,7 +653,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       data_.muonPz = mu->pz();
       data_.muondxy = fabs(mu->muonBestTrack()->dxy(goodVertex.position()));
       data_.muondz = fabs(mu->muonBestTrack()->dz(goodVertex.position()));
-
+      //cout<<"\nmuondxy="<<data_.muondxy<<"\tmuondx"<<data_.muondz;
       data_.muonpt = mu->pt();
       data_.muoneta = mu->eta();
       data_.muonphi = mu->phi();
@@ -657,7 +668,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       data_.muonPFIso = (mu->pfIsolationR04().sumChargedHadronPt + max(0., mu->pfIsolationR04().sumNeutralHadronEt + mu->pfIsolationR04().sumPhotonEt - 0.5*mu->pfIsolationR04().sumPUPt))/mu->pt();
       data_.muonTkIso = mu->isolationR03().sumPt/mu->pt();
 
-      std::cout <<"muon pt "<< mu->pt() <<" eta "<< mu->eta() <<" phi "<< mu->phi() <<" charge "<< mu->charge() << std::endl;
+     // std::cout <<"muon pt "<< mu->pt() <<" eta "<< mu->eta() <<" phi "<< mu->phi() <<" charge "<< mu->charge() << std::endl;
 
       std::set<float> detLists;
       
@@ -1141,13 +1152,16 @@ bool SliceTestAnalysis::matchRecoMuonwithCSCLCT(const LocalPoint muonlp, edm::Ha
 
       float deltaR_local = std::sqrt(std::pow(lctlp.x() - muonlp.x(), 2) + std::pow(lctlp.y() -muonlp.y(), 2));
       //std::cout << " LCT mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
-
+     
+     
       if ( deltaR_local < deltaCSCR  ){
         matched = true;
         deltaCSCR = deltaR_local;
         mindR = deltaR_local;
         matchedlctlp = lctlp;
         matchedLCT = *lctIt;
+
+ 
       }
     }
   }//loop over LCTs
