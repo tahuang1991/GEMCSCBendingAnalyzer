@@ -171,6 +171,7 @@ struct MuonData
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
   float rechit_prop_dphi_GE11[2];
+  float rechit_flippedStrip_GE11[2];
   
   //online
   float dphi_CSCL1_GE11L1[2];//average CSC phi - GEM phi for each GEM layer
@@ -237,6 +238,7 @@ void MuonData::init()
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
     rechit_prop_dphi_GE11[i] = -9;
+    rechit_flippedStrip_GE11[i] = -1.0;
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
@@ -394,6 +396,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_used_GE11", rechit_r_GE11, "rechit_used_GE11[2]/B");
   t->Branch("rechit_BX_GE11", rechit_BX_GE11, "rechit_BX_GE11[2]/I");
   t->Branch("rechit_firstClusterStrip_GE11", rechit_firstClusterStrip_GE11, "rechit_firstClusterStrip_GE11[2]/I");
+  t->Branch("rechit_flippedStrip_GE11", rechit_flippedStrip_GE11, "rechit_flippedStrip_GE11[2]/F");
   t->Branch("rechit_clusterSize_GE11", rechit_clusterSize_GE11, "rechit_clusterSize_GE11[2]/I");
   t->Branch("has_propGE11", has_propGE11, "has_propGE11[2]/B");
   t->Branch("roll_propGE11", roll_propGE11, "roll_propGE11[2]/I");
@@ -689,8 +692,19 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
               GEMDetId gemid((hit)->geographicalId());
               if (gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and (gemid.roll() - ch->id().roll()) <= 1) {
                 const auto& etaPart = GEMGeometry_->etaPartition(gemid);
+		float strip = etaPart->strip(hit->localPosition());
+		float strip_flipped = 0.0;
+		if (strip < 128.0) strip_flipped = 128.0 - strip;
+		else if (strip >=128.0 and strip < 256.0) strip_flipped = 256.0-strip + 128.0;
+		else if (strip >= 256.0 and strip < 384.0) strip_flipped = 384.0-strip + 128*2.0;
+		else
+		    std::cout <<"error strip number from rechit hit : strip "<< strip <<" rechit "<< (*hit) << std::endl;
+		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 		float deltaX_local = (hit)->localPosition().x() -pos.x();
+		float deltaR_local_flipped = std::sqrt(std::pow(lp_flipped.x()-pos.x(), 2) + std::pow(lp_flipped.y()-pos.y(), 2));
+		float deltaX_local_flipped = lp_flipped.x() -pos.x();
+
                 //bool rechit_used = std::find( muonTrack->recHitsBegin(), muonTrack->recHitsEnd(), hit->recHits().begin()) != muonTrack->recHitsEnd();
 		bool rechit_used = false;
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
@@ -703,34 +717,44 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		}
 
 
-		if (fabs(deltaX_local) < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
+		if (fabs(deltaX_local_flipped) < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
 		    data_.nrechit_GE11 += 1;
 
-		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local) < mindX){
-		    cout << "found hit at GEM detector "<< gemid
+		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local_flipped) < mindX){
+		    cout << "found hit at GEM detector "<< gemid <<" strip "<< strip <<" flipped strip "<< strip_flipped
 			 << " lp " << (hit)->localPosition()
+			 << " flipped lp "<< lp_flipped
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
+			 << " flipped gp " << etaPart->toGlobal(lp_flipped)
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
-			 << " "<< (*hit)
+			 << " "<< (*hit) <<" "
 			 << (rechit_used ? "used by muon track":"not used by muon track")
-			 <<" deltaX_local "<< deltaX_local
+			 <<" propagated lp "<< pos
+			 <<" deltaX_local "<< deltaX_local <<" local-dR " << deltaR_local
+			 <<" deltaX_local_flipped "<< deltaX_local_flipped << " local-dR flipped "<< deltaR_local_flipped
 			 << endl;
 		    
-		    mindX = fabs(deltaX_local);
+		    mindX = fabs(deltaX_local_flipped);
 		    data_.has_GE11[gemid.layer()-1] = 1;
 		    data_.roll_GE11[gemid.layer()-1] = ch->id().roll();
 		    data_.rechit_firstClusterStrip_GE11[gemid.layer()-1] = hit->firstClusterStrip();
+		    data_.rechit_flippedStrip_GE11[gemid.layer()-1] = strip_flipped;
 		    data_.rechit_clusterSize_GE11[gemid.layer()-1] = hit->clusterSize();
 		    data_.rechit_BX_GE11[gemid.layer()-1] = hit->BunchX();
 		    data_.rechit_used_GE11[gemid.layer()-1] = rechit_used;
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
-		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local;
-		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local;
-		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
-		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
-		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
-		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
-		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
+		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
+		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
+		    //data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
+		    //data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
+		    //data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
+		    //data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
+		    //data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
+		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
+		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
+		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
+		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
+		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
 		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
 
 		}
