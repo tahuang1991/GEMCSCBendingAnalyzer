@@ -89,6 +89,8 @@ struct MuonData
   float rechit_eta_ME11[6];
   float rechit_x_ME11[6];
   float rechit_y_ME11[6];
+  float rechit_localx_ME11[6];
+  float rechit_localy_ME11[6];
   float rechit_r_ME11[6];
   bool rechit_used_ME11[6];
   int rechit_hitWire_ME11[6];
@@ -106,6 +108,8 @@ struct MuonData
   float prop_eta_ME11[6];//projected position in ME11
   float prop_x_ME11[6];//projected position in ME11
   float prop_y_ME11[6];
+  float prop_localx_ME11[6];//projected position in ME11
+  float prop_localy_ME11[6];
   float prop_r_ME11[6];
   float rechit_prop_dR_ME11[6];
   float rechit_prop_dphi_ME11[6];
@@ -153,6 +157,8 @@ struct MuonData
   float rechit_eta_GE11[2];
   float rechit_x_GE11[2];//rechit position in GE11
   float rechit_y_GE11[2];
+  float rechit_localx_GE11[2];//rechit position in GE11
+  float rechit_localy_GE11[2];
   float rechit_r_GE11[2];
   bool rechit_used_GE11[2];
   int rechit_BX_GE11[2];//-1
@@ -167,6 +173,8 @@ struct MuonData
   float prop_eta_GE11[2];
   float prop_x_GE11[2];//projected position in GE11
   float prop_y_GE11[2];
+  float prop_localx_GE11[2];//projected position in GE11
+  float prop_localy_GE11[2];
   float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
@@ -224,17 +232,21 @@ void MuonData::init()
     has_propGE11[i] = false;
     rechit_phi_GE11[i] = -9;
     rechit_eta_GE11[i] = -9;
-    rechit_x_GE11[i] = 0.0;
-    rechit_y_GE11[i] = 0.0;
-    rechit_r_GE11[i] = 0.0;
+    rechit_x_GE11[i] = 99999.0;
+    rechit_y_GE11[i] = 99999.0;
+    rechit_localx_GE11[i] = 99999.0;
+    rechit_localy_GE11[i] = 99999.0;
+    rechit_r_GE11[i] = 99999.0;
     isGood_GE11[i] = 0;
     roll_GE11[i] = 0;
     chamber_GE11[i] = 0;
     prop_phi_GE11[i] = -9.0;
     prop_eta_GE11[i] = -9.0;
-    prop_x_GE11[i] = 0;
-    prop_y_GE11[i] = 0;
-    prop_r_GE11[i] = 0;
+    prop_x_GE11[i] = 999999.0;
+    prop_y_GE11[i] = 999999.0;
+    prop_localx_GE11[i] = 999999.0;
+    prop_localy_GE11[i] = 999999.0;
+    prop_r_GE11[i] = 999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
     rechit_prop_dphi_GE11[i] = -9;
@@ -263,18 +275,22 @@ void MuonData::init()
     has_ME11[i] = 0;
     rechit_phi_ME11[i]=-9;
     rechit_eta_ME11[i] = -9;
-    rechit_x_ME11[i] = 0.0;
-    rechit_y_ME11[i] = 0.0;
-    rechit_r_ME11[i] = 0.0;
+    rechit_x_ME11[i] = 999999.0;
+    rechit_y_ME11[i] = 999999.0;
+    rechit_localx_ME11[i] = 999999.0;
+    rechit_localy_ME11[i] = 999999.0;
+    rechit_r_ME11[i] = 999999.0;
 
     rechit_prop_dphi_ME11[i]=-9;
 
 
     prop_phi_ME11[i] = -9.0;
     prop_eta_ME11[i] = -9.0;
-    prop_x_ME11[i] = 0.0;
-    prop_y_ME11[i] = 0.0;
-    prop_r_ME11[i] = 0.0;
+    prop_x_ME11[i] = 99999.0;
+    prop_y_ME11[i] = 99999.0;
+    prop_localx_ME11[i] = 99999.0;
+    prop_localy_ME11[i] = 99999.0;
+    prop_r_ME11[i] = 99999.0;
     rechit_prop_dR_ME11[i] = 9999;
     chamber_ME11[i] = -1;
     has_propME11[i] = false;
@@ -682,6 +698,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_x_GE11[ch->id().layer()-1] = tsosGP.x();
 		data_.prop_y_GE11[ch->id().layer()-1] = tsosGP.y();
 		data_.prop_r_GE11[ch->id().layer()-1] = tsosGP.mag();
+		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
+		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
 	  }
 
 	  float mindX = 9999.0;
@@ -754,6 +772,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
 		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
+		    data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
+		    data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
 		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
 		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
 
@@ -792,6 +812,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	    data_.prop_eta_ME11[ch->id().layer()-1] = tsosGP.eta();
 	    data_.prop_x_ME11[ch->id().layer()-1] = tsosGP.x();
 	    data_.prop_y_ME11[ch->id().layer()-1] = tsosGP.y();
+	    data_.prop_localx_ME11[ch->id().layer()-1] = pos.x();
+	    data_.prop_localy_ME11[ch->id().layer()-1] = pos.y();
 	    data_.prop_r_ME11[ch->id().layer()-1] = tsosGP.mag();
 	    if(ch->id().layer() == 3){
 		for (unsigned int i =0; i<2; i++){
@@ -925,6 +947,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_eta_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).eta();
 		    data_.rechit_x_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).x();
 		    data_.rechit_y_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).y();
+		    data_.rechit_localx_ME11[cscid.layer()-1] = (hit)->localPosition().x();
+		    data_.rechit_localy_ME11[cscid.layer()-1] = (hit)->localPosition().y();
 		    data_.rechit_r_ME11[cscid.layer()-1] = layer->toGlobal((hit)->localPosition()).mag();
 		    data_.rechit_prop_dphi_ME11[cscid.layer()-1] = reco::deltaPhi(tsosGP.phi(),  data_.rechit_phi_ME11[cscid.layer()-1]);
 		    if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4) and cscid.layer() == 3){//keylayer
