@@ -53,10 +53,41 @@ def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, 
     c1.SaveAs(outplot + ".png")
     #c1.SaveAs(outplot + ".pdf")
 
-branch_list=["lumi", "run", "event", "muonpt","muoneta", "muonphi", "muoncharge", "muonendcap", "muonPx","muonPy","muonPz", "muondxy", "muondz", "muon_ntrackhit", "muon_chi2", "muonPFIso","muonTkIso", "muon_nChamber", "has_MediumID", "has_LooseID", "has_TightID", "has_ME11", "chamber_ME11", "has_propME11", "ring_ME11", "chamber_propME11", "ring_propME11","rechit_phi_ME11", "rechit_eta_ME11", "prop_phi_ME11", "rechit_x_ME11", "rechit_y_ME11", "rechit_r_ME11", "rechit_L1eta_ME11", "rechit_L1phi_ME11", "rechit_hitWire_ME11", "rechit_WG_ME11", "rechit_nStrips_ME11", "rechit_centralStrip_ME11", "rechit_used_ME11", "prop_eta_ME11", "prop_x_ME11", "prop_y_ME11", "prop_r_ME11", "rechit_prop_dR_ME11", "rechit_prop_dphi_ME11", "isGood_GE11", "has_GE11", "roll_GE11", "chamber_GE11", "rechit_phi_GE11","rechit_eta_GE11","rechit_x_GE11", "rechit_y_GE11", "rechit_r_GE11", "rechit_used_GE11", "rechit_BX_GE11", "rechit_firstClusterStrip_GE11", "rechit_clusterSize_GE11", "has_propGE11", "roll_propGE11", "chamber_propGE11", "prop_phi_GE11", "prop_eta_GE11", "prop_x_GE11", "prop_y_GE11", "prop_r_GE11", "rechit_prop_dR_GE11","rechit_prop_dX_GE11", "rechit_prop_dphi_GE11","has_cscseg_st", "cscseg_phi_st", "cscseg_eta_st", "cscseg_x_st", "cscseg_y_st", "cscseg_r_st", "cscseg_prop_dR_st", "cscseg_prop_dphi_st", "cscseg_chamber_st","cscseg_ring_st", "has_csclct_st","csclct_phi_st", "csclct_eta_st", "csclct_x_st", "csclct_y_st", "csclct_r_st",  "csclct_chamber_st","csclct_ring_st","csclct_prop_dR_st","csclct_prop_dphi_st", "csclct_keyStrip_st", "csclct_keyWG_st","csclct_matchWin_st","csclct_pattern_st", "dphi_CSCL1_GE11L1","dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit", "dphi_keyCSCRechit_GE11Rechit", "dphi_CSCRechits_GE11Rechit", "dphi_propCSC_propGE11","dphi_keyCSCRechitL1_GE11Rechit", "nrechit_ME11", "ncscseg", "ncscLct", "nrechit_GE11"]
+def plot_tree_3D(tree, branch_name_x, branch_name_y,branch_name_z, cut, xtitle, xnbins, xmin, xmax,  ytitle, ynbins, ymin, ymax,ztitle,znbins, zmin, zmax, text, plotname):
 
+    c1=ROOT.TCanvas("c1","New Graph",0,0,800,600);
+    #h=F.Get("SliceTestAnalysis/MuonData");
+    hist = ROOT.TH2F("hist","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax, znbins, zmin, zmax,)
+
+    todraw = branch_name_y +":"+branch_name_x+":"+branch_name_z;
+    ##cut = "muonpt>10"
+    tree.Draw(todraw + ">> hist", cut, "colz");## plot hist with cut
+    print "todraw ",todraw, " cut ",cut
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    hist.GetXaxis().SetTitle(xtitle)
+    hist.GetYaxis().SetTitle(ytitle)
+    hist.GetZaxis().SetTitle(ztitle)
+
+
+    #hist.SetStat(0)
+    #outplot = os.path.join(plotname, str(branch_name))
+    outplot = plotname
+    txt = ROOT.TLatex(.15, .8, text)
+    txt.SetNDC()
+    txt.SetTextFont(42)
+    txt.SetTextSize(.04)
+    txt.Draw("same")
+
+    c1.SaveAs(outplot + ".png")
+    #c1.SaveAs(outplot + ".pdf")
+
+
+
+
+
+branch_list=["lumi", "run", "event", "muonpt","muoneta", "muonphi", "muoncharge", "muonendcap", "muonPx","muonPy","muonPz", "muondxy", "muondz", "muon_ntrackhit", "muon_chi2", "muonPFIso","muonTkIso", "muon_nChamber", "has_MediumID", "has_LooseID", "has_TightID", "has_ME11", "chamber_ME11", "has_propME11", "ring_ME11", "chamber_propME11", "ring_propME11","rechit_phi_ME11", "rechit_eta_ME11", "prop_phi_ME11", "rechit_x_ME11", "rechit_y_ME11", "rechit_r_ME11","rechit_localx_ME11","rechit_localy_ME11" "rechit_L1eta_ME11", "rechit_L1phi_ME11", "rechit_hitWire_ME11", "rechit_WG_ME11", "rechit_nStrips_ME11", "rechit_centralStrip_ME11", "rechit_used_ME11", "prop_eta_ME11", "prop_x_ME11", "prop_y_ME11", "prop_r_ME11", "rechit_prop_dR_ME11", "rechit_prop_dphi_ME11", "isGood_GE11", "has_GE11", "roll_GE11", "chamber_GE11", "rechit_phi_GE11","rechit_eta_GE11","rechit_x_GE11", "rechit_y_GE11", "rechit_r_GE11", "rechit_used_GE11", "rechit_BX_GE11", "rechit_firstClusterStrip_GE11", "rechit_clusterSize_GE11", "has_propGE11", "roll_propGE11", "chamber_propGE11", "prop_phi_GE11", "prop_eta_GE11", "prop_x_GE11", "prop_y_GE11", "prop_r_GE11", "rechit_prop_dR_GE11","rechit_prop_dX_GE11", "rechit_prop_dphi_GE11","has_cscseg_st", "cscseg_phi_st", "cscseg_eta_st", "cscseg_x_st", "cscseg_y_st", "cscseg_r_st", "cscseg_prop_dR_st", "cscseg_prop_dphi_st", "cscseg_chamber_st","cscseg_ring_st", "has_csclct_st","csclct_phi_st", "csclct_eta_st", "csclct_x_st", "csclct_y_st", "csclct_r_st",  "csclct_chamber_st","csclct_ring_st","csclct_prop_dR_st","csclct_prop_dphi_st", "csclct_keyStrip_st", "csclct_keyWG_st","csclct_matchWin_st","csclct_pattern_st", "dphi_CSCL1_GE11L1","dphi_fitCSCL1_GE11L1","dphi_CSCSeg_GE11Rechit", "dphi_keyCSCRechit_GE11Rechit", "dphi_CSCRechits_GE11Rechit", "dphi_propCSC_propGE11","dphi_keyCSCRechitL1_GE11Rechit", "nrechit_ME11", "ncscseg", "ncscLct", "nrechit_GE11", "prop_localx_ME11","prop_localy_ME11","rechit_localx_GE11","rechit_localy_GE11","prop_localx_GE11","prop_localy_GE11"]
 chain = ROOT.TChain("SliceTestAnalysis/MuonData")
-chain.Add('/eos/uscms/store/user/mkhurana/out_ana_all_2018C_v4.root')
+chain.Add('out_ana_all_2018C_v5.root')
 #chain.Add("slicetest_ana.root")
 #chain.Add("2017G_out_ana.root")
 #for branch_name1 in branch_list:
@@ -67,6 +98,60 @@ chain.Add('/eos/uscms/store/user/mkhurana/out_ana_all_2018C_v4.root')
 ##	if branch_name1 == "rechit_phi_GE11":
 ##		cut1="has_GE11=1"
 ##	else :
+
+
+
+def dx_x_y_rechit(chamber_number,layer_number):
+
+        cut1="has_GE11["+str(layer_number)+"]>0  && chamber_GE11["+str(layer_number)+"]=="+str(chamber_number)
+        nxbins1=200
+        nybins1=200
+        nzbins1=200
+        xmin1=-1.5
+        xmax1=1.5
+        ymin1=-1.5
+        ymax1=1.5
+        zmin1=-1.5
+        zmax1=1.5
+
+        plotname1='rechit_3d_plot_GE11_chamber_'+str(chamber_number)+'_layer_'+str(layer_number)
+        brx="rechit_localx_GE11["+str(layer_number)+"]";
+        bry="rechit_localy_GE11["+str(layer_number)+"]";
+        brz="rechit_prop_dX_GE11["+str(layer_number)+"]";
+
+        text=cut1
+        ytitle1="rechit_loacly_GE11["+str(layer_number)+"]";
+        xtitle1="rechit_localx_GE11["+str(layer_number)+"]";
+        ztitle1="rechit_prop_dX_GE11["+str(layer_number)+"]";
+
+        plot_tree_3D(chain, brx, bry,bry, cut1, xtitle1, nxbins1, xmin1, xmax1,  ytitle1, nybins1, ymin1, ymax1,ytitle1, nzbins1, ymin1, ymax1, text, plotname1)
+dx_x_y_rechit(29,1);
+def dx_x_y_extraploated(chamber_number,layer_number):
+
+        cut1="has_GE11["+str(layer_number)+"]>0  && chamber_GE11["+str(layer_number)+"]=="+str(chamber_number)
+        nxbins1=200
+        nybins1=200
+        nzbins1=200
+        xmin1=-1.5
+        xmax1=1.5
+        ymin1=-1.5
+        ymax1=1.5
+        zmin1=-1.5
+        zmax1=1.5
+
+        plotname1='extrapolated_3d_plot_GE11_chamber_'+str(chamber_number)+'_layer_'+str(layer_number)
+    #    brx="rechit_localx_GE11["+str(layer_number)+"]";
+    #    bry="rechit_localy_GE11["+str(layer_number)+"]";
+    #    brz="rechit_prop_dX_GE11["+str(layer_number)+"]";
+
+        text=cut1
+    #    ytitle1="rechit_loacly_GE11["+str(layer_number)+"]";
+    #    xtitle1="rechit_localx_GE11["+str(layer_number)+"]";
+    #    ztitle1="rechit_prop_dX_GE11["+str(layer_number)+"]";
+
+        plot_tree_3D(chain, brx, bry,bry, cut1, xtitle1, nxbins1, xmin1, xmax1,  ytitle1, nybins1, ymin1, ymax1,ytitle1, nzbins1, ymin1, ymax1, text, plotname1)
+dx_x_y_extrapolated(29,1);
+
 
 def prop_rechit_phi(chamber_number,layer_number):
 	
@@ -99,17 +184,20 @@ def dphi_key_CSC(chamber_number,layer_number):
         text=cut1
         ytitle1="muonpt";
         plot_tree_2D(chain, brx, bry, cut1, xtitle1, nbins1, xmin1, xmax1,  ytitle1, nbins1, ymin1, ymax1, text, plotname1)
+def plot_for_meeting():
 
-for i in [0,1]:
-  for j in [27,28,29,30]:
-       prop_rechit_phi(j,i);
-       dphi_key_CSC(j,i);
+    for i in [0,1]:
+        for j in [27,28,29,30]:
+            prop_rechit_phi(j,i);
+            dphi_key_CSC(j,i);
+
+#plot_for_meeting();
 #	plot_tree_1D(filename1, treename1, branch_name1, cut1, xtitle1, nbins1, xmin1, xmax1, plotname1)
 #print ('##################################################\n\n\n')
 #print('#########################################################')
 #plot_tree_1D(filename, treename, branch_name, cut, xtitle, nbins, xmin, xmax, plotname)
-plotdir = "GEMCSCBending_2018C_graphs/"
-os.system("mkdir -p "+plotdir)
+#plotdir = "GEMCSCBending_2018C_graphs/"
+#os.system("mkdir -p "+plotdir)
 def plotmuons(chain, cut, plotdir):
     text = "reco muon"
     todrawlist = ["muonpt", "muoneta","muonphi","muonendcap"]
