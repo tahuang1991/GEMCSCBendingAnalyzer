@@ -614,6 +614,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<View<reco::Muon> > muons;
   iEvent.getByToken(muons_, muons);
  // std::cout << "muons->size() " << muons->size() <<std::endl;
+  cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run << endl; //edited by mohit
   
 
   for (size_t i = 0; i < muons->size(); ++i) {
@@ -640,7 +641,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       data_.lumi = iEvent.id().luminosityBlock();
       data_.run = iEvent.id().run();
       data_.event = iEvent.id().event();
-      cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run; //edited by mohit
       data_.muon_nChamber = mu->numberOfChambersCSCorDT();
      
       if (mu->innerTrack().isNonnull())
