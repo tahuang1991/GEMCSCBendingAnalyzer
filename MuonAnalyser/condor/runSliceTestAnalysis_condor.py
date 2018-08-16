@@ -29,7 +29,12 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource", 
 	#fileNames = cms.untracked.vstring()
-	fileNames = cms.untracked.vstring(options.inputFiles)
+	fileNames = cms.untracked.vstring(options.inputFiles),
+	inputCommands = cms.untracked.vstring(
+            "keep *",
+	    "drop TotemTimingDigiedmDetSetVector_totemTimingRawToDigi_TotemTiming_reRECO",
+	    "drop TotemTimingRecHitedmDetSetVector_totemTimingRecHits__reRECO"
+	    )
 	)
 #process.source.skipEvents = cms.untracked.uint32(17601)
 #fname = 'singleMuon.txt'

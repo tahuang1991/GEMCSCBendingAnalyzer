@@ -385,6 +385,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_x_ME11", rechit_x_ME11, "rechit_x_ME11[6]/F");
   t->Branch("rechit_y_ME11", rechit_y_ME11, "rechit_y_ME11[6]/F");
   t->Branch("rechit_r_ME11", rechit_r_ME11, "rechit_r_ME11[6]/F");
+  t->Branch("rechit_localx_ME11",rechit_localx_ME11,"rechit_localx_ME11[6]/F");
+  t->Branch("rechit_localy_ME11",rechit_localy_ME11,"rechit_localy_ME11[6]/F");
   t->Branch("rechit_L1eta_ME11", rechit_L1eta_ME11, "rechit_L1eta_ME11[6]/F");
   t->Branch("rechit_L1phi_ME11", rechit_L1phi_ME11, "rechit_L1phi_ME11[6]/F");
   t->Branch("rechit_hitWire_ME11", rechit_hitWire_ME11, "rechit_hitWire_ME11[6]/I");
@@ -396,6 +398,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_x_ME11", prop_x_ME11, "prop_x_ME11[6]/F");
   t->Branch("prop_y_ME11", prop_y_ME11, "prop_y_ME11[6]/F");
   t->Branch("prop_r_ME11", prop_r_ME11, "prop_r_ME11[6]/F");
+  t->Branch("prop_localx_ME11",prop_localx_ME11,"prop_localx_ME11[6]/F");
+  t->Branch("prop_localy_ME11",prop_localy_ME11,"prop_localy_ME11[6]/F");
   t->Branch("rechit_prop_dR_ME11", rechit_prop_dR_ME11, "rechit_prop_dR_ME11[6]/F");
   t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
 
@@ -409,6 +413,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_x_GE11", rechit_x_GE11, "rechit_x_GE11[2]/F");
   t->Branch("rechit_y_GE11", rechit_y_GE11, "rechit_y_GE11[2]/F");
   t->Branch("rechit_r_GE11", rechit_r_GE11, "rechit_r_GE11[2]/F");
+  t->Branch("rechit_localx_GE11",rechit_localx_GE11,"rechit_localx_GE11[2]/F");
+  t->Branch("rechit_localy_GE11",rechit_localy_GE11,"rechit_localy_GE11[2]/F");
   t->Branch("rechit_used_GE11", rechit_r_GE11, "rechit_used_GE11[2]/B");
   t->Branch("rechit_BX_GE11", rechit_BX_GE11, "rechit_BX_GE11[2]/I");
   t->Branch("rechit_firstClusterStrip_GE11", rechit_firstClusterStrip_GE11, "rechit_firstClusterStrip_GE11[2]/I");
@@ -422,6 +428,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
   t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
+  t->Branch("prop_localx_GE11",prop_localx_GE11,"prop_localx_GE11[2]/F");
+  t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
   t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
@@ -469,14 +477,6 @@ TTree* MuonData::book(TTree *t)
   t->Branch("ncscLct", &ncscLct, "ncscLct/I");
   t->Branch("nrechit_GE11", &nrechit_GE11, "nrechit_GE11/I");
 
-  t->Branch("rechit_localx_ME11",&rechit_localx_ME11,"rechit_localx_ME11[6]/F");
-  t->Branch("rechit_localy_ME11",&rechit_localy_ME11,"rechit_localy_ME11[6]/F");
-  t->Branch("prop_localx_ME11",&prop_localx_ME11,"prop_localx_ME11[6]/F");
-  t->Branch("prop_localy_ME11",&prop_localy_ME11,"prop_localy_ME11[6]/F");
-  t->Branch("rechit_localx_GE11",&rechit_localx_GE11,"rechit_localx_GE11[2]/F");
-  t->Branch("rechit_localy_GE11",&rechit_localy_GE11,"rechit_localy_GE11[2]/F");
-  t->Branch("prop_localx_GE11",&prop_localx_GE11,"prop_localx_GE11[2]/F");
-  t->Branch("prop_localy_GE11",&prop_localy_GE11,"prop_localy_GE11[2]/F");
 
 
   //  the above is the new edited lines
