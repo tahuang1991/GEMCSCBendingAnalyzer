@@ -176,7 +176,7 @@ struct MuonData
   float prop_localx_GE11[2];//projected position in GE11
   float prop_localy_GE11[2];
   float prop_localx_center_GE11[2];//projected position in GE11
-  int prop_strip_GE11[2];//projected position in GE11
+  float prop_strip_GE11[2];//projected position in GE11
   float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
@@ -715,8 +715,15 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
                 const auto& etaPart = GEMGeometry_->etaPartition(ch->id());
 		float strip = etaPart->strip(pos);
+		int strip_int= int(strip);
+		if ((strip-strip_int)>0.25 and (strip-strip_int)<=0.75) strip = strip_int + 0.5;
+		else if ((strip-strip_int)>0.75) strip = strip_int +1.0;
+		else if ((strip-strip_int) <= 0.25) strip = strip_int*1.0;
+		else 
+		    std::cout <<"localpoint, strip "<< strip << "strip_int "<< strip_int <<" warning !! "<< std::endl; 
+
 		LocalPoint lp_center = etaPart->centreOfStrip(strip);
-		//std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center << std::endl;
+		std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center <<" strip "<< strip <<std::endl;
 		data_.prop_localx_center_GE11[ch->id().layer()-1] = lp_center.x();
 		data_.prop_strip_GE11[ch->id().layer()-1] = strip;
 
