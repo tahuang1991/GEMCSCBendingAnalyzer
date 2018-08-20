@@ -271,7 +271,8 @@ void MuonData::init()
     dphi_propCSC_propGE11[i] = -9.0;
     dphi_keyCSCRechitL1_GE11Rechit[i] = -9.0;
     
-
+    prop_localx_center_GE11[i]=999999.0;
+    prop_strip_GE11[i]=-1;
   }
   for (int i=0; i<6; ++i){
     has_ME11[i] = 0;
@@ -473,7 +474,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
   t->Branch("dphi_keyCSCRechitL1_GE11Rechit", dphi_keyCSCRechitL1_GE11Rechit, "dphi_keyCSCRechitL1_GE11Rechit[2]/F");
  
-
+  t->Branch("prop_strip_GE11",prop_strip_GE11,"prop_strip_GE11[2]/F");
+  t->Branch("prop_localx_center_GE11",prop_localx_center_GE11,"prop_localx_center_GE11[2]/F");
   t->Branch("nrechit_ME11", &nrechit_ME11, "nrechit_ME11/I");
   t->Branch("ncscseg", &ncscseg, "ncscseg/I");
   t->Branch("ncscLct", &ncscLct, "ncscLct/I");
