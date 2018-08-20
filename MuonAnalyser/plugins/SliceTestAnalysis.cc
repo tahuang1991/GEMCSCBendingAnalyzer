@@ -175,6 +175,8 @@ struct MuonData
   float prop_y_GE11[2];
   float prop_localx_GE11[2];//projected position in GE11
   float prop_localy_GE11[2];
+  float prop_localx_center_GE11[2];//projected position in GE11
+  int prop_strip_GE11[2];//projected position in GE11
   float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
@@ -614,7 +616,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<View<reco::Muon> > muons;
   iEvent.getByToken(muons_, muons);
  // std::cout << "muons->size() " << muons->size() <<std::endl;
-  cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run << endl; //edited by mohit
+  //cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run << endl; //edited by mohit
   
 
   for (size_t i = 0; i < muons->size(); ++i) {
@@ -711,6 +713,13 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_r_GE11[ch->id().layer()-1] = tsosGP.mag();
 		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
 		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
+                const auto& etaPart = GEMGeometry_->etaPartition(ch->id());
+		float strip = etaPart->strip(pos);
+		LocalPoint lp_center = etaPart->centreOfStrip(strip);
+		//std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center << std::endl;
+		data_.prop_localx_center_GE11[ch->id().layer()-1] = lp_center.x();
+		data_.prop_strip_GE11[ch->id().layer()-1] = strip;
+
 	  }
 
 	  float mindX = 9999.0;
