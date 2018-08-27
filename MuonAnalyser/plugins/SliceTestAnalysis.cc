@@ -1,4 +1,5 @@
 // system include files
+#include <assert.h> 
 #include <memory>
 #include <cmath>
 #include <iostream>
@@ -154,10 +155,12 @@ struct MuonData
   int roll_GE11[2];
   int chamber_GE11[2];
   float rechit_phi_GE11[2];//phi,eta from GE11 rechits
+  float rechit_alignedphi_GE11[2];//phi,eta from GE11 rechits
   float rechit_eta_GE11[2];
   float rechit_x_GE11[2];//rechit position in GE11
   float rechit_y_GE11[2];
   float rechit_localx_GE11[2];//rechit position in GE11
+  float rechit_alignedlocalx_GE11[2];//rechit position in GE11
   float rechit_localy_GE11[2];
   float rechit_r_GE11[2];
   bool rechit_used_GE11[2];
@@ -180,7 +183,9 @@ struct MuonData
   float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
+  float rechit_prop_aligneddX_GE11[2]; // 99999
   float rechit_prop_dphi_GE11[2];
+  float rechit_prop_aligneddphi_GE11[2];
   float rechit_flippedStrip_GE11[2];
   
   //online
@@ -191,6 +196,10 @@ struct MuonData
   float dphi_keyCSCRechit_GE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
   float dphi_keyCSCRechitL1_GE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
   float dphi_CSCRechits_GE11Rechit[2];// CSC phi from fit - GEM phi for each GEM layer
+
+  float dphi_CSCSeg_alignedGE11Rechit[2];//average CSC phi - GEM phi for each GEM layer
+  float dphi_keyCSCRechit_alignedGE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
+  float dphi_keyCSCRechitL1_alignedGE11Rechit[2];// CSC phi in key layer - GEM phi for each GEM layer
   
   //propagation
   float dphi_propCSC_propGE11[2];//average CSC phi - GEM phi for each GEM layer
@@ -233,6 +242,7 @@ void MuonData::init()
     has_GE11[i] = 0;
     has_propGE11[i] = false;
     rechit_phi_GE11[i] = -9;
+    rechit_alignedphi_GE11[i] = -9;
     rechit_eta_GE11[i] = -9;
     rechit_x_GE11[i] = 99999.0;
     rechit_y_GE11[i] = 99999.0;
@@ -251,7 +261,9 @@ void MuonData::init()
     prop_r_GE11[i] = 999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
+    rechit_prop_aligneddX_GE11[i] = 9999;
     rechit_prop_dphi_GE11[i] = -9;
+    rechit_prop_aligneddphi_GE11[i] = -9;
     rechit_flippedStrip_GE11[i] = -1.0;
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
@@ -270,6 +282,10 @@ void MuonData::init()
     dphi_CSCRechits_GE11Rechit[i] = -9.;
     dphi_propCSC_propGE11[i] = -9.0;
     dphi_keyCSCRechitL1_GE11Rechit[i] = -9.0;
+
+    dphi_CSCSeg_alignedGE11Rechit[i] = -9.;
+    dphi_keyCSCRechit_alignedGE11Rechit[i] = -9.0;
+    dphi_keyCSCRechitL1_alignedGE11Rechit[i] = -9.0;
     
     prop_localx_center_GE11[i]=999999.0;
     prop_strip_GE11[i]=-1;
@@ -412,11 +428,13 @@ TTree* MuonData::book(TTree *t)
   t->Branch("roll_GE11", roll_GE11, "roll_GE11[2]/I");
   t->Branch("chamber_GE11", chamber_GE11, "chamber_GE11[2]/I");
   t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
+  t->Branch("rechit_alignedphi_GE11", rechit_alignedphi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("rechit_eta_GE11", rechit_eta_GE11, "rechit_eta_GE11[2]/F");
   t->Branch("rechit_x_GE11", rechit_x_GE11, "rechit_x_GE11[2]/F");
   t->Branch("rechit_y_GE11", rechit_y_GE11, "rechit_y_GE11[2]/F");
   t->Branch("rechit_r_GE11", rechit_r_GE11, "rechit_r_GE11[2]/F");
   t->Branch("rechit_localx_GE11",rechit_localx_GE11,"rechit_localx_GE11[2]/F");
+  t->Branch("rechit_alignedlocalx_GE11",rechit_alignedlocalx_GE11,"rechit_alignedlocalx_GE11[2]/F");
   t->Branch("rechit_localy_GE11",rechit_localy_GE11,"rechit_localy_GE11[2]/F");
   t->Branch("rechit_used_GE11", rechit_r_GE11, "rechit_used_GE11[2]/B");
   t->Branch("rechit_BX_GE11", rechit_BX_GE11, "rechit_BX_GE11[2]/I");
@@ -435,7 +453,9 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
   t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
+  t->Branch("rechit_prop_aligneddX_GE11", rechit_prop_aligneddX_GE11, "rechit_prop_aligneddX_GE11[2]/F");
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
+  t->Branch("rechit_prop_aligneddphi_GE11", rechit_prop_aligneddphi_GE11, "rechit_prop_aligneddphi_GE11[2]/F");
 
 
 
@@ -473,6 +493,10 @@ TTree* MuonData::book(TTree *t)
   t->Branch("dphi_CSCRechits_GE11Rechit", dphi_CSCRechits_GE11Rechit, "dphi_CSCRechits_GE11Rechit[2]/F");
   t->Branch("dphi_propCSC_propGE11", dphi_propCSC_propGE11, "dphi_propCSC_propGE11[2]/F");
   t->Branch("dphi_keyCSCRechitL1_GE11Rechit", dphi_keyCSCRechitL1_GE11Rechit, "dphi_keyCSCRechitL1_GE11Rechit[2]/F");
+
+  t->Branch("dphi_CSCSeg_alignedGE11Rechit", dphi_CSCSeg_alignedGE11Rechit, "dphi_CSCSeg_alignedGE11Rechit[2]/F");
+  t->Branch("dphi_keyCSCRechit_alignedGE11Rechit", dphi_keyCSCRechit_alignedGE11Rechit, "dphi_keyCSCRechit_alignedGE11Rechit[2]/F");
+  t->Branch("dphi_keyCSCRechitL1_alignedGE11Rechit", dphi_keyCSCRechitL1_alignedGE11Rechit, "dphi_keyCSCRechitL1_alignedGE11Rechit[2]/F");
  
   t->Branch("prop_strip_GE11",prop_strip_GE11,"prop_strip_GE11[2]/F");
   t->Branch("prop_localx_center_GE11",prop_localx_center_GE11,"prop_localx_center_GE11[2]/F");
@@ -537,6 +561,9 @@ private:
   float CSCSegment_muon_deltaR_ = 2.0;//cm
   float CSCLCT_muon_deltaR_ = 4.0;//cm
 
+  //GEM alignment correction
+  std::vector<double> GEM_alginment_deltaX_;
+
   TTree * tree_data_;
   MuonData data_;
 };
@@ -552,9 +579,13 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   minMuonEta_ =  iConfig.getUntrackedParameter<double>("minMuonEta", 1.4);
   maxMuonEta_ =  iConfig.getUntrackedParameter<double>("maxMuonEta", 2.5);
+  GEM_alginment_deltaX_ =  iConfig.getParameter<std::vector<double>>("GEM_alginment_deltaX");//cm
   matchMuonwithLCT_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithLCT", false);
   matchMuonwithCSCRechit_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithCSCRechit", false);
   theService_ = new MuonServiceProxy(serviceParameters);
+
+  assert(GEM_alginment_deltaX_.size() == 8);//four GEM chambers, each 2 layrs
+  //std::cout<<"error in GEM_alginment_deltaX_, size "<< GEM_alginment_deltaX_.size() << std::endl;
   //edm::ParameterSet matchParameters = iConfig.getParameter<edm::ParameterSet>("MatchParameters");
   //edm::ConsumesCollector iC  = consumesCollector();
   //theMatcher = new MuonSegmentMatcher(matchParameters, iC);
@@ -759,10 +790,14 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		else
 		    std::cout <<"error strip number from rechit hit : strip "<< strip <<" rechit "<< (*hit) << std::endl;
 		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
+		unsigned int detid_index = (ch->id().chamber() - 27)*2+ch->id().layer()-1;
+		assert(detid_index < 8);
+		LocalPoint lp_aligned(lp_flipped.x() + GEM_alginment_deltaX_[detid_index], lp_flipped.y(), lp_flipped.z());
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 		float deltaX_local = (hit)->localPosition().x() -pos.x();
 		float deltaR_local_flipped = std::sqrt(std::pow(lp_flipped.x()-pos.x(), 2) + std::pow(lp_flipped.y()-pos.y(), 2));
 		float deltaX_local_flipped = lp_flipped.x() -pos.x();
+		float deltaX_local_aligned = lp_aligned.x() - pos.x();
 
                 //bool rechit_used = std::find( muonTrack->recHitsBegin(), muonTrack->recHitsEnd(), hit->recHits().begin()) != muonTrack->recHitsEnd();
 		bool rechit_used = false;
@@ -783,14 +818,17 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    cout << "found hit at GEM detector "<< gemid <<" strip "<< strip <<" flipped strip "<< strip_flipped
 			 << " lp " << (hit)->localPosition()
 			 << " flipped lp "<< lp_flipped
+			 << " aligned lp " << lp_aligned
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
 			 << " flipped gp " << etaPart->toGlobal(lp_flipped)
+			 << " aligned gp " << etaPart->toGlobal(lp_aligned)
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
 			 << " "<< (*hit) <<" "
 			 << (rechit_used ? "used by muon track":"not used by muon track")
 			 <<" propagated lp "<< pos
 			 <<" deltaX_local "<< deltaX_local <<" local-dR " << deltaR_local
 			 <<" deltaX_local_flipped "<< deltaX_local_flipped << " local-dR flipped "<< deltaR_local_flipped
+			 <<" deltaX_local_aligned "<< deltaX_local_aligned
 			 << endl;
 		    
 		    mindX = fabs(deltaX_local_flipped);
@@ -804,19 +842,23 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
 		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
 		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
+		    data_.rechit_prop_aligneddX_GE11[gemid.layer()-1] = deltaX_local_aligned;
 		    //data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		    //data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
 		    //data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
 		    //data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
 		    //data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
 		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
+		    data_.rechit_alignedphi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_aligned).phi();
 		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
 		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
 		    data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
+		    data_.rechit_alignedlocalx_GE11[gemid.layer()-1] = lp_aligned.x();
 		    data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
 		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
 		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
+		    data_.rechit_prop_aligneddphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_alignedphi_GE11[gemid.layer()-1]);
 
 		}
               }
@@ -893,6 +935,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		      for(unsigned int i=0; i<2; i++){
 			  if (data_.has_GE11[i]){
 			      data_.dphi_CSCSeg_GE11Rechit[i] = reco::deltaPhi(data_.cscseg_phi_st[ch->id().station() - 1], data_.rechit_phi_GE11[i]);
+			      data_.dphi_CSCSeg_alignedGE11Rechit[i] = reco::deltaPhi(data_.cscseg_phi_st[ch->id().station() - 1], data_.rechit_alignedphi_GE11[i]);
 			  }
 		      }
 		  }//ME11-GE11, dphi(CSCsegment, GEMRechit)
@@ -996,8 +1039,11 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		        for(unsigned int i=0; i<2; i++){
 		            if (data_.has_GE11[i]){
 		                data_.dphi_keyCSCRechit_GE11Rechit[i] = reco::deltaPhi(data_.rechit_phi_ME11[cscid.layer()-1], data_.rechit_phi_GE11[i]);
-				if (data_.rechit_L1phi_ME11[cscid.layer()-1] < 4.0)//avoid fake value
+		                data_.dphi_keyCSCRechit_alignedGE11Rechit[i] = reco::deltaPhi(data_.rechit_phi_ME11[cscid.layer()-1], data_.rechit_alignedphi_GE11[i]);
+				if (data_.rechit_L1phi_ME11[cscid.layer()-1] < 4.0){//avoid fake value
 				    data_.dphi_keyCSCRechitL1_GE11Rechit[i] = reco::deltaPhi(data_.rechit_L1phi_ME11[cscid.layer()-1], data_.rechit_phi_GE11[i]);
+				    data_.dphi_keyCSCRechitL1_alignedGE11Rechit[i] = reco::deltaPhi(data_.rechit_L1phi_ME11[cscid.layer()-1], data_.rechit_alignedphi_GE11[i]);
+				}
 		            }
 		        }
 		    }//ME11-GE11, dphi(CSCRechit, GEMRechit)

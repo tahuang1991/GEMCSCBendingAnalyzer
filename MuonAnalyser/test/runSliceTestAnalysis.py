@@ -63,5 +63,9 @@ process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
     matchMuonwithLCT = cms.untracked.bool(False),
     matchMuonwithCSCRechit = cms.untracked.bool(False),
+    #GEM_alginment_deltaX = cms.vdouble(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    GEM_alginment_deltaX = cms.vdouble(-0.16968, -0.1421, 0.1139,  0.1242,  -0.30713,  -0.33472, 0.37761, 0.36531),
+
 )
+
 process.p = cms.Path(process.SliceTestAnalysis)
