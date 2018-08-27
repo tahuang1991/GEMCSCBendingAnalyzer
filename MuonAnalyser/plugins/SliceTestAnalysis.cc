@@ -73,7 +73,7 @@ struct MuonData
   int muon_ntrackhit, muon_chi2, muon_nChamber;
   float muonpt, muoneta, muonphi;
   bool muoncharge;
-  bool muonendcap;
+  int muonendcap;
   float muonPFIso, muonTkIso;
   
   

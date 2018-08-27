@@ -10,7 +10,8 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '101X_dataRun2_Prompt_v10', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v1', '')
 #process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -39,7 +40,10 @@ process.source = cms.Source("PoolSource",
                             )
 #process.source.skipEvents = cms.untracked.uint32(17601)
 #file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2017G_v1_RECO/            #directory on LPC where all 555 files are placed
-process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2018C_v1_RECO/step3_001.root')
+#process.source.fileNames.append('file:/eos/uscms/store/group/lpcgem/SingleMuon_Run2018C_v1_RECO/step3_001.root')
+#process.source.fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/320/500/00000/9AC95BCF-8C95-E811-A24D-FA163E67426E.root')
+#process.source.fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/SingleMuon/AOD/PromptReco-v2/000/320/500/00000/FE2B5583-8C95-E811-B8F8-FA163ED06560.root')
+process.source.fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/SingleMuon/MINIAOD/PromptReco-v2/000/321/475/00000/AA10A5A1-77A6-E811-B57C-FA163EF0320D.root')
 #process.source.fileNames.append('file:/eos/uscms/store/user/mkhurana/2018C_data_files/step3_152.root')
 
 #fname = 'singleMuon.txt'
@@ -66,6 +70,8 @@ process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     #GEM_alginment_deltaX = cms.vdouble(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
     GEM_alginment_deltaX = cms.vdouble(-0.16968, -0.1421, 0.1139,  0.1242,  -0.30713,  -0.33472, 0.37761, 0.36531),
 
+    #runs = cms.vint32(321475, 321461,  321457,  321434,  321433,  321432,  321431,  321415,  321414,  321396,  321393,  321313,  321312,  321311, 321310,  321305,  321218,  321178,  321177,  321167,  321166,  321165,  321164,  321162,  321149,  321140,  321138,  321134,  321126, 321123,  321122,  321121,  321119,  321069,  321068,  321067,  321055,  321051,  320996,  320995),
+    
 )
 
 process.p = cms.Path(process.SliceTestAnalysis)
