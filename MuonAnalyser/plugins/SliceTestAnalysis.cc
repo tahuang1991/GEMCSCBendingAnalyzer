@@ -528,6 +528,7 @@ private:
 
   double maxMuonEta_, minMuonEta_;
   bool matchMuonwithLCT_;
+  bool matchMuonwithCSCRechit_;
 
   //find it out later 
   float GEMRechit_muon_deltaR_ = 15.0;//cm
@@ -552,6 +553,7 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   minMuonEta_ =  iConfig.getUntrackedParameter<double>("minMuonEta", 1.4);
   maxMuonEta_ =  iConfig.getUntrackedParameter<double>("maxMuonEta", 2.5);
   matchMuonwithLCT_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithLCT", false);
+  matchMuonwithCSCRechit_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithCSCRechit", false);
   theService_ = new MuonServiceProxy(serviceParameters);
   //edm::ParameterSet matchParameters = iConfig.getParameter<edm::ParameterSet>("MatchParameters");
   //edm::ConsumesCollector iC  = consumesCollector();
@@ -578,8 +580,18 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
 
+  bool hasCSCRechitcollection = false;
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
-  iEvent.getByToken(cscRecHits_, cscRecHits);
+  if (matchMuonwithCSCRechit_){
+      try{
+	  iEvent.getByToken(cscRecHits_, cscRecHits);
+	  hasCSCRechitcollection = true;
+      }catch (cms::Exception){
+	std::cout<< "Error! Can't get CSC Rechit by label. " << std::endl;
+	hasCSCRechitcollection = false;
+      }
+  }
+   
 
   edm::Handle<CSCSegmentCollection> cscSegments;
   iEvent.getByToken(cscSegments_, cscSegments);
@@ -925,7 +937,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  //use all CSC reco hit collection instead, because reco muon algorithm might be inefficiency in using CSC hits
           //for (auto hit = muonTrack->recHitsBegin(); hit != muonTrack->recHitsEnd(); hit++) {
 	  float mindR = 9999.0;
-          for (auto hit = cscRecHits->begin(); hit != cscRecHits->end(); hit++) {
+          if (matchMuonwithCSCRechit_ and hasCSCRechitcollection) for (auto hit = cscRecHits->begin(); hit != cscRecHits->end(); hit++) {
             if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::CSC) {
               if ((hit)->rawId() == ch->id().rawId() ) {
                 CSCDetId cscid((hit)->geographicalId());

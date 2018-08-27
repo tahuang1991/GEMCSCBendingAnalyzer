@@ -62,5 +62,6 @@ process.SliceTestAnalysis = cms.EDAnalyzer('SliceTestAnalysis',
     muons = cms.InputTag("muons"),
     vertexCollection = cms.InputTag("offlinePrimaryVertices"),
     matchMuonwithLCT = cms.untracked.bool(False),
+    matchMuonwithCSCRechit = cms.untracked.bool(False),
 )
 process.p = cms.Path(process.SliceTestAnalysis)
