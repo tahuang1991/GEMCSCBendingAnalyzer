@@ -681,7 +681,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     if (not mu->standAloneMuon()) continue;//not standalone muon
 
     //focus on endcap muons
-    if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ ) {
+    //GEMs are installed on minus endcap, namly eta < 0
+    if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ and mu->eta()< 0.0 ) {
 	 
       data_.init();
       
