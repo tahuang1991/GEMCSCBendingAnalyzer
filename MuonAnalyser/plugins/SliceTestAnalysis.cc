@@ -82,6 +82,7 @@ struct MuonData
   bool has_MediumID;
   bool has_LooseID;
   
+  bool hasGEMdata;
   bool has_ME11[6];
   bool has_GE11[2];
 
@@ -101,6 +102,7 @@ struct MuonData
   int rechit_WG_ME11[6]; // -1
   float rechit_L1eta_ME11[6];// -9
   float rechit_L1phi_ME11[6]; //-9
+  
       
   int nrechit_ME11;
 
@@ -232,6 +234,8 @@ void MuonData::init()
   has_TightID = 0;
   has_MediumID = 0;
   has_LooseID = 0;
+   
+  hasGEMdata = false;
 
   nrechit_GE11 = 0;
   nrechit_ME11 = 0;
@@ -390,6 +394,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("has_MediumID", &has_MediumID);
   t->Branch("has_LooseID", &has_LooseID);  
   t->Branch("has_TightID", &has_TightID);
+  t->Branch("hasGEMdata", &hasGEMdata);
 
 
   t->Branch("has_ME11", has_ME11, "has_ME11[6]/B");
@@ -611,6 +616,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
 
+      
+
   bool hasCSCRechitcollection = false;
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   if (matchMuonwithCSCRechit_){
@@ -684,6 +691,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ ) {
 	 
       data_.init();
+      if (gemRecHits->size() > 0)
+	  data_.hasGEMdata  = true;
       
       data_.lumi = iEvent.id().luminosityBlock();
       data_.run = iEvent.id().run();
@@ -801,6 +810,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
                 //bool rechit_used = std::find( muonTrack->recHitsBegin(), muonTrack->recHitsEnd(), hit->recHits().begin()) != muonTrack->recHitsEnd();
 		bool rechit_used = false;
+		/*
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
 		    if ( (*muonhit)->rawId() == ch->id().rawId() ) {
 			float deltaX_hitmatch = (hit)->localPosition().x() - (*muonhit)->localPosition().x();
@@ -808,7 +818,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			if (fabs(deltaX_hitmatch) < 0.01) // deltaX should be just 0.0
 			    rechit_used = true;
 		    }
-		}
+		}*/
 
 
 		if (fabs(deltaX_local_flipped) < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
@@ -990,6 +1000,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.nrechit_ME11 += 1;
 
 		bool rechit_used = false;
+		
 		for (auto muonhit = muonTrack->recHitsBegin(); muonhit != muonTrack->recHitsEnd(); muonhit++) {
 		    if ( (*muonhit)->rawId() == ch->id().rawId() ) {
 			float deltaX_hitmatch = (hit)->localPosition().x() - (*muonhit)->localPosition().x();
