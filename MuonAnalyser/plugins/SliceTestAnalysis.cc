@@ -790,7 +790,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
             if ( (hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
               GEMDetId gemid((hit)->geographicalId());
-              if (gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and (gemid.roll() - ch->id().roll()) <= 1) {
+              if (gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1) {
                 const auto& etaPart = GEMGeometry_->etaPartition(gemid);
 		float strip = etaPart->strip(hit->localPosition());
 		float strip_flipped = 0.0;
