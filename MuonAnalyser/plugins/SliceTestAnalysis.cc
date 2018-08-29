@@ -121,6 +121,15 @@ struct MuonData
   int chamber_propME11[6];
   int ring_propME11[6];
 
+  bool has_prop_st[4];
+  float prop_phi_st[4];
+  float prop_eta_st[4];
+  int  prop_chamber_st[4];
+  int  prop_ring_st[4];
+  float prop_x_st[4];
+  float prop_y_st[4];
+  float prop_r_st[4];
+
   //CSC segment matched to recoMuon
   bool has_cscseg_st[4];
   float cscseg_phi_st[4];
@@ -331,12 +340,24 @@ void MuonData::init()
 
 
   }
+
   for (int i = 0; i<4; ++i) {
-    has_cscseg_st[i] = 0;
+
+
+    has_prop_st[i] = false;
+    prop_phi_st[i] = -9;
+    prop_eta_st[i] = -9;
+    prop_x_st[i] = -99999.0;
+    prop_y_st[i] = -99999.0;
+    prop_r_st[i] = 0.0;
+    prop_chamber_st[i] = -1;
+    prop_ring_st[i] = -1;
+
+    has_cscseg_st[i] = false;
     cscseg_phi_st[i] = -9;
     cscseg_eta_st[i] = -9;
-    cscseg_x_st[i] = 0.0;
-    cscseg_y_st[i] = 0.0;
+    cscseg_x_st[i] = -99999.0;
+    cscseg_y_st[i] = -99999.0;
     cscseg_r_st[i] = 0.0;
 
     cscseg_prop_dR_st[i] =  99999;
@@ -345,9 +366,8 @@ void MuonData::init()
     has_csclct_st[i] =false;
     csclct_phi_st[i] = -9.0;
     csclct_eta_st[i] = -9.0;
-    csclct_x_st[i] = 0;
-
-    csclct_y_st[i] = 0.0;
+    csclct_x_st[i] = -99999.0;
+    csclct_y_st[i] = -99999.0;
     csclct_r_st[i] = 0.0;
     csclct_prop_dR_st[i] = 9999;
     csclct_chamber_st[i] = -1;
@@ -361,9 +381,8 @@ void MuonData::init()
     cscseg_prop_dphi_st[i]=-9;
     csclct_prop_dphi_st[i]=-9;
 
-
-
   }
+
 }
 
 TTree* MuonData::book(TTree *t)
@@ -462,7 +481,14 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
   t->Branch("rechit_prop_aligneddphi_GE11", rechit_prop_aligneddphi_GE11, "rechit_prop_aligneddphi_GE11[2]/F");
 
-
+  t->Branch("has_prop_st", has_cscseg_st, "has_prop_st[4]/B");
+  t->Branch("prop_phi_st", prop_phi_st, "prop_phi_st[4]/F");
+  t->Branch("prop_eta_st", prop_eta_st, "prop_eta_st[4]/F");
+  t->Branch("prop_x_st", prop_x_st, "prop_x_st[4]/F");
+  t->Branch("prop_y_st", prop_y_st, "prop_y_st[4]/F");
+  t->Branch("prop_r_st", prop_r_st, "prop_r_st[4]/F");
+  t->Branch("prop_ring_st", prop_ring_st, "prop_ring_st[4]/I");
+  t->Branch("prop_chamber_st", prop_chamber_st, "prop_chamber_st[4]/I");
 
   t->Branch("has_cscseg_st", has_cscseg_st, "has_cscseg_st[4]/B");
   t->Branch("cscseg_phi_st", cscseg_phi_st, "cscseg_phi_st[4]/F");
@@ -922,6 +948,15 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	  if (ch->id().layer() == 3)//keylayer
 	  {
+	      data_.has_prop_st[ch->id().station() -1] = true;
+	      data_.prop_phi_st[ch->id().station() - 1] = tsosGP.phi();
+	      data_.prop_eta_st[ch->id().station() - 1] = tsosGP.eta();
+	      data_.prop_x_st[ch->id().station() - 1]   = tsosGP.x();
+	      data_.prop_y_st[ch->id().station() - 1]   = tsosGP.y();
+	      data_.prop_r_st[ch->id().station() - 1]   = tsosGP.mag();
+	      data_.prop_chamber_st[ch->id().station() - 1] = ch->id().chamber();
+	      data_.prop_ring_st[ch->id().station() - 1] = ch->id().ring();
+
 	      CSCSegment matchedSeg;
 	      float mindR = 9999.0;
 	      bool hasCSCsegment  = matchRecoMuonwithCSCSeg(pos, cscSegments, ch->id(), matchedSeg, mindR);
