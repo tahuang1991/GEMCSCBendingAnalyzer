@@ -593,6 +593,7 @@ private:
   float CSCLCT_muon_deltaR_ = 4.0;//cm
 
   //GEM alignment correction
+  bool applyGEMalignment_ = false;
   std::vector<double> GEM_alginment_deltaX_;
 
   TTree * tree_data_;
@@ -613,9 +614,11 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   GEM_alginment_deltaX_ =  iConfig.getParameter<std::vector<double>>("GEM_alginment_deltaX");//cm
   matchMuonwithLCT_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithLCT", false);
   matchMuonwithCSCRechit_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithCSCRechit", false);
+  applyGEMalignment_ =  iConfig.getUntrackedParameter<bool>("applyGEMalignment", false);
   theService_ = new MuonServiceProxy(serviceParameters);
 
-  assert(GEM_alginment_deltaX_.size() == 8);//four GEM chambers, each 2 layrs
+  if (applyGEMalignment_)
+      assert(GEM_alginment_deltaX_.size() == 8 );//four GEM chambers, each 2 layrs
   //std::cout<<"error in GEM_alginment_deltaX_, size "<< GEM_alginment_deltaX_.size() << std::endl;
   //edm::ParameterSet matchParameters = iConfig.getParameter<edm::ParameterSet>("MatchParameters");
   //edm::ConsumesCollector iC  = consumesCollector();
@@ -642,6 +645,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
 
+  //if (gemRecHits->size() == 0) return;
       
 
   bool hasCSCRechitcollection = false;
@@ -706,7 +710,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     else 
 	continue;
 
-    if (mu->pt() < 5.0) continue;//ignore low pt muon
+    if (mu->pt() < 2.0) continue;//ignore low pt muon
     if (mu->isGEMMuon()) {
       std::cout << "isGEMMuon " <<std::endl;
     }
@@ -826,14 +830,18 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		else
 		    std::cout <<"error strip number from rechit hit : strip "<< strip <<" rechit "<< (*hit) << std::endl;
 		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
-		unsigned int detid_index = (ch->id().chamber() - 27)*2+ch->id().layer()-1;
-		assert(detid_index < 8);
-		LocalPoint lp_aligned(lp_flipped.x() + GEM_alginment_deltaX_[detid_index], lp_flipped.y(), lp_flipped.z());
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 		float deltaX_local = (hit)->localPosition().x() -pos.x();
 		float deltaR_local_flipped = std::sqrt(std::pow(lp_flipped.x()-pos.x(), 2) + std::pow(lp_flipped.y()-pos.y(), 2));
 		float deltaX_local_flipped = lp_flipped.x() -pos.x();
-		float deltaX_local_aligned = lp_aligned.x() - pos.x();
+		LocalPoint lp_aligned(0.0, 0.0);
+		float deltaX_local_aligned  = 0.0;
+		if (applyGEMalignment_){
+		    unsigned int detid_index = (ch->id().chamber() - 27)*2+ch->id().layer()-1;
+		    assert(detid_index < 8);
+		    lp_aligned = LocalPoint(lp_flipped.x() + GEM_alginment_deltaX_[detid_index], lp_flipped.y(), lp_flipped.z());
+		    deltaX_local_aligned = lp_aligned.x() - pos.x();
+		}
 
                 //bool rechit_used = std::find( muonTrack->recHitsBegin(), muonTrack->recHitsEnd(), hit->recHits().begin()) != muonTrack->recHitsEnd();
 		bool rechit_used = false;
@@ -855,18 +863,20 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    cout << "found hit at GEM detector "<< gemid <<" strip "<< strip <<" flipped strip "<< strip_flipped
 			 << " lp " << (hit)->localPosition()
 			 << " flipped lp "<< lp_flipped
-			 << " aligned lp " << lp_aligned
 			 << " gp " << etaPart->toGlobal((hit)->localPosition())
 			 << " flipped gp " << etaPart->toGlobal(lp_flipped)
-			 << " aligned gp " << etaPart->toGlobal(lp_aligned)
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
 			 << " "<< (*hit) <<" "
 			 << (rechit_used ? "used by muon track":"not used by muon track")
 			 <<" propagated lp "<< pos
 			 <<" deltaX_local "<< deltaX_local <<" local-dR " << deltaR_local
 			 <<" deltaX_local_flipped "<< deltaX_local_flipped << " local-dR flipped "<< deltaR_local_flipped
-			 <<" deltaX_local_aligned "<< deltaX_local_aligned
 			 << endl;
+		    if (applyGEMalignment_){
+			 cout<< "after applying GEM alignment, aligned lp " << lp_aligned
+			 << " aligned gp " << etaPart->toGlobal(lp_aligned)
+			 <<" deltaX_local_aligned "<< deltaX_local_aligned << endl;
+		    }
 		    
 		    mindX = fabs(deltaX_local_flipped);
 		    data_.has_GE11[gemid.layer()-1] = 1;
@@ -879,23 +889,25 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
 		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
 		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
-		    data_.rechit_prop_aligneddX_GE11[gemid.layer()-1] = deltaX_local_aligned;
 		    //data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		    //data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
 		    //data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
 		    //data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
 		    //data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
 		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
-		    data_.rechit_alignedphi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_aligned).phi();
 		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
 		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
 		    data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
-		    data_.rechit_alignedlocalx_GE11[gemid.layer()-1] = lp_aligned.x();
 		    data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
 		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
 		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
-		    data_.rechit_prop_aligneddphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_alignedphi_GE11[gemid.layer()-1]);
+		    if (applyGEMalignment_){
+			data_.rechit_prop_aligneddX_GE11[gemid.layer()-1] = deltaX_local_aligned;
+			data_.rechit_alignedphi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_aligned).phi();
+			data_.rechit_alignedlocalx_GE11[gemid.layer()-1] = lp_aligned.x();
+			data_.rechit_prop_aligneddphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_alignedphi_GE11[gemid.layer()-1]);
+		    }
 
 		}
               }
