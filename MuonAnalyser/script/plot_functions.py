@@ -1,0 +1,894 @@
+import ROOT
+import os
+import time
+import numpy as np
+    
+#_____________________________________________________________
+def plot_efficiency(Teffs, xtitle,ytitle, legs, legheader, txt,picname):
+	
+    #b1 = ROOT.TH1F("b1","b1")
+    b1 = cloneDummyHistogram(Teffs[0].GetCopyTotalHisto())
+    b1.GetYaxis().SetRangeUser(-0.40,1.05)##GEM
+    #b1.GetYaxis().SetRangeUser(0.9,1.01)##CSC
+    b1.GetYaxis().SetTitleOffset(1.1)
+    b1.GetYaxis().SetNdivisions(520)
+    b1.GetYaxis().SetTitle(ytitle)
+    b1.GetXaxis().SetTitle(xtitle)
+    b1.GetXaxis().SetTitleSize(0.05)
+    b1.GetXaxis().SetLabelSize(0.05)
+    b1.GetYaxis().SetTitleSize(0.05)
+    b1.GetYaxis().SetLabelSize(0.05)
+    b1.SetTitle(" #scale[1.4]{#font[61]{CMS}} #font[52]{Internal}"+"  "*8+" 2018 RunC")
+    
+    c1 = ROOT.TCanvas()
+    c1.SetGridx()
+    c1.SetGridy()
+    c1.SetTickx()
+    c1.SetTicky()
+    c1.SetLogx()
+
+    b1.SetStats(0)
+    b1.Draw()
+    color = [2,4,3,5,6,7,8,9,1]
+    color = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kOrange, ROOT.kMagenta+2,ROOT.kCyan+2, 5,6,7,8,9, ROOT.kBlack]
+    #marker = [20,21, 22, 23,, 24, 25]
+    marker = [20, 24, 21, 25, 22, 26, 23, 27, 33, 28, 30]
+    legend = ROOT.TLegend(0.65,0.16,0.83,0.20+0.04*len(Teffs))
+    legend.SetFillColor(ROOT.kWhite)
+    legend.SetTextFont(42)
+    legend.SetTextSize(.035)
+    legend.SetHeader("%s"%legheader)
+    for m, Teff in enumerate(Teffs):
+	Teffs[m].SetLineColor(color[m])
+	Teffs[m].SetMarkerColor(color[m])
+	Teffs[m].SetMarkerStyle(marker[m])
+	Teffs[m].Draw("same")
+	legend.AddEntry(Teffs[m],"%s"%legs[m],"pl")
+    #print "Teffs ",Teffs
+    #Teffs[0].Print("ALL")
+    legend.Draw("same")
+
+    tex = ROOT.TLatex(0.2,0.27,"%s"%txt)
+    #tex = ROOT.TLatex(0.45,0.57,"#splitline{%s}{%d%% eff at %d [GeV]}"%(txt,fractionToKeep,pt))
+    #tex = ROOT.TLatex(0.45,0.57,"#splitline{%s}{check the sign of #Delta Y_{12} and #Delta Y_{23}}"%(txt))
+    tex.SetTextSize(0.04)
+    tex.SetTextFont(62)
+    tex.SetNDC()
+    tex.Draw("same")
+    #c1.Update()
+    c1.SaveAs("%s.png"%(picname))
+    c1.SaveAs("%s.pdf"%(picname))
+    #c1.SaveAs("%s.C"%(picname))
+	
+#_____________________________________________________________
+def plot_GEMHitEff(chain, todraw, dencut, xbins,xtitle, txt, plotdir):
+
+    ytitle = "GEM hit efficiency"
+    Teff_all = []
+    leg_all = []
+    for ch in [27, 28, 29, 30]:
+        Teff_layers = []
+        leg_layers = []
+        for layer in [0, 1]:
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02"%(layer)
+            layercut = "has_propGE11[%d] && chamber_propGE11[%d] == %d && has_cscseg_st[0] && cscseg_chamber_st[0]==%d"%(layer, layer, ch, ch)## 
+            thisdencut = dencut + " && "+ layercut
+            thisnumcut = dencut + " && "+ layercut+"&& has_GE11[%d] && chamber_GE11[%d] == %d"%(layer, layer, ch)  +dRcut
+            Teff_layers.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, xbins))
+            leg_layers.append("layer %d"%(layer+1))
+            Teff_all.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, xbins))
+            leg_all.append("Ch%d, layer %d"%(ch, layer+1))
+
+            Teff_rolls = []
+            leg_rolls = []
+            header_roll = "GEM %d,layer%d"%(ch, layer+1)
+            for roll in range(1, 9):
+                detidcut = layercut +"&& roll_propGE11[%d] == %d"%(layer, roll)
+                thisdencut  = dencut + " && "+detidcut
+                #thisnumcut = dencut + " && "+detidcut+"&& has_GE11[%d] && chamber_GE11[%d] == %d && roll_GE11[%d]==%d"%(layer, layer, ch, layer,roll)
+                thisnumcut = dencut + " && "+detidcut+"&& has_GE11[%d] && chamber_GE11[%d] == %d"%(layer, layer, ch)+dRcut
+                Teff_rolls.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, xbins))
+                leg_rolls.append("roll%d"%(roll))
+            picname_roll = plotdir + "ch%d_layer%d_rolls"%(ch, layer)
+            plot_efficiency(Teff_rolls, xtitle, ytitle, leg_rolls, header_roll, txt, picname_roll)
+        header_layer = "GEM %d"%(ch)
+        picname_layer = plotdir+"ch%d_layers"%(ch)
+        plot_efficiency(Teff_layers, xtitle, ytitle, leg_layers, header_layer, txt, picname_layer)
+
+    header_all = ""
+    picname_all = plotdir+"all4chambers_layers"
+    plot_efficiency(Teff_all, xtitle, ytitle, leg_all, header_all, txt, picname_all)
+
+
+#_____________________________________________________________
+def plot_GEMHitEff_phi(chain, dencut, txt, plotdir):
+    ytitle = "GEM hit efficiency"
+    xtitle = "Muon global #phi at GE11"
+    xtitle = "Muon strip number at GE11"
+    Teff_all = []
+    leg_all = []
+    for ch in [27, 28, 29, 30]:
+        Teff_layers = []
+        leg_layers = []
+        #phimin = -1.850 + (ch-27)*0.175
+        #phimax = -1.650 + (ch-27)*0.175
+        #phibin = 20
+        phimax = 384.0; phimin= 0.0; phibin= 24
+        phi_step = abs(phimax-phimin)/phibin
+        phibin_x = np.arange(phimin, phimax, phi_step)
+        ##important!!!
+        phibin_x = np.append(phibin_x, phimax)
+        #print "phibin_x ",phibin_x
+        for layer in [0, 1]:
+            #todraw = "prop_phi_GE11[%d]"%layer
+            todraw = "prop_strip_GE11[%d]"%layer
+            #dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02"%(layer)
+            dRcut = "&& abs(rechit_prop_aligneddphi_GE11[%d])<.02"%(layer)
+            layercut = "has_propGE11[%d] && chamber_propGE11[%d] == %d && has_cscseg_st[0] && cscseg_chamber_st[0]==%d"%(layer, layer, ch, ch)## 
+            thisdencut = dencut + " && "+ layercut
+            thisnumcut = dencut + " && "+ layercut+"&& has_GE11[%d] && chamber_GE11[%d] == %d"%(layer, layer, ch)  +dRcut
+            Teff_layers.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, phibin_x))
+            leg_layers.append("layer %d"%(layer+1))
+            Teff_all.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, phibin_x))
+            leg_all.append("Ch%d, layer %d"%(ch, layer+1))
+            Teff_rolls = []
+            leg_rolls = []
+            header_roll = "GEM %d,layer%d"%(ch, layer+1)
+            for roll in range(1, 9):
+                detidcut = layercut +"&& roll_propGE11[%d] == %d"%(layer, roll)
+                thisdencut  = dencut + " && "+detidcut
+                #thisnumcut = dencut + " && "+detidcut+"&& has_GE11[%d] && chamber_GE11[%d] == %d && roll_GE11[%d]==%d"%(layer, layer, ch, layer,roll)
+                thisnumcut = dencut + " && "+detidcut+"&& has_GE11[%d] && chamber_GE11[%d] == %d"%(layer, layer, ch)+dRcut
+                Teff_rolls.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, phibin_x))
+                leg_rolls.append("roll%d"%(roll))
+            picname_roll = plotdir + "ch%d_layer%d_rolls_dphi02"%(ch, layer)
+            plot_efficiency(Teff_rolls, xtitle, ytitle, leg_rolls, header_roll, txt, picname_roll)
+        header_layer = "GEM %d"%(ch)
+        picname_layer = plotdir+"ch%d_layers_dphi02"%(ch)
+        plot_efficiency(Teff_layers, xtitle, ytitle, leg_layers, header_layer, txt, picname_layer)
+
+    header_all = ""
+    picname_all = plotdir+"all4chambers_layers"
+    print " Teff_all ",Teff_all
+    plot_efficiency(Teff_all, xtitle, ytitle, leg_all, header_all, txt, picname_all)
+    
+
+#_____________________________________________________________
+def plot_ME11CSCHitEff(chain, xtodraw, dencut, nbins, xmin, xmax,  xtitle, txt, plotdir):
+    ytitle = "CSC hit efficiency, ME11"
+    
+    Teff_layers = []
+    leg_layers = []
+    step = abs(xmax-xmin)/nbins
+    bin_x = np.arange(xmin, xmax, step)
+    ##important!!!
+    bin_x = np.append(bin_x, xmax)
+    #print "bin_x ",bin_x
+    for layer in xrange(6):
+        #todraw = "prop_phi_GE11[%d]"%layer
+        todraw = xtodraw +"[%d]"%layer
+        dRcut = "&& abs(rechit_prop_dR_ME11[%d])< 5"%(layer)
+        layercut = "has_propME11[%d]>0 "%(layer)## 
+        thisdencut = dencut + " && "+ layercut
+        thisnumcut = dencut + " && "+ layercut +dRcut
+        Teff_layers.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, bin_x))
+        leg_layers.append("layer %d"%(layer+1))
+    header_layer = "ME11"
+    picname_layer = plotdir+"layers_dR05"
+    plot_efficiency(Teff_layers, xtitle, ytitle, leg_layers, header_layer, txt, picname_layer)
+
+#_____________________________________________________________
+def plot_CSCSegmentEff(chain, xtodraw, dencut, nbins, xmin, xmax,  xtitle, txt, plotdir):
+    ytitle = "CSC Segment efficiency, MEX1"
+    
+    Teff_st = []
+    leg_st = []
+    step = abs(xmax-xmin)/nbins
+    bin_x = np.arange(xmin, xmax, step)
+    ##important!!!
+    bin_x = np.append(bin_x, xmax)
+    #print "bin_x ",bin_x
+    for st in xrange(4):
+        #todraw = "prop_phi_GE11[%d]"%layer
+        todraw = xtodraw +"[%d]"%st
+        dRcut = "&& abs(cscseg_prop_dR_st[%d])< 2 "%(st)
+        stationcut = "has_prop_st[%d]>0 && (prop_ring_st[%d]==1 || prop_ring_st[%d]==4) "%(st, st, st)## 
+        thisdencut = dencut + " && "+ stationcut
+        thisnumcut = dencut + " && "+ stationcut +dRcut+" && has_cscseg_st[%d]>0"%(st)
+        Teff_st.append(getTefficiency(chain, todraw, thisdencut, thisnumcut, bin_x))
+        leg_st.append("ME%d/1"%(st+1))
+    header_st = "MEX1"
+    picname_st = plotdir+"MEX1_dR2"
+    plot_efficiency(Teff_st, xtitle, ytitle, leg_st, header_st, txt, picname_st)
+
+
+#_____________________________________________________________
+def plot_tree_1D(tree, branch_name, cut, xtitle, nbins, xmin, xmax, text, plotname):
+   
+    c1=ROOT.TCanvas("c1","New Graph",0,0, 800,600);
+    c1.SetGridx()
+    c1.SetGridy()
+    #c1.SetTickx()
+    #c1.SetTicky()
+    #h=F.Get("SliceTestAnalysis/MuonData");
+    hist = ROOT.TH1F("hist","hist_title", nbins, xmin, xmax)
+    
+    ##cut = "muonpt>10"
+    tree.Draw(branch_name + ">> hist", cut);## plot hist with cut
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*16+"data, Run2018C")
+    hist.GetXaxis().SetTitle(xtitle)
+    hist.GetYaxis().SetTitle("Normalized to unity")
+    hist.SetStats(0)
+    print "todraw ", branch_name, " cut ",cut
+    hist.Scale(1.0/hist.Integral())
+    hist.Draw("hist")
+#    outplot = os.path.join(plotname, str(branch_name))
+    txt = ROOT.TLatex(.15, .8, text)
+    txt.SetNDC()
+    txt.SetTextFont(42)
+    txt.SetTextFont(42)
+    txt.SetTextSize(.04)
+    txt.Draw("same")
+    
+    #outplot = os.path.join(os.getcwd(), str(plotname))
+    outplot = plotname
+    c1.SaveAs(outplot + ".png")
+    c1.SaveAs(outplot + ".pdf")
+
+#_____________________________________________________________
+def plot_tree_1D_multiple(tree, branch_names, cuts, legs, xtitle, nbins, xmin, xmax, text, plotname):
+
+   
+    c1=ROOT.TCanvas("c1","New Graph",0,0, 800,600);
+    #h=F.Get("SliceTestAnalysis/MuonData");
+    histlist = []
+    hs = ROOT.THStack("hs",  " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*16+"data, Run2018")
+    legend = ROOT.TLegend(0.55,0.67,0.91,0.7+0.04*len(cuts))
+    legend.SetFillColor(ROOT.kWhite)
+
+    for i,branch_name in enumerate(branch_names):
+        histlist.append( ROOT.TH1F("hist%d"%i,"hist_title", nbins, xmin, xmax))
+        
+        ##cut = "muonpt>10"
+        tree.Draw(branch_name + ">> hist%d"%i, cuts[i]);## plot hist with cut
+        histlist[-1].SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*16+"data, Run2018")
+        histlist[-1].GetXaxis().SetTitle(xtitle)
+        histlist[-1].SetStats(0)
+        histlist[-1].SetLineColor(color[i])
+        histlist[-1].SetLineWidth(2)
+        hs.Add(histlist[-1])
+        legend.AddEntry(histlist[-1], legs[i], "l")
+        print "todraw ", branch_name, " cut ",cuts[i]
+        #hist.Scale(1.0/hist.Integral())
+        #hist.Draw("hist")
+#    outplot = os.path.join(plotname, str(branch_name))
+    hs.Draw("nostackhist")
+    legend.Draw("same")
+    txt = ROOT.TLatex(.65, .6, text)
+    txt.SetNDC()
+    txt.SetTextFont(42)
+    txt.SetTextFont(42)
+    txt.SetTextSize(.04)
+    txt.Draw("same")
+    
+    #outplot = os.path.join(os.getcwd(), str(plotname))
+    outplot = plotname
+    c1.SaveAs(outplot + ".png")
+    c1.SaveAs(outplot + ".pdf")
+
+
+#_____________________________________________________________
+def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, xmax,  ytitle, ynbins, ymin, ymax, text, plotname):
+
+    c1=ROOT.TCanvas("c1","New Graph",0,0,800,600);
+
+    c1.SetGridx()
+    c1.SetGridy()
+    #c1.SetTickx()
+    #c1.SetTicky()
+    #h=F.Get("SliceTestAnalysis/MuonData");
+    hist = ROOT.TH2F("hist","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
+    
+    todraw = branch_name_y +":"+branch_name_x
+    ##cut = "muonpt>10"
+    tree.Draw(todraw + ">> hist", cut, "colz");## plot hist with cut
+    print "todraw ",todraw, " cut ",cut
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    hist.SetStats(0)
+    hist.GetXaxis().SetTitle(xtitle)
+    hist.GetYaxis().SetTitle(ytitle)
+    hist.GetXaxis().SetTitleSize(0.04)
+    hist.GetYaxis().SetTitleSize(0.04)
+    hist.GetXaxis().CenterTitle()
+    hist.GetYaxis().SetTitleOffset(1.2)
+    #hist.SetStat(0)
+    #outplot = os.path.join(plotname, str(branch_name))
+    outplot = plotname
+    txt = ROOT.TLatex(.15, .8, text)
+    txt.SetNDC()
+    txt.SetTextFont(42)
+    txt.SetTextSize(.04)
+    txt.Draw("same")
+
+    c1.SaveAs(outplot + ".png")
+    c1.SaveAs(outplot + ".pdf")
+
+
+#_____________________________________________________________
+def plot_tree_2D_alignment(tree, chamber, layer, cut, xnbins, xmin, xmax, ynbins, ymin, ymax, text, plotname):
+
+    c1=ROOT.TCanvas("c1","New Graph",0,0,1200,800);
+    #h=F.Get("SliceTestAnalysis/MuonData");
+    ##pad1
+    branch_name_x="prop_localx_GE11[%d]"%(layer)
+    #branch_name_x="(rechit_prop_dphi_GE11[%d]*rechit_r_GE11[%d])"%(layer,layer)
+    #branch_name_x = "rechit_flippedStrip_GE11[%d]"%(layer)
+    branch_name_y="(prop_localy_GE11[%d]+25.0*(roll_GE11[%d]-1))"%(layer, layer)
+    #branch_name_y="(prop_localy_GE11[%d])"%(layer)
+    xtitle = branch_name_x
+    ytitle = branch_name_y
+    #z = "(prop_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+    #z = "(rechit_prop_dphi_GE11[%d]*rechit_r_GE11[%d])"%(layer, layer)
+    #z = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+    z = "(prop_localx_center_GE11[%d]-rechit_alignedlocalx_GE11[%d])"%(layer, layer)
+
+    
+    hist_weight = ROOT.TH2F("hist_weight","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
+    hist_entry = ROOT.TH2F("hist_entry","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
+    hist = ROOT.TH2F("hist","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
+
+    
+    todraw = branch_name_y +":"+branch_name_x
+    ##cut = "muonpt>10"
+    tree.Draw(todraw + ">> hist_weight", "("+cut+")*"+z, "colz");## plot hist with cut
+    tree.Draw(todraw + ">> hist_entry", "("+cut+")", "colz");## plot hist with cut
+    #print "todraw ",todraw, " cut ","("+cut+")*"+z
+    #hist.Divide(hist_entry)
+    total_all = 0.0; events_all = 0;
+    for xbin in xrange(xnbins):
+        for ybin in xrange(ynbins):
+            events = hist_entry.GetBinContent(xbin+1, ybin+1)
+            events_all = events_all + events
+            if events>0:
+                total = hist_weight.GetBinContent(xbin+1, ybin+1)
+                total_all = total + total_all
+                average = total/events
+                hist.SetBinContent(xbin+1, ybin+1, average)
+            else:
+                hist.SetBinContent(xbin+1, ybin+1, -999)
+
+    print " total weight ", total_all, " total events ", events_all," correction ", total_all/events_all
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    hist.SetStats(0)
+    hist.GetXaxis().SetTitle(xtitle)
+    hist.GetYaxis().SetTitle(ytitle)
+    hist.GetXaxis().SetTitleSize(0.04)
+    hist.GetYaxis().SetTitleSize(0.04)
+    hist.GetXaxis().CenterTitle()
+    hist.GetYaxis().SetTitleOffset(1.2)
+    zmax=4.0
+    hist.SetMaximum(zmax*(1.0+1.0/40))
+    hist.SetMinimum(zmax*(-1.0))
+    #hist.SetStat(0)
+    #outplot = os.path.join(plotname, str(branch_name))
+    c1.Clear()
+    outplot = plotname
+    setcolortables()
+    hist.Draw("colz")
+    txt = ROOT.TLatex(.15, .8, text)
+    txt.SetNDC()
+    txt.SetTextFont(42)
+    txt.SetTextSize(.04)
+    txt.Draw("same")
+
+    c1.SaveAs(outplot + ".png")
+    c1.SaveAs(outplot + ".pdf")
+
+#_____________________________________________________________
+def plot_residual_1D(tree, cut, xtitle, nbins, xmin, xmax, text, plotname):
+
+   
+    color = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kOrange, ROOT.kMagenta+2,ROOT.kCyan+2, 5,6,7,8,9, ROOT.kBlack]
+    #for ch in [27, 28, 29, 30]
+    for ch in [28, 29]:
+        for layer in range(0, 2):
+            c1=ROOT.TCanvas("c1","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+            c1.Clear()
+            c1.Divide(4, 2)
+            todraw = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+            layercut = "has_propGE11[%d]>0 && chamber_propGE11[%d] == %d "%(layer, layer, ch)## 
+            boundarycut = "abs(prop_y_center_GE11[%d])<15.0"
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02 && rechit_clusterSize_GE11[%d]<=5"%(layer, layer)
+            hs_list = []
+            legend_list = []
+            for roll in range(1, 9):
+                c1.cd(roll)
+
+                detidcut = layercut +"&& roll_propGE11[%d] == %d"%(layer, roll)
+                thiscut = cut +"&& "+detidcut + dRcut
+                hs_list.append( ROOT.THStack("hs_roll%d"%roll, "GEM ch%d layer%d roll%d"%(ch, layer+1, roll)) )
+                legend_list.append( ROOT.TLegend(0.63,0.7,0.91,0.8))
+                legend_list[roll -1].SetFillColor(ROOT.kWhite)
+                legend_list[roll-1].SetTextFont(42)
+                legend_list[roll-1].SetTextSize(.035)
+                #legend.SetHeader("%s"%legheader)
+                hist_list = []
+                fit_list = []
+                for vfat in range(0, 3):
+                    hist_list.append( ROOT.TH1F("hist_eta%d_vfat%d"%(roll, vfat), "GEM ch%d layer%d roll%d VFAT%d"%(ch, layer+1, roll, vfat), nbins, xmin, xmax) )
+                    vfatcut_1 = "rechit_flippedStrip_GE11[%d]>=%d && rechit_flippedStrip_GE11[%d]< %d"%(layer, vfat*128, layer, (vfat+1)*128)
+                    tree.Draw(todraw +" >> hist_eta%d_vfat%d"%(roll, vfat), thiscut +" && "+vfatcut_1)
+                    #hist_list[vfat].Scale(1.0/hist_list[vfat].Integral())
+                    hist_list[vfat].Fit("gaus","S","",-1.0, 1.0)
+                    fit_list.append(hist_list[vfat].GetFunction("gaus"))
+                    mean = fit_list[vfat].GetParameter(1)
+                    std =  fit_list[vfat].GetParameter(2)
+                    #mean = 0.0; std = 1.0
+                    #legend_list[roll-1].AddEntry(hist_list[vfat], "mean: %.2f, std:%.1f"%(mean, std))
+                    legend_list[roll-1].AddEntry(hist_list[vfat], "#mu: %.2f, #sigma:%.1f"%(mean, std))
+                    hs_list[roll-1].Add(hist_list[vfat])
+                    hist_list[vfat].SetLineColor(color[vfat])
+                    fit_list[vfat].SetLineColor(color[vfat])
+                hs_list[roll-1].Draw("nostacke")
+                legend_list[roll-1].Draw("same")
+                for fit in fit_list:
+                    fit.Draw("same")
+                hs_list[roll-1].GetHistogram().GetXaxis().SetTitle("residual [cm]")
+                c1.Update()
+            c1.cd()
+            txt = ROOT.TLatex(.5, .5, text)
+            txt.SetNDC()
+            txt.SetTextFont(42)
+            txt.SetTextSize(.035)
+            txt.Draw("same")
+
+            #txt0 = ROOT.TLatex(.15, .93, legs)
+            #txt0.SetNDC()
+            #txt0.SetTextFont(42)
+            #txt0.SetTextSize(.04)
+            #txt0.Draw("same")
+            
+            picname_layer = plotname+"_ch%d_layer%d_dphi02"%(ch, layer)
+            c1.SaveAs(picname_layer+ ".png")
+            c1.SaveAs(picname_layer+ ".pdf")
+
+#_____________________________________________________________
+def plot_residual_1D_v2(tree, cut, xtitle, nbins, xmin, xmax, text, plotname):
+
+   
+    ROOT.gStyle.SetOptStat(111111)
+    ROOT.gStyle.SetOptFit(1111)
+    color = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kOrange, ROOT.kMagenta+2,ROOT.kCyan+2, 5,6,7,8,9, ROOT.kBlack]
+    totalvfat = 6
+    nstrip = 384/totalvfat
+    alignment_localXshift = {"ch27_layer1":-0.152,  "ch27_layer2":-0.145, "ch28_layer1": 0.1382, "ch28_layer2":0.1345, "ch29_layer1":-0.2737, "ch29_layer2":-0.2939,"ch30_layer1":0.387, "ch30_layer2":0.377}
+    #alignment_localXshift = {"ch27_layer1":0.0,  "ch27_layer2":0.0, "ch28_layer1": 0.0, "ch28_layer2": 0.0, "ch29_layer1": 0.0, "ch29_layer2": 0.0, "ch30_layer1":0.0, "ch30_layer2":0.0}
+    #for ch in [27, 28, 29, 30]:
+    #for ch in [27,30]:
+    for ch in [28, 29]:
+        for layer in range(0, 2):
+            hist_rotation_list = []
+            for vfat in range(0, totalvfat):
+                hist_rotation_list.append( ROOT.TH1F("hist_rotationfit_GEM_ch%d_layer%d_vfat%d"%(ch, layer+1, vfat), "GEM ch%d layer%d VFAT%d"%(ch, layer+1,  vfat), 8, -4.0, 4.0) )
+            hist_rotation_list_v2 = []
+            for roll in range(1, 9):
+                hist_rotation_list_v2.append( ROOT.TH1F("hist_rotationfit_v2_GEM_ch%d_layer%d_roll%d"%(ch, layer+1, roll), "GEM ch%d layer%d Roll%d"%(ch, layer+1,  roll), totalvfat, -1.0*totalvfat, 1.0*totalvfat) )
+
+            residual_2D = ROOT.TH2F("residual_2D","residual_2D", totalvfat, 0.0, totalvfat, 8, 1.0, 9.0)
+            todraw = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d] - %f)"%(layer, layer, alignment_localXshift["ch%d_layer%d"%(ch, layer+1)])
+            #todraw = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+            layercut = "has_propGE11[%d] && chamber_propGE11[%d] == %d "%(layer, layer, ch)## 
+            #dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02"%(layer)
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02 && rechit_clusterSize_GE11[%d]<=6"%(layer, layer)
+            hs_list = []
+            c1=ROOT.TCanvas("c1","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 900,1200);
+            #c1.Clear()
+            c1.Divide(totalvfat, 8)
+            hs_list = []
+            legend_list = []
+            hist_list = []
+            fit_list = []
+            txt_list = []
+            localX_shift = 0.0; nVfat = 0
+            for roll in range(1, 9):
+                detidcut = layercut +"&& roll_propGE11[%d] == %d"%(layer, roll)
+                thiscut = cut +"&& "+detidcut + dRcut
+                #hs_list.append( ROOT.THStack("hs_roll%d"%roll, "GEM ch%d layer%d roll%d"%(ch, layer+1, roll)) )
+                #legend_list.append( ROOT.TLegend(0.63,0.7,0.91,0.8))
+                #legend_list[roll -1].SetFillColor(ROOT.kWhite)
+                #legend_list[roll-1].SetTextFont(42)
+                #legend_list[roll-1].SetTextSize(.035)
+                #legend.SetHeader("%s"%legheader)
+                for vfat in range(0, totalvfat):
+                    c1.cd((roll-1)*totalvfat+vfat+1)
+                    #hist_list.append( ROOT.TH1F("hist_eta%d_vfat%d"%(roll, vfat),"hist_eta%d_vfat%d"%(roll, vfat), nbins, xmin, xmax) )
+                    hist_list.append( ROOT.TH1F("hist_eta%d_vfat%d"%(roll, vfat), "GEM ch%d layer%d roll%d VFAT%d"%(ch, layer+1, roll, vfat), nbins, xmin, xmax) )
+                    minstrip = vfat*nstrip;  maxstrip = (vfat+1)*nstrip 
+                    vfatcut_1 = "rechit_flippedStrip_GE11[%d]>=%d && rechit_flippedStrip_GE11[%d]< %d"%(layer, minstrip, layer, maxstrip)
+                    tree.Draw(todraw +" >> hist_eta%d_vfat%d"%(roll, vfat), thiscut +" && "+vfatcut_1)
+                    #hist_list[roll*3+vfat].SetLineColor(color[vfat])
+                    #hist_list[roll*3+vfat].Scale(1.0/hist_list[roll*3+vfat].Integral())
+                    hist_list[(roll-1)*totalvfat+vfat].Fit("gaus","S","", -1.0, 1.0)
+                    if ch == 30:
+                        hist_list[(roll-1)*totalvfat+vfat].Fit("gaus","S","", -1.0, 1.5)
+                    hist_list[(roll-1)*totalvfat+vfat].GetXaxis().SetTitle("residual [cm]")
+                    hist_list[(roll-1)*totalvfat+vfat].GetXaxis().SetTitleSize(0.05)
+                    hist_list[(roll-1)*totalvfat+vfat].GetXaxis().SetTitleFont(42)
+                    if hist_list[(roll-1)*totalvfat+vfat].GetEntries() > 60 :
+                        fit_list.append( hist_list[(roll-1)*totalvfat+vfat].GetFunction("gaus"))
+                        mean = fit_list[(roll-1)*totalvfat+vfat].GetParameter(1)
+                        std =  fit_list[(roll-1)*totalvfat+vfat].GetParameter(2)
+                        meanerr = fit_list[(roll-1)*totalvfat+vfat].GetParError(1)
+                        stderr  = fit_list[(roll-1)*totalvfat+vfat].GetParError(2)
+                        if abs(mean) < 1.0 and abs(meanerr) < 1.0:
+                            residual_2D.SetBinContent(vfat+1, roll, mean)
+                            residual_2D.SetBinError(vfat+1, roll, meanerr)
+                            localX_shift = mean + localX_shift
+                            nVfat = nVfat+1
+                            hist_rotation_list[vfat].SetBinContent(roll, mean)
+                            hist_rotation_list[vfat].SetBinError(roll, meanerr)
+                            hist_rotation_list_v2[roll-1].SetBinContent(vfat+1, mean)
+                            hist_rotation_list_v2[roll-1].SetBinError(vfat+1, meanerr)
+
+                        else:
+                            print "warning!!! large residual!!! "
+                            residual_2D.SetBinContent(vfat+1, roll, -99)
+                    else:
+                        fit_list.append("nofit")
+                        residual_2D.SetBinContent(vfat+1, roll, -99)
+                        print "no fit for GEM ch%d layer%d roll%d VFAT%d"%(ch, layer+1, roll, vfat)
+
+                    #print "mean ",mean," std ",std
+                    #mean = 0.0; std = 1.0
+                    #legend_list[roll-1].AddEntry(hist_list[vfat], "mean: %.2f, std:%.1f"%(mean, std))
+                    #legend_list[roll-1].AddEntry(hist_list[vfat], "#mu: %.2f, #sigma:%.1f"%(mean, std))
+                    #hs_list[roll-1].Add(hist_list[vfat])
+                    #txt_list.append(ROOT.TLatex(.65, .7, "#mu: %.2f, #sigma:%.1f"%(mean, std)))
+                    #txt_list[(roll-1)*3+vfat].SetNDC()
+                    #txt_list[(roll-1)*3+vfat].SetTextFont(42)
+                    #txt_list[(roll-1)*3+vfat].SetTextSize(.035)
+           
+                    #print "(roll-1)*3+vfat ",(roll-1)*3+vfat
+                    hist_list[(roll-1)*totalvfat+vfat].Draw("e")
+                    #fit_list[(roll-1)*3+vfat].Draw("same")
+                    #txt_list[(roll-1)*3+vfat].Draw("same")
+                    c1.Update()
+            c1.cd()
+            c1.Update()
+            #print "hist_list ",hist_list," fit_list ",fit_list
+            txt = ROOT.TLatex(.5, .5, text)
+            txt.SetNDC()
+            txt.SetTextFont(42)
+            txt.SetTextSize(.035)
+            txt.Draw("same")
+
+
+            picname_layer = plotname+"_ch%d_layer%d_dphi02"%(ch, layer)
+            c1.SaveAs(picname_layer+ "_clustersize6.png")
+            c1.SaveAs(picname_layer+ "_clustersize6.pdf")
+
+            c2=ROOT.TCanvas("c2","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+            residual_2D.SetStats(0)
+            setcolortables()
+            maxresidualshift = 0.5
+            if ch == 30:
+                maxresidualshift = 0.7
+
+            residual_2D.SetMaximum(maxresidualshift)
+            residual_2D.SetMinimum(maxresidualshift*(-1.0))
+            residual_2D.SetTitle("Average local x residual in each VFAT,GEM ch%d layer%d,"%(ch, layer+1) + text)
+            residual_2D.SetTitleSize(0.035)
+            residual_2D.Draw("text colz err")
+            print "Alignment of GEM ch%d layer%d"%(ch, layer+1)," shift in local X ", localX_shift/nVfat
+            residual_2D.GetXaxis().SetTitle("#VFAT")
+            residual_2D.GetYaxis().SetTitle("#Roll")
+            txt2D = ROOT.TLatex(.1, .05,"whole layer average local X residual: %.3f"%( localX_shift/nVfat))
+            txt2D.SetNDC()
+            txt2D.SetTextFont(42)
+            txt2D.SetTextSize(.035)
+            txt2D.Draw("same")
+            c2.SaveAs(picname_layer+ "_clustersize6_2D.png")
+            c2.SaveAs(picname_layer+ "_clustersize6_2D.pdf")
+
+
+            c3=ROOT.TCanvas("c3","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+
+            hs_rotation_layer = ROOT.THStack("hs_GEM ch%d layer%d"%(ch, layer+1), "GEM ch%d layer%d"%(ch, layer+1))
+            fit_rotation_list = []
+            legend = ROOT.TLegend(0.6,0.67,0.91,0.7+0.04*totalvfat)
+            legend.SetFillColor(ROOT.kWhite)
+            #legend.SetTextFont(42)
+            #legend.SetTextSize(.035)
+            legend.SetHeader("GEM ch%d layer%d"%(ch, layer+1))
+            for vfat in range(0, totalvfat):
+                hist_rotation_list[vfat].Fit('pol1')
+                hist_rotation_list[vfat].SetLineColor(color[vfat])
+                fit_rotation_list.append( hist_rotation_list[vfat].GetFunction('pol1'))
+                fit_rotation_list[vfat].SetLineColor(color[vfat])
+                p0 =  fit_rotation_list[vfat].GetParameter(0)
+                p1 =  fit_rotation_list[vfat].GetParameter(1)
+                hs_rotation_layer.Add(hist_rotation_list[vfat])
+                legend.AddEntry(hist_rotation_list[vfat], "VFAT%d: slope = %.3f"%(vfat, p1),"l")
+            hs_rotation_layer.Draw("nostacke")
+            for vfat in range(0, totalvfat):
+                fit_rotation_list[vfat].Draw("same")
+            legend.Draw("same")
+
+
+            c3.SaveAs(picname_layer+ "_clustersize6_rotationfit.png")
+            c3.SaveAs(picname_layer+ "_clustersize6_rotationfit.pdf")
+
+
+            c4=ROOT.TCanvas("c4","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+
+            hs_rotation_layer_v2 = ROOT.THStack("hs_GEM ch%d layer%d"%(ch, layer+1), "GEM ch%d layer%d"%(ch, layer+1))
+            fit_rotation_list_v2 = []
+            legend_v2 = ROOT.TLegend(0.6,0.67,0.91,0.7+0.035*8)
+            legend_v2.SetFillColor(ROOT.kWhite)
+            #legend.SetTextFont(42)
+            #legend.SetTextSize(.035)
+            legend_v2.SetHeader("GEM ch%d layer%d"%(ch, layer+1))
+            for roll in range(1, 9):
+                hist_rotation_list_v2[roll-1].Fit('pol1')
+                hist_rotation_list_v2[roll-1].SetLineColor(color[roll-1])
+                fit_rotation_list_v2.append( hist_rotation_list_v2[roll-1].GetFunction('pol1'))
+                fit_rotation_list_v2[roll-1].SetLineColor(color[roll-1])
+                p0 =  fit_rotation_list_v2[roll-1].GetParameter(0)
+                p1 =  fit_rotation_list_v2[roll-1].GetParameter(1)
+                hs_rotation_layer_v2.Add(hist_rotation_list_v2[roll-1])
+                legend_v2.AddEntry(hist_rotation_list_v2[roll-1], "roll%d: slope = %.3f"%(roll, p1),"l")
+            hs_rotation_layer_v2.Draw("nostacke")
+            for roll in range(1, 9):
+                fit_rotation_list_v2[roll-1].Draw("same")
+            legend_v2.Draw("same")
+
+
+            c4.SaveAs(picname_layer+ "_clustersize6_rotationfit_v2.png")
+            c4.SaveAs(picname_layer+ "_clustersize6_rotationfit_v2.pdf")
+
+
+
+
+
+#_____________________________________________________________
+def plot_muons(chain, cut, plotdir):
+    text = "reco muon"
+    todrawlist = ["muonpt", "muoneta","muonphi","muonendcap"]
+    xbinlist = [[50, 0, 200.0], [40, 0, 2.5], [60, -3.14, 3.14], [3, -1.5, 1.5]]
+    for i, todraw in enumerate(todrawlist):
+	xbins = xbinlist[i]
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_"+todraw)
+	plot_tree_1D(chain, todraw, cut, todraw, xbins[0], xbins[1], xbins[2], text, plotname)
+
+
+#_____________________________________________________________
+def plot_deltaR(chain, cut, text, plotdir):
+    
+    todraws_ME11 = "rechit_prop_dR_ME11"
+    for i in range(0, 6):#6layers for CSC
+        todraw = todraws_ME11+"[%d]"%i
+        thiscut = cut + "&& has_ME11[%d]>0"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_prop_dR_ME11_CSClayer%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 20.0, text,plotname)
+
+    todraws_GE11 = "rechit_prop_dR_GE11"
+    for i in range(0, 2):#2layers for GEM
+        todraw = todraws_GE11+"[%d]"%i
+        thiscut = cut + "&& has_GE11[%d]>0"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_prop_dR_GE11_GEMlayer%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 20.0, text,plotname)
+
+    todraws_GE11 = "rechit_prop_dX_GE11"
+    for i in range(0, 2):#2layers for GEM
+        todraw = todraws_GE11+"[%d]"%i
+        thiscut = cut + "&& has_GE11[%d]>0"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_prop_dX_GE11_GEMlayer%d"%i)
+	plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 20.0, text,plotname)
+    
+    todraws_X = "rechit_phi_GE11"
+    todraws_Y = "prop_phi_GE11"
+    phimin = -2.0
+    phimax = -0.8
+    phibin = 60
+    ##29: [-1.5, -1.3]
+    for chamber in [27, 28,29, 30]:
+    #for chamber in [1]:##all
+    #for roll in xrange(8):
+        for i in range(0, 2):#2layers for GEM
+            todrawX = todraws_X+"[%d]"%i
+            todrawY = todraws_Y+"[%d]"%i
+            thiscut = cut + "&& has_GE11[%d]>0 && abs(%s)<4"%(i, todrawX) +" && chamber_GE11[%d] == %d"%(i, chamber)
+            #thiscut = cut + "&& has_GE11[%d]>0 && abs(%s)<4"%(i, todrawX) 
+            #thiscut = cut + "&& has_GE11[%d]>0 && abs(%s)<4"%(i, todrawX) + " && roll_GE11[%d] == %d"%(i, roll) 
+            plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_prop_phi_2D_GE11_GEMlayer%d_chamber%d"%(i, chamber))
+            #plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_prop_phi_2D_GE11_GEMlayer%d_roll%d"%(i, roll))
+            plot_tree_2D(chain, todrawX, todrawY, thiscut, "Rechit global phi", phibin, phimin,phimax, "Muon propagated phi", phibin, phimin, phimax,text, plotname)
+    
+
+    todraws_seg = "cscseg_prop_dR_st"
+    for i in range(0, 4):#4 station CSCs 
+        todraw = todraws_seg+"[%d]"%i
+        thiscut = cut + " && has_cscseg_st[%d]>0"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_cscseg_prop_dR_st%d"%i)
+        #plot_tree_1D(chain, todraw, thiscut, todraw, 100, 0.0, 20.0, text,plotname)
+
+#_____________________________________________________________
+def plot_dPhiGEMMuon(chain, cut, text, plotdir):
+    todraw = "rechit_prop_dphi_GE11"
+    for chamber in [27, 28,29, 30]:
+    #for chamber in [0]:
+        for i in range(0, 2):#2layers for GEM
+            todrawX = todraw+"[%d]"%i
+            #thiscut = cut + "&& has_GE11[%d]>0 && abs(%s)<4"%(i, todrawX) +" && chamber_GE11[%d] == %d"%(i, chamber)
+            thiscut = cut + "&& has_GE11[%d]>0 && abs(%s)<4"%(i, todrawX) 
+            plotname = os.path.join(plotdir, "2018D_Zmu_GEMCSCbending_rechit_prop_dphi_GE11_GEMlayer%d_chamber%d"%(i, chamber))
+            #plot_tree_1D(chain, todraw, thiscut, "#Delta phi between GEM rechit and propagated muon", 100, -0.10, 0.10, text,plotname)
+            plot_tree_1D(chain, todraw, thiscut, "Residual [rad]", 80, -0.020, 0.020, text,plotname)
+
+
+#_____________________________________________________________
+def plot_GEMHitsVsChamber(chain, cut, text, plotdir):
+    todraws = ["chamber_GE11", "chamber_propGE11"]
+    cuts = ["has_GE11","has_propGE11"]
+    legs = ["chamber with GEM rechits","chamber with propagated muon position"]
+    for i in range(0, 2):
+        todrawlist = []
+        cutlist = []
+        for j, todraw in enumerate(todraws) :
+            todrawlist.append(todraw+"[%d]"%i)
+            cutlist.append(cut+"&&"+cuts[j]+"[%d]"%i)
+        plotname = os.path.join(plotdir, "2018D_Zmu_GEMCSCbending_GE11_hashits_GEMlayer%d"%(i))
+        plot_tree_1D_multiple(chain, todrawlist, cutlist, legs, "GEM Chamber", 4, 27.0, 31.0, text,plotname)
+
+        
+#_____________________________________________________________
+def plot_CSCHits(chain, cut, text, plotdir):
+    todrawX_seg = "cscseg_x_st"
+    todrawY_seg = "cscseg_y_st"
+    for i in range(0, 4):
+	todrawX = todrawX_seg + "[%d]"%i
+	todrawY = todrawY_seg + "[%d]"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_CSCsegment_x_y_st%d"%i)
+	thiscut = cut + " && has_cscseg_st[%d]>0 && cscseg_prop_dR_st[%d] < 5.0"%(i, i) 
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "CSC Segment X", 100, -600.0, 600.0,  "CSC segment Y", 600, -600.0, 600.0,text, plotname)
+
+    todrawX_seg = "rechit_x_ME11"
+    todrawY_seg = "rechit_y_ME11"
+    for i in range(0, 6):
+	todrawX = todrawX_seg + "[%d]"%i
+	todrawY = todrawY_seg + "[%d]"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_CSCRechit_x_y_ME11layer%d"%i)
+	thiscut = cut + " && has_ME11[%d]>0 && rechit_prop_dR_ME11[%d] < 5.0"%(i, i) 
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "CSC Rechit X", 100, -600.0, 600.0,  "CSC Rechit Y", 600, -600.0, 600.0,text, plotname)
+
+    #for i in range(0, 6):
+    #    todrawX_strip = "rechit_centralStrip_ME11"
+    #    todrawY_strip = "rechit_nStrips_ME11"
+    #    thiscut = cut + " && has_ME11[%d]>0 && rechit_prop_dR_ME11[%d] < 5.0"%(i, i)
+    #    plotname = os.path.join(plotdir, "2018C_GEMCSCbending_rechit_centralstrip_nstrips_ME11layer%d"%i)
+    #    plot_tree_2D(chain, todrawX_strip, todrawY_strip, thiscut, "CSC Rechit centralStrip", , -600.0, 600.0,  "CSC Rechit Y", 600, -600.0, 600.0,text, plotname)
+
+    #todrawXlist = ["rechit_centralStrip_ME11","rechit_hotWire_ME11", "rechit_WG_ME11"]
+
+
+
+#_____________________________________________________________
+def plot_GEMHits(chain, cut, text, plotdir):
+    todrawX_gem = "rechit_x_GE11"
+    todrawY_gem = "rechit_y_GE11"
+    for i in range(0, 2):
+	todrawX = todrawX_gem + "[%d]"%i
+	todrawY = todrawY_gem + "[%d]"%i
+	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_GEMRechit_x_y_gemlayer%d"%i)
+	thiscut = cut + " && has_GE11[%d]>0 && rechit_prop_dR_GE11[%d] < 5.0"%(i, i) 
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "GEM Rechit X", 100, -600.0, 600.0,  "GEM Rechit Y", 100, -600.0, 600.0, text, plotname)
+    todrawlist = ["rechit_clusterSize_GE11"]
+    xbins = [[20, 0,20]]
+    xtitles = ["cluster size, GE11"]
+    for itodraw, todraw in enumerate(todrawlist):
+        for chamber in [27, 28, 29, 30]:
+            for i in range(0, 2):
+                thistodraw = todrawlist+"[%d]"%i
+                thiscut = cut +" && has_GE11[%d]>0 && rechit_prop_dX_GE11[%d] < 2.0 && chamber_GE11[%d]==%d"%(i,i, i, chamber)
+                plot_tree_1D(chain, thistodraw, thiscut, xtiles[itodraw], xbins[itodraw][0], xbins[itodraw][1], xbins[itodraw][2], text, plotname)
+
+
+#_____________________________________________________________
+def plotGEMdXVsRoll(chain, cut, text, plotdir):
+    todrawX_0 = "rechit_prop_dX_GE11"
+    todrawY_0 = "roll_GE11"
+    xbin=100; xmin=-10; xmax=10
+    ybin=8; ymin=1; ymax=9
+    for ilayer in range(0, 2):
+        todrawX = todrawX_0 + "[%d]"%ilayer
+        todrawY = todrawY_0 +  "[%d]"%ilayer
+        thiscut = cut+" && has_GE11[%d]>0 "%(ilayer)
+        namesuffix = todrawX.split('[')[0]
+        thistext = text+" layer %d"%(ilayer+1)
+        plotname =  os.path.join(plotdir, "2018C_GEMCSCbending_%s_vsroll_gemlayer%d"%(namesuffix, ilayer))
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "#Delta X between GEM rechit and propagated muon", xbin, xmin, xmax,  "roll number", ybin, ymin, ymax, thistext, plotname)
+
+
+#_____________________________________________________________
+def plot_GEMRechitVsMuon(chain, cut, text, plotdir):
+    todrawX_gem = "rechit_phi_GE11"
+    todrawY_muon = "prop_phi_GE11"
+    for ich in xrange(27, 31):
+        phimin = -1.850 + (ich-27)*0.175
+        phimax = -1.650 + (ich-27)*0.175
+        phibin = 60
+        for ilayer in range(0, 2):
+            todrawX = todrawX_gem + "[%d]"%ilayer
+            todrawY = todrawY_muon +  "[%d]"%ilayer
+            thiscut = cut+" && has_GE11[%d]>0 && chamber_GE11[%d]==%d"%(ilayer, ilayer, ich)
+            namesuffix = todrawY.split('[')[0]
+            thistext = text+" GEM chamber %d, layer %d"%(ich, ilayer+1)
+            plotname =  os.path.join(plotdir, "2018C_GEMCSCbending_globalphi_GE11_muonprop_%s_chamber%d_gemlayer%d"%(namesuffix,ich, ilayer))
+            plot_tree_2D(chain, todrawX, todrawY, thiscut, "global phi, GEM Rechit", phibin, phimin, phimax,  "global phi, Propagated Muon", phibin, phimin, phimax, thistext, plotname)
+
+
+#_____________________________________________________________
+def plot_GEMPhiVsCSCPhi(chain, cut, text, plotdir):
+    todrawX_gem = "rechit_phi_GE11"
+    todrawY_CSC = ["cscseg_phi_st[0]", "rechit_phi_ME11[2]","rechit_L1phi_ME11[2]"]
+    cuts = [cut+"&& has_cscseg_st[0]>0", cut+"&& has_ME11[2]>0", cut+"&& has_ME11[2]>0"]
+    for icsc, todrawY in enumerate(todrawY_CSC):
+        for ilayer in range(0, 2):
+            todrawX = todrawX_gem + "[%d]"%ilayer
+            thiscut = cuts[icsc]+" && has_GE11[%d]>0"%ilayer
+            namesuffix = todrawY.split('[')[0]
+            plotname =  os.path.join(plotdir, "2018C_GEMCSCbending_globalphi_GE11_ME11_%s_gemlayer%d"%(namesuffix, ilayer))
+            phimin = -2.0
+            phimax = -0.8
+            phibin = 120
+            plot_tree_2D(chain, todrawX, todrawY, thiscut, "global phi, GE11", phibin, phimin, phimax,  "global phi, ME11", phibin, phimin, phimax, text, plotname)
+
+
+#_____________________________________________________________
+def plot_deltaPhi(chain, cut, text, plotdir):
+    todrawlist  = ["dphi_CSCSeg_GE11Rechit", "dphi_keyCSCRechit_GE11Rechit", "dphi_propCSC_propGE11"]
+    for i, todraw in enumerate(todrawlist):
+	for layer in range(0,2):
+	    todraw_dphi = todraw + "[%d]"%layer
+	    plotname = os.path.join(plotdir, "2018C_GEMCSCbending_%s_gemlayer%d"%(todraw, layer))
+	    thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0 && has_ME11[2]>0 "%(layer, layer)
+	    plot_tree_1D(chain, todraw, thiscut, todraw_dphi, 60, -0.30, 0.3, text, plotname)
+
+#_____________________________________________________________
+def plot_deltaPhiVspt(chain, cut, text, plotdir):
+    #todrawlist  = ["dphi_CSCSeg_GE11Rechit", "dphi_keyCSCRechit_GE11Rechit", "dphi_propCSC_propGE11"]
+    todrawlist  = ["dphi_keyCSCRechit_GE11Rechit", "dphi_keyCSCRechit_alignedGE11Rechit"]
+    #todrawlist = ["dphi_CSCSeg_GE11Rechit","dphi_CSCSeg_alignedGE11Rechit"]
+    todrawY= "muonpt"
+    xbin = 90; xmin=-0.045; xmax = 0.045
+    ybin= 14; ymin=5.0; ymax=75.0
+    for i, todraw in enumerate(todrawlist):
+        for ich in range(27, 31):
+            for layer in range(0,2):
+                todraw_dphi = todraw + "[%d]"%layer
+                plotname = os.path.join(plotdir, "2018C_GEMCSCbending_%s_gemchamber%d_layer%d_drcut"%(todraw, ich, layer))
+                dRcut = "&& rechit_prop_dR_ME11[2]<5.0 && abs(rechit_prop_dphi_GE11[0])<.02"
+                #dRcut = "&& cscseg_prop_dR_st[0]< 2.0 && abs(rechit_prop_dphi_GE11[0])<.02"
+                thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0 && has_ME11[2]>0 "%(layer, layer) +" && chamber_GE11[%d]==%d"%(layer, ich) + dRcut
+                #thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0 && has_cscseg_st[0]>0 "%(layer, layer) +" && chamber_GE11[%d]==%d"%(layer, ich) + dRcut
+                thistext = text+" GEM chamber %d, layer %d"%(ich, layer+1)
+                plot_tree_2D(chain, todraw_dphi, todrawY, thiscut, "GEM-CSC bending angle", xbin, xmin, xmax,  "Muon p_{T} GeV", ybin, ymin, ymax, thistext, plotname)
+
+#_____________________________________________________________
+def plot_GEMalignment(chain, cut, text, plotdir):
+    xbin = 40; xmin=-24.0; xmax = 24.0
+    #xbin =384/6; xmin=0; xmax = 384
+    ybin= 15*8; ymin=-10.0; ymax= 25*7.0+15.0
+    #ybin= 20; ymin=-10.0; ymax= 10.0
+    for ich in range(27, 31):
+        for layer in range(0,2):
+            plotname = os.path.join(plotdir, "2018C_GEMCSCbending_GEMalignment_gemchamber%d_layer%d_drcut_alignedlocalx"%( ich, layer))
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02"%(layer)
+            thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0"%(layer, layer) +" && chamber_GE11[%d]==%d"%(layer, ich)+dRcut
+            thistext = text+" GEM chamber %d, layer %d"%(ich, layer+1)
+            plot_tree_2D_alignment(chain, ich, layer, thiscut,  xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname)
+
+#_____________________________________________________________
+def plot_GEMHitEff_ptbin(chain, dencut, text, plotdir):
+    thisplotdir = os.path.join(plotdir, "GEMRechit_Eff_ptbin_run319347_")
+    plot_GEMHitEff(chain, "muonpt", dencut,  myptbin, "Muon p_{T}^{reco} [GeV]", text, thisplotdir)
