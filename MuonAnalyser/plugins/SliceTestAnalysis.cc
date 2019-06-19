@@ -72,7 +72,7 @@ struct MuonData
   float muondxy, muondz;
   int muon_ntrackhit, muon_chi2, muon_nChamber;
   float muonpt, muoneta, muonphi;
-  bool muoncharge;
+  int muoncharge;
   int muonendcap;
   float muonPFIso, muonTkIso;
   
@@ -595,6 +595,7 @@ private:
   //GEM alignment correction
   bool applyGEMalignment_ = false;
   std::vector<double> GEM_alginment_deltaX_;
+  bool flippedGEMStrip_ = false;
 
   TTree * tree_data_;
   MuonData data_;
@@ -615,6 +616,7 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   matchMuonwithLCT_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithLCT", false);
   matchMuonwithCSCRechit_ =  iConfig.getUntrackedParameter<bool>("matchMuonwithCSCRechit", false);
   applyGEMalignment_ =  iConfig.getUntrackedParameter<bool>("applyGEMalignment", false);
+  flippedGEMStrip_ =  iConfig.getUntrackedParameter<bool>("flippedGEMStrip", false);
   theService_ = new MuonServiceProxy(serviceParameters);
 
   if (applyGEMalignment_)
@@ -719,7 +721,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     //focus on endcap muons
     //GEMs are installed on minus endcap, namly eta < 0
-    if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_ and mu->eta()< 0.0 ) {
+    //if (muonTrack and mu->numberOfChambersCSCorDT() >= 2 and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_) {
+    if (muonTrack and fabs(mu->eta()) > minMuonEta_ and fabs(mu->eta()) < maxMuonEta_) {
 	 
       data_.init();
       if (gemRecHits->size() > 0)
@@ -755,7 +758,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       data_.muonPFIso = (mu->pfIsolationR04().sumChargedHadronPt + max(0., mu->pfIsolationR04().sumNeutralHadronEt + mu->pfIsolationR04().sumPhotonEt - 0.5*mu->pfIsolationR04().sumPUPt))/mu->pt();
       data_.muonTkIso = mu->isolationR03().sumPt/mu->pt();
 
-     // std::cout <<"muon pt "<< mu->pt() <<" eta "<< mu->eta() <<" phi "<< mu->phi() <<" charge "<< mu->charge() << std::endl;
+      std::cout <<"muon pt "<< mu->pt() <<" eta "<< mu->eta() <<" phi "<< mu->phi() <<" charge "<< mu->charge() << std::endl;
 
       std::set<float> detLists;
       
@@ -770,6 +773,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
       /**** propagating track to GEM station and then associating gem reco hit to track ****/
       for (const auto& ch : GEMGeometry_->etaPartitions()) {
+	  //only GE1/1 !!!
+	 if (ch->id().station() != 1) continue;
         //if ( !detLists.insert( ch->surface().position().z() ).second ) continue;
 
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
@@ -868,7 +873,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			 << " bx " << hit->BunchX() <<" firstclusterstrip "<< hit->firstClusterStrip() <<" cluster size "<< hit->clusterSize()
 			 << " "<< (*hit) <<" "
 			 << (rechit_used ? "used by muon track":"not used by muon track")
-			 <<" propagated lp "<< pos
+			 <<" propagated lp "<< pos 
+			 <<" propagated gp "<< etaPart->toGlobal(pos)
 			 <<" deltaX_local "<< deltaX_local <<" local-dR " << deltaR_local
 			 <<" deltaX_local_flipped "<< deltaX_local_flipped << " local-dR flipped "<< deltaR_local_flipped
 			 << endl;
@@ -889,18 +895,23 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
 		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
 		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
-		    //data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
-		    //data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
-		    //data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
-		    //data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
-		    //data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
-		    data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
-		    data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
-		    data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
-		    data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
-		    data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
-		    data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
-		    data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
+		    if (flippedGEMStrip_){
+		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
+		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
+		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
+		      data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).y();
+		      data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
+		      data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
+		      data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
+		    }else {
+		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
+		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
+		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
+		      data_.rechit_y_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).y();
+		      data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).mag();
+		      data_.rechit_localx_GE11[gemid.layer()-1] = (hit)->localPosition().x();
+		      data_.rechit_localy_GE11[gemid.layer()-1] = (hit)->localPosition().y();
+		    }
 		    data_.rechit_prop_dphi_GE11[gemid.layer()-1] = reco::deltaPhi(tsosGP.phi(), data_.rechit_phi_GE11[gemid.layer()-1]);
 		    if (applyGEMalignment_){
 			data_.rechit_prop_aligneddX_GE11[gemid.layer()-1] = deltaX_local_aligned;
@@ -921,6 +932,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       /**** propagating track to CSC station and then associating csc reco hit to track ****/
       for (const auto& ch : CSCGeometry_->layers()) {
 
+	 //ME1/1 only
+	if (not (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)) ) continue;
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
         if (!tsos.isValid()) continue;
 
