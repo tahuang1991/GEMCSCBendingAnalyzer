@@ -31,6 +31,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/TrackReco/interface/Track.h"
 
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
@@ -170,10 +171,10 @@ struct MuonData
   float rechit_eta_GE11[2];
   float rechit_x_GE11[2];//rechit position in GE11
   float rechit_y_GE11[2];
+  float rechit_r_GE11[2];
   float rechit_localx_GE11[2];//rechit position in GE11
   float rechit_alignedlocalx_GE11[2];//rechit position in GE11
   float rechit_localy_GE11[2];
-  float rechit_r_GE11[2];
   bool rechit_used_GE11[2];
   int rechit_BX_GE11[2];//-1
   int rechit_firstClusterStrip_GE11[2];//-1
@@ -187,11 +188,16 @@ struct MuonData
   float prop_eta_GE11[2];
   float prop_x_GE11[2];//projected position in GE11
   float prop_y_GE11[2];
+  float prop_r_GE11[2];
+  float propv2_phi_GE11[2];//phi,eta from GE11 rechits
+  float propv2_eta_GE11[2];
+  float propv2_x_GE11[2];//projected position in GE11
+  float propv2_y_GE11[2];
+  float propv2_r_GE11[2];
   float prop_localx_GE11[2];//projected position in GE11
   float prop_localy_GE11[2];
   float prop_localx_center_GE11[2];//projected position in GE11
   float prop_strip_GE11[2];//projected position in GE11
-  float prop_r_GE11[2];
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
   float rechit_prop_aligneddX_GE11[2]; // 99999
@@ -272,6 +278,11 @@ void MuonData::init()
     prop_localx_GE11[i] = 999999.0;
     prop_localy_GE11[i] = 999999.0;
     prop_r_GE11[i] = 999999.0;
+    propv2_phi_GE11[i] = -9.0;
+    propv2_eta_GE11[i] = -9.0;
+    propv2_x_GE11[i] = 999999.0;
+    propv2_y_GE11[i] = 999999.0;
+    propv2_r_GE11[i] = 999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
     rechit_prop_aligneddX_GE11[i] = 9999;
@@ -473,6 +484,11 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
   t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
+  t->Branch("propv2_phi_GE11", propv2_phi_GE11, "propv2_phi_GE11[2]/F");
+  t->Branch("propv2_eta_GE11", propv2_eta_GE11, "propv2_eta_GE11[2]/F");
+  t->Branch("propv2_x_GE11", propv2_x_GE11, "propv2_x_GE11[2]/F");
+  t->Branch("propv2_y_GE11", propv2_y_GE11, "propv2_y_GE11[2]/F");
+  t->Branch("propv2_r_GE11", propv2_r_GE11, "propv2_r_GE11[2]/F");
   t->Branch("prop_localx_GE11",prop_localx_GE11,"prop_localx_GE11[2]/F");
   t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
@@ -560,6 +576,9 @@ private:
   edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> csclcts_;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
+//vector<reco::Track>                   "standAloneMuons"           ""                "RECO"       
+  //edm::EDGetTokenT<reco::Track> standAloneMuons_;
+
   edm::Service<TFileService> fs;
 
   MuonServiceProxy* theService_;
@@ -609,6 +628,7 @@ SliceTestAnalysis::SliceTestAnalysis(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
+  //standAloneMuons_ = consumes<reco::Track>(iConfig.getParameter<edm::InputTag>("standAloneMuons"));
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   minMuonEta_ =  iConfig.getUntrackedParameter<double>("minMuonEta", 1.4);
   maxMuonEta_ =  iConfig.getUntrackedParameter<double>("maxMuonEta", 2.5);
@@ -654,11 +674,11 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<CSCRecHit2DCollection> cscRecHits;
   if (matchMuonwithCSCRechit_){
       try{
-	  iEvent.getByToken(cscRecHits_, cscRecHits);
-	  hasCSCRechitcollection = true;
+          iEvent.getByToken(cscRecHits_, cscRecHits);
+          hasCSCRechitcollection = true;
       }catch (cms::Exception){
-	std::cout<< "Error! Can't get CSC Rechit by label. " << std::endl;
-	hasCSCRechitcollection = false;
+        std::cout<< "Error! Can't get CSC Rechit by label. " << std::endl;
+        hasCSCRechitcollection = false;
       }
   }
    
@@ -671,11 +691,11 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   edm::Handle<CSCCorrelatedLCTDigiCollection> cscLcts;
   if (matchMuonwithLCT_){
       try{
-	iEvent.getByToken(csclcts_, cscLcts);
-	hasLCTcollection = true;
+        iEvent.getByToken(csclcts_, cscLcts);
+        hasLCTcollection = true;
       }catch (cms::Exception){
-	std::cout<< "Error! Can't get LCT by label. " << std::endl;
-	hasLCTcollection = false;
+        std::cout<< "Error! Can't get LCT by label. " << std::endl;
+        hasLCTcollection = false;
       }
   }
    
@@ -701,6 +721,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.getByToken(muons_, muons);
  // std::cout << "muons->size() " << muons->size() <<std::endl;
   //cout<<"\nlumi="<<data_.lumi<<"\t run="<<data_.run<<"\t event"<<data_.run << endl; //edited by mohit
+
+  //edm::Handle<reco::Track> standAloneMuons;
+  //iEvent.getByToken( standAloneMuons_, standAloneMuons );
+  //std::cout <<"standalone muons "<< standAloneMuons->size() << std::endl;
   
 
   for (size_t i = 0; i < muons->size(); ++i) {
@@ -718,6 +742,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     }
 
     if (not mu->standAloneMuon()) continue;//not standalone muon
+    const reco::Track* standaloneMuon =  mu->standAloneMuon().get();
 
     //focus on endcap muons
     //GEMs are installed on minus endcap, namly eta < 0
@@ -768,7 +793,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
 
-      reco::TransientTrack ttTrack = ttrackBuilder_->build(muonTrack);
+      reco::TransientTrack ttTrack_v2 = ttrackBuilder_->build(muonTrack);
+      reco::TransientTrack ttTrack = ttrackBuilder_->build(standaloneMuon);
 
 
       /**** propagating track to GEM station and then associating gem reco hit to track ****/
@@ -777,30 +803,40 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	 if (ch->id().station() != 1) continue;
         //if ( !detLists.insert( ch->surface().position().z() ).second ) continue;
 
-        TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos_v2 = propagator->propagate(ttTrack_v2.outermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.innermostMeasurementState(),ch->surface());
         if (!tsos.isValid()) continue;
+        if (!tsos_v2.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
+        GlobalPoint tsosGP_v2 = tsos_v2.globalPosition();
 	if (tsosGP.eta() * mu->eta() < 0.0) continue;
 
         const LocalPoint pos = ch->toLocal(tsosGP);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
         const BoundPlane& bps(ch->surface());
-        //cout << "tsos gp   "<< tsosGP << ch->id() <<endl;
+        //cout << "tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
+	//cout <<"transientTrack using global track inner "<< ttTrack_v2.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack_v2.outermostMeasurementState().globalPosition().z() <<endl;
 
         if (bps.bounds().inside(pos2D)) {
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
 	  //    cout << "projection to GEM, in chamber "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
           //     <<  bps.bounds().inside(pos2D) <<endl;
 	  if (ch->id().station() == 1 and ch->id().ring() == 1 ){
+		cout <<"chamber id " << ch->id() << " propagation using standalone muon  tsos gp   "<< tsosGP <<" using globaltrack "<< tsosGP_v2 << endl;
 	        data_.has_propGE11[ch->id().layer()-1]= true;
 		data_.roll_propGE11[ch->id().layer()-1] = ch->id().roll();
 		data_.chamber_propGE11[ch->id().layer()-1] = ch->id().chamber();
 		data_.prop_phi_GE11[ch->id().layer()-1] = tsosGP.phi();
 		data_.prop_eta_GE11[ch->id().layer()-1] = tsosGP.eta();
-		data_.prop_x_GE11[ch->id().layer()-1] = tsosGP.x();
-		data_.prop_y_GE11[ch->id().layer()-1] = tsosGP.y();
-		data_.prop_r_GE11[ch->id().layer()-1] = tsosGP.mag();
+		data_.prop_x_GE11[ch->id().layer()-1]   = tsosGP.x();
+		data_.prop_y_GE11[ch->id().layer()-1]   = tsosGP.y();
+		data_.prop_r_GE11[ch->id().layer()-1]   = tsosGP.mag();
+		data_.propv2_phi_GE11[ch->id().layer()-1] = tsosGP_v2.phi();
+		data_.propv2_eta_GE11[ch->id().layer()-1] = tsosGP_v2.eta();
+		data_.propv2_x_GE11[ch->id().layer()-1]   = tsosGP_v2.x();
+		data_.propv2_y_GE11[ch->id().layer()-1]   = tsosGP_v2.y();
+		data_.propv2_r_GE11[ch->id().layer()-1]   = tsosGP_v2.mag();
 		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
 		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
                 const auto& etaPart = GEMGeometry_->etaPartition(ch->id());
@@ -861,10 +897,12 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		}*/
 
 
-		if (fabs(deltaX_local_flipped) < GEMRechit_muon_deltaX_ and not data_.has_GE11[gemid.layer()-1])
+		bool dXcut = (flippedGEMStrip_) ? (fabs(deltaX_local_flipped) < GEMRechit_muon_deltaX_) : (fabs(deltaX_local) < GEMRechit_muon_deltaX_);
+		if (dXcut and not data_.has_GE11[gemid.layer()-1])
 		    data_.nrechit_GE11 += 1;
+		bool mindXcut = (flippedGEMStrip_) ? (fabs(deltaX_local_flipped) < mindX) : (fabs(deltaX_local) < mindX);
 
-		if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs(deltaX_local_flipped) < mindX){
+		if (ch->id().station() == 1 and ch->id().ring() == 1 and mindXcut){
 		    cout << "found hit at GEM detector "<< gemid <<" strip "<< strip <<" flipped strip "<< strip_flipped
 			 << " lp " << (hit)->localPosition()
 			 << " flipped lp "<< lp_flipped
@@ -884,7 +922,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			 <<" deltaX_local_aligned "<< deltaX_local_aligned << endl;
 		    }
 		    
-		    mindX = fabs(deltaX_local_flipped);
+		    mindX = (flippedGEMStrip_) ? fabs(deltaX_local_flipped) : fabs(deltaX_local);
 		    data_.has_GE11[gemid.layer()-1] = 1;
 		    data_.roll_GE11[gemid.layer()-1] = ch->id().roll();
 		    data_.rechit_firstClusterStrip_GE11[gemid.layer()-1] = hit->firstClusterStrip();
@@ -893,9 +931,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_BX_GE11[gemid.layer()-1] = hit->BunchX();
 		    data_.rechit_used_GE11[gemid.layer()-1] = rechit_used;
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
-		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
-		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
 		    if (flippedGEMStrip_){
+			data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
+			data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
@@ -904,6 +942,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		      data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
 		      data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
 		    }else {
+		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local;
+		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
 		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
@@ -934,7 +974,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	 //ME1/1 only
 	if (not (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)) ) continue;
-        TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
+        //TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.innermostMeasurementState(),ch->surface());
         if (!tsos.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
@@ -944,6 +985,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
         const BoundPlane& bps(ch->surface());
         //cout << "tsos gp   "<< tsosGP << ch->id() <<endl;
+        //cout << "tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
 
         if (bps.bounds().inside(pos2D)) {
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
@@ -989,6 +1031,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	      if (mindR < CSCSegment_muon_deltaR_ and not data_.has_cscseg_st[ch->id().station() -1])
 		  data_.ncscseg += 1;
 	      if (hasCSCsegment){
+		  std::cout <<"CSC segment is found "<< std::endl;
 		  data_.has_cscseg_st[ch->id().station() - 1] = hasCSCsegment;
 		  //CSCDetId cscid((*cscseg)->geographicalId());
 		  //GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
@@ -1001,7 +1044,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  data_.cscseg_prop_dphi_st[ch->id().station() - 1] = reco::deltaPhi(tsosGP.phi(), data_.cscseg_phi_st[ch->id().station() - 1]);
 		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
-		  //std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg << std::endl;
+		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg << std::endl;
 		  if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)){
 		      for(unsigned int i=0; i<2; i++){
 			  if (data_.has_GE11[i]){
@@ -1010,7 +1053,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			  }
 		      }
 		  }//ME11-GE11, dphi(CSCsegment, GEMRechit)
-	      }
+	      }else
+		  std::cout <<" no CSC segment is found "<< std::endl;
 	  }
 	  
 	  if (matchMuonwithLCT_ and hasLCTcollection and ch->id().layer() == 3)//keylayer
@@ -1073,12 +1117,11 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
 		if (ch->id().station() == 1 and (ch->id().ring()==1 or ch->id().ring() ==4) and deltaR_local < mindR){
-		    /*cout << "found hit ME11 CSC detector "<< cscid
-			 << " lp " << (hit)->localPosition()
-			 << " gp " << layer->toGlobal((hit)->localPosition())
-			 <<" "<< (*hit)
-			 << endl;
-		    */
+		    //cout << "found hit ME11 CSC detector "<< cscid
+		    //     << " lp " << (hit)->localPosition()
+		    //     << " gp " << layer->toGlobal((hit)->localPosition())
+		    //     <<" "<< (*hit)
+		    //     << endl;
 		    mindR = deltaR_local;
 		    data_.has_ME11[cscid.layer()-1] = 1;
 		    data_.rechit_used_ME11[cscid.layer()-1] = rechit_used;
@@ -1127,6 +1170,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
         }//if (bps.bounds().inside(pos2D)) 
       }
+
 
       /**** end of propagating track to CSC station and then associating csc reco hit to track ****/
       ///std::cout <<"end of propagating track to CSC station and then associating csc reco hit to track" << std::endl;
@@ -1245,7 +1289,7 @@ bool SliceTestAnalysis::matchRecoMuonwithCSCSeg(const LocalPoint muonlp, edm::Ha
 
 
     float deltaR_local = std::sqrt(std::pow((*segIt).localPosition().x() - muonlp.x(), 2) + std::pow((*segIt).localPosition().y() -muonlp.y(), 2));
-    //std::cout << " Seg mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
+    std::cout << " Seg mathced to TT: "<<id.endcap()<<" "<<id.station()<<" "<< id.chamber() << " and targeted idCSC "<< idCSC <<" deltaR_local "<< deltaR_local <<std::endl;
 
     if ( deltaR_local < deltaCSCR  ){
       matched = true;
