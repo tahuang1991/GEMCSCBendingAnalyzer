@@ -115,6 +115,16 @@ struct MuonData
   float prop_localx_ME11[6];//projected position in ME11
   float prop_localy_ME11[6];
   float prop_r_ME11[6];
+  float propgt_x_ME11[6];//projected position in ME11
+  float propgt_y_ME11[6];
+  float propgt_eta_ME11[6];//projected position in ME11
+  float propgt_phi_ME11[6];
+  float propgt_r_ME11[6];
+  float propinner_x_ME11[6];//projected position in ME11
+  float propinner_y_ME11[6];
+  float propinner_eta_ME11[6];//projected position in ME11
+  float propinner_phi_ME11[6];
+  float propinner_r_ME11[6];
   float rechit_prop_dR_ME11[6];
   float rechit_prop_dphi_ME11[6];
   int chamber_ME11[6];
@@ -346,6 +356,16 @@ void MuonData::init()
     prop_localx_ME11[i] = 99999.0;
     prop_localy_ME11[i] = 99999.0;
     prop_r_ME11[i] = 99999.0;
+    propgt_x_ME11[i] = 99999.0;
+    propgt_y_ME11[i] = 99999.0;
+    propgt_phi_ME11[i] = 99999.0;
+    propgt_eta_ME11[i] = 99999.0;
+    propgt_r_ME11[i] = 99999.0;
+    propinner_x_ME11[i] = 99999.0;
+    propinner_y_ME11[i] = 99999.0;
+    propinner_phi_ME11[i] = 99999.0;
+    propinner_eta_ME11[i] = 99999.0;
+    propinner_r_ME11[i] = 99999.0;
     rechit_prop_dR_ME11[i] = 9999;
     chamber_ME11[i] = -1;
     has_propME11[i] = false;
@@ -447,7 +467,6 @@ TTree* MuonData::book(TTree *t)
   t->Branch("ring_propME11", ring_propME11, "ring_propME11[6]/I");
   t->Branch("rechit_phi_ME11", rechit_phi_ME11, "rechit_phi_ME11[6]/F");
   t->Branch("rechit_eta_ME11", rechit_eta_ME11, "rechit_eta_ME11[6]/F");
-  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
   t->Branch("rechit_x_ME11", rechit_x_ME11, "rechit_x_ME11[6]/F");
   t->Branch("rechit_y_ME11", rechit_y_ME11, "rechit_y_ME11[6]/F");
   t->Branch("rechit_r_ME11", rechit_r_ME11, "rechit_r_ME11[6]/F");
@@ -461,9 +480,20 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_centralStrip_ME11", rechit_centralStrip_ME11, "rechit_centralStrip_ME11[6]/I");
   t->Branch("rechit_used_ME11", rechit_used_ME11, "rechit_used_ME11[6]/B");
   t->Branch("prop_eta_ME11", prop_eta_ME11, "prop_eta_ME11[6]/F");
-  t->Branch("prop_x_ME11", prop_x_ME11, "prop_x_ME11[6]/F");
-  t->Branch("prop_y_ME11", prop_y_ME11, "prop_y_ME11[6]/F");
-  t->Branch("prop_r_ME11", prop_r_ME11, "prop_r_ME11[6]/F");
+  t->Branch("prop_phi_ME11", prop_phi_ME11, "prop_phi_ME11[6]/F");
+  t->Branch("prop_x_ME11",   prop_x_ME11,   "prop_x_ME11[6]/F");
+  t->Branch("prop_y_ME11",   prop_y_ME11,   "prop_y_ME11[6]/F");
+  t->Branch("prop_r_ME11",   prop_r_ME11,   "prop_r_ME11[6]/F");
+  t->Branch("propgt_eta_ME11", propgt_eta_ME11, "propgt_eta_ME11[6]/F");
+  t->Branch("propgt_phi_ME11", propgt_phi_ME11, "propgt_phi_ME11[6]/F");
+  t->Branch("propgt_x_ME11",   propgt_x_ME11,   "propgt_x_ME11[6]/F");
+  t->Branch("propgt_y_ME11",   propgt_y_ME11,   "propgt_y_ME11[6]/F");
+  t->Branch("propgt_r_ME11",   propgt_r_ME11,   "propgt_r_ME11[6]/F");
+  t->Branch("propinner_eta_ME11", propinner_eta_ME11, "propinner_eta_ME11[6]/F");
+  t->Branch("propinner_phi_ME11", propinner_phi_ME11, "propinner_phi_ME11[6]/F");
+  t->Branch("propinner_x_ME11",   propinner_x_ME11,   "propinner_x_ME11[6]/F");
+  t->Branch("propinner_y_ME11",   propinner_y_ME11,   "propinner_y_ME11[6]/F");
+  t->Branch("propinner_r_ME11",   propinner_r_ME11,   "propinner_r_ME11[6]/F");
   t->Branch("prop_localx_ME11",prop_localx_ME11,"prop_localx_ME11[6]/F");
   t->Branch("prop_localy_ME11",prop_localy_ME11,"prop_localy_ME11[6]/F");
   t->Branch("rechit_prop_dR_ME11", rechit_prop_dR_ME11, "rechit_prop_dR_ME11[6]/F");
@@ -1007,9 +1037,16 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	if (not (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)) ) continue;
         //TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.outermostMeasurementState(),ch->surface());
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.innermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos_gt = propagator->propagate(ttTrack_gt.outermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos_inner = propagator->propagate(ttTrack_inner.outermostMeasurementState(),ch->surface());
         if (!tsos.isValid()) continue;
+        if (!tsos_gt.isValid()) continue;
+        if (!tsos_inner.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
+        GlobalPoint tsosGP_gt = tsos_gt.globalPosition();
+        GlobalPoint tsosGP_inner = tsos_inner.globalPosition();
+
 	if (tsosGP.eta() * mu->eta() < 0.0) continue;
 	
         const LocalPoint pos = ch->toLocal(tsosGP);
@@ -1030,9 +1067,20 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	    data_.prop_eta_ME11[ch->id().layer()-1] = tsosGP.eta();
 	    data_.prop_x_ME11[ch->id().layer()-1] = tsosGP.x();
 	    data_.prop_y_ME11[ch->id().layer()-1] = tsosGP.y();
+	    data_.prop_r_ME11[ch->id().layer()-1] = tsosGP.mag();
+	    data_.propgt_phi_ME11[ch->id().layer()-1] = tsosGP_gt.phi();
+	    data_.propgt_eta_ME11[ch->id().layer()-1] = tsosGP_gt.eta();
+	    data_.propgt_x_ME11[ch->id().layer()-1]   = tsosGP_gt.x();
+	    data_.propgt_y_ME11[ch->id().layer()-1]   = tsosGP_gt.y();
+	    data_.propgt_r_ME11[ch->id().layer()-1]   = tsosGP_gt.mag();
+	    data_.propinner_phi_ME11[ch->id().layer()-1] = tsosGP_inner.phi();
+	    data_.propinner_eta_ME11[ch->id().layer()-1] = tsosGP_inner.eta();
+	    data_.propinner_x_ME11[ch->id().layer()-1]   = tsosGP_inner.x();
+	    data_.propinner_y_ME11[ch->id().layer()-1]   = tsosGP_inner.y();
+	    data_.propinner_r_ME11[ch->id().layer()-1]   = tsosGP_inner.mag();
+
 	    data_.prop_localx_ME11[ch->id().layer()-1] = pos.x();
 	    data_.prop_localy_ME11[ch->id().layer()-1] = pos.y();
-	    data_.prop_r_ME11[ch->id().layer()-1] = tsosGP.mag();
 	    if(ch->id().layer() == 3){
 		for (unsigned int i =0; i<2; i++){
 		    if (data_.has_propGE11[i]){
@@ -1062,7 +1110,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	      if (mindR < CSCSegment_muon_deltaR_ and not data_.has_cscseg_st[ch->id().station() -1])
 		  data_.ncscseg += 1;
 	      if (hasCSCsegment){
-		  std::cout <<"CSC segment is found "<< std::endl;
+		  //std::cout <<"CSC segment is found "<< std::endl;
 		  data_.has_cscseg_st[ch->id().station() - 1] = hasCSCsegment;
 		  //CSCDetId cscid((*cscseg)->geographicalId());
 		  //GlobalPoint seggp = CSCGeometry_->idToDet((*cscseg)->cscDetId())->surface().toGlobal((*cscseg)->localPosition());
