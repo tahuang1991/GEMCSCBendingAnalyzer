@@ -199,21 +199,27 @@ struct MuonData
   float prop_x_GE11[2];//projected position in GE11
   float prop_y_GE11[2];
   float prop_r_GE11[2];
+  float prop_localx_GE11[2];//projected position in GE11
+  float prop_localy_GE11[2];
+  float prop_localx_center_GE11[2];//projected position in GE11
 
   float propgt_phi_GE11[2];//phi,eta from GE11 rechits
   float propgt_eta_GE11[2];
   float propgt_x_GE11[2];//projected position in GE11
   float propgt_y_GE11[2];
   float propgt_r_GE11[2];
+  float propgt_localx_GE11[2];//projected position in GE11
+  float propgt_localy_GE11[2];
+  float propgt_localx_center_GE11[2];//projected position in GE11
   float propinner_phi_GE11[2];//phi,eta from GE11 rechits
   float propinner_eta_GE11[2];
   float propinner_x_GE11[2];//projected position in GE11
   float propinner_y_GE11[2];
   float propinner_r_GE11[2];
+  float propinner_localx_GE11[2];//projected position in GE11
+  float propinner_localy_GE11[2];
+  float propinner_localx_center_GE11[2];//projected position in GE11
 
-  float prop_localx_GE11[2];//projected position in GE11
-  float prop_localy_GE11[2];
-  float prop_localx_center_GE11[2];//projected position in GE11
   float prop_strip_GE11[2];//projected position in GE11
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
@@ -295,16 +301,24 @@ void MuonData::init()
     prop_localx_GE11[i] = 999999.0;
     prop_localy_GE11[i] = 999999.0;
     prop_r_GE11[i] = 999999.0;
+    prop_localx_center_GE11[i]=999999.0;
+    prop_strip_GE11[i]=-1;
     propgt_phi_GE11[i] = -9.0;
     propgt_eta_GE11[i] = -9.0;
     propgt_x_GE11[i] = 999999.0;
     propgt_y_GE11[i] = 999999.0;
     propgt_r_GE11[i] = 999999.0;
+    propgt_localx_GE11[i] = 999999.0;
+    propgt_localy_GE11[i] = 999999.0;
+    propgt_localx_center_GE11[i]=999999.0;
     propinner_phi_GE11[i] = -9.0;
     propinner_eta_GE11[i] = -9.0;
     propinner_x_GE11[i] = 999999.0;
     propinner_y_GE11[i] = 999999.0;
     propinner_r_GE11[i] = 999999.0;
+    propinner_localx_GE11[i] = 999999.0;
+    propinner_localy_GE11[i] = 999999.0;
+    propinner_localx_center_GE11[i]=999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
     rechit_prop_aligneddX_GE11[i] = 9999;
@@ -333,8 +347,6 @@ void MuonData::init()
     dphi_keyCSCRechit_alignedGE11Rechit[i] = -9.0;
     dphi_keyCSCRechitL1_alignedGE11Rechit[i] = -9.0;
     
-    prop_localx_center_GE11[i]=999999.0;
-    prop_strip_GE11[i]=-1;
   }
   for (int i=0; i<6; ++i){
     has_ME11[i] = 0;
@@ -526,18 +538,22 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
   t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
+  t->Branch("prop_localx_GE11",prop_localx_GE11,"prop_localx_GE11[2]/F");
+  t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
   t->Branch("propgt_phi_GE11", propgt_phi_GE11, "propgt_phi_GE11[2]/F");
   t->Branch("propgt_eta_GE11", propgt_eta_GE11, "propgt_eta_GE11[2]/F");
   t->Branch("propgt_x_GE11",   propgt_x_GE11,   "propgt_x_GE11[2]/F");
   t->Branch("propgt_y_GE11",   propgt_y_GE11,   "propgt_y_GE11[2]/F");
   t->Branch("propgt_r_GE11",   propgt_r_GE11,   "propgt_r_GE11[2]/F");
+  t->Branch("propgt_localx_GE11",propgt_localx_GE11,"propgt_localx_GE11[2]/F");
+  t->Branch("propgt_localy_GE11",propgt_localy_GE11,"propgt_localy_GE11[2]/F");
   t->Branch("propinner_phi_GE11", propinner_phi_GE11, "propinner_phi_GE11[2]/F");
   t->Branch("propinner_eta_GE11", propinner_eta_GE11, "propinner_eta_GE11[2]/F");
   t->Branch("propinner_x_GE11",   propinner_x_GE11,   "propinner_x_GE11[2]/F");
   t->Branch("propinner_y_GE11",   propinner_y_GE11,   "propinner_y_GE11[2]/F");
   t->Branch("propinner_r_GE11",   propinner_r_GE11,   "propinner_r_GE11[2]/F");
-  t->Branch("prop_localx_GE11",prop_localx_GE11,"prop_localx_GE11[2]/F");
-  t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
+  t->Branch("propinner_localx_GE11",propinner_localx_GE11,"propinner_localx_GE11[2]/F");
+  t->Branch("propinner_localy_GE11",propinner_localy_GE11,"propinner_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
   t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
   t->Branch("rechit_prop_aligneddX_GE11", rechit_prop_aligneddX_GE11, "rechit_prop_aligneddX_GE11[2]/F");
@@ -594,6 +610,8 @@ TTree* MuonData::book(TTree *t)
  
   t->Branch("prop_strip_GE11",prop_strip_GE11,"prop_strip_GE11[2]/F");
   t->Branch("prop_localx_center_GE11",prop_localx_center_GE11,"prop_localx_center_GE11[2]/F");
+  t->Branch("propgt_localx_center_GE11",propgt_localx_center_GE11,"propgt_localx_center_GE11[2]/F");
+  t->Branch("propinner_localx_center_GE11",propinner_localx_center_GE11,"propinner_localx_center_GE11[2]/F");
   t->Branch("nrechit_ME11", &nrechit_ME11, "nrechit_ME11/I");
   t->Branch("ncscseg", &ncscseg, "ncscseg/I");
   t->Branch("ncscLct", &ncscLct, "ncscLct/I");
@@ -643,6 +661,9 @@ private:
   //match LCT to recoMuon
   bool matchRecoMuonwithCSCLCT(const LocalPoint muonlp, edm::Handle<CSCCorrelatedLCTDigiCollection> lcts, CSCDetId cscid, CSCCorrelatedLCTDigi &matchedLCT,LocalPoint &matchedlctlp, float &mindR);
   bool matchRecoMuonwithCSCSeg(const LocalPoint muonlp, edm::Handle<CSCSegmentCollection> cscSegments, CSCDetId cscid, CSCSegment &matchedSeg, float &mindR);
+
+  //get float strip number of one strip centre,like 0.5, 1.5 
+  float getCenterStripNumber_float(float strip);
 
   
 
@@ -866,6 +887,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	if (tsosGP.eta() * mu->eta() < 0.0) continue;
 
         const LocalPoint pos = ch->toLocal(tsosGP);
+        const LocalPoint pos_gt = ch->toLocal(tsosGP_gt);
+        const LocalPoint pos_inner = ch->toLocal(tsosGP_inner);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
         const BoundPlane& bps(ch->surface());
         //cout << "transientTrack using standalone muon tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
@@ -886,33 +909,43 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_x_GE11[ch->id().layer()-1]   = tsosGP.x();
 		data_.prop_y_GE11[ch->id().layer()-1]   = tsosGP.y();
 		data_.prop_r_GE11[ch->id().layer()-1]   = tsosGP.mag();
+		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
+		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
 		
 		data_.propgt_phi_GE11[ch->id().layer()-1] = tsosGP_gt.phi();
 		data_.propgt_eta_GE11[ch->id().layer()-1] = tsosGP_gt.eta();
 		data_.propgt_x_GE11[ch->id().layer()-1]   = tsosGP_gt.x();
 		data_.propgt_y_GE11[ch->id().layer()-1]   = tsosGP_gt.y();
 		data_.propgt_r_GE11[ch->id().layer()-1]   = tsosGP_gt.mag();
+		data_.propgt_localx_GE11[ch->id().layer()-1] = pos_gt.x();
+		data_.propgt_localy_GE11[ch->id().layer()-1] = pos_gt.y();
+
 		data_.propinner_phi_GE11[ch->id().layer()-1] = tsosGP_inner.phi();
 		data_.propinner_eta_GE11[ch->id().layer()-1] = tsosGP_inner.eta();
 		data_.propinner_x_GE11[ch->id().layer()-1]   = tsosGP_inner.x();
 		data_.propinner_y_GE11[ch->id().layer()-1]   = tsosGP_inner.y();
 		data_.propinner_r_GE11[ch->id().layer()-1]   = tsosGP_inner.mag();
+		data_.propinner_localx_GE11[ch->id().layer()-1] = pos_inner.x();
+		data_.propinner_localy_GE11[ch->id().layer()-1] = pos_inner.y();
 
-		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
-		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
                 const auto& etaPart = GEMGeometry_->etaPartition(ch->id());
 		float strip = etaPart->strip(pos);
-		int strip_int= int(strip);
-		if ((strip-strip_int)>0.25 and (strip-strip_int)<=0.75) strip = strip_int + 0.5;
-		else if ((strip-strip_int)>0.75) strip = strip_int +1.0;
-		else if ((strip-strip_int) <= 0.25) strip = strip_int*1.0;
-		else 
-		    std::cout <<"localpoint, strip "<< strip << "strip_int "<< strip_int <<" warning !! "<< std::endl; 
 
+		strip = getCenterStripNumber_float(strip);
 		LocalPoint lp_center = etaPart->centreOfStrip(strip);
-		std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center <<" strip "<< strip <<std::endl;
+		//std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center <<" strip "<< strip <<std::endl;
 		data_.prop_localx_center_GE11[ch->id().layer()-1] = lp_center.x();
 		data_.prop_strip_GE11[ch->id().layer()-1] = strip;
+
+		float strip_gt = etaPart->strip(pos_gt);
+		strip_gt =  getCenterStripNumber_float(strip_gt);
+		LocalPoint lp_center_gt = etaPart->centreOfStrip(strip_gt);
+		data_.propgt_localx_center_GE11[ch->id().layer()-1] = lp_center_gt.x();
+		float strip_inner = etaPart->strip(pos_inner);
+		strip_inner =  getCenterStripNumber_float(strip_inner);
+		LocalPoint lp_center_inner = etaPart->centreOfStrip(strip_inner);
+		data_.propinner_localx_center_GE11[ch->id().layer()-1] = lp_center_inner.x();
+
 
 	  }
 
@@ -993,8 +1026,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.rechit_used_GE11[gemid.layer()-1] = rechit_used;
 		    data_.chamber_GE11[gemid.layer()-1] = ch->id().chamber();
 		    if (flippedGEMStrip_){
-			data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
-			data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
+		      data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
+		      data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
@@ -1440,6 +1473,17 @@ bool SliceTestAnalysis::matchRecoMuonwithCSCLCT(const LocalPoint muonlp, edm::Ha
 
 }
 
+float SliceTestAnalysis::getCenterStripNumber_float(float strip){
+
+    int strip_int= int(strip);
+    if ((strip-strip_int)>0.25 and (strip-strip_int)<=0.75) strip = strip_int + 0.5;
+    else if ((strip-strip_int)>0.75) strip = strip_int +1.0;
+    else if ((strip-strip_int) <= 0.25) strip = strip_int*1.0;
+    else 
+	std::cout <<"localpoint, strip "<< strip << "strip_int "<< strip_int <<" warning !! "<< std::endl; 
+    return strip;
+
+}
 
 void SliceTestAnalysis::beginJob(){}
 void SliceTestAnalysis::endJob(){}
