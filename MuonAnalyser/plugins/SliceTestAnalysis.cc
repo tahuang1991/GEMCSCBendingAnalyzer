@@ -189,11 +189,18 @@ struct MuonData
   float prop_x_GE11[2];//projected position in GE11
   float prop_y_GE11[2];
   float prop_r_GE11[2];
-  float propv2_phi_GE11[2];//phi,eta from GE11 rechits
-  float propv2_eta_GE11[2];
-  float propv2_x_GE11[2];//projected position in GE11
-  float propv2_y_GE11[2];
-  float propv2_r_GE11[2];
+
+  float propgt_phi_GE11[2];//phi,eta from GE11 rechits
+  float propgt_eta_GE11[2];
+  float propgt_x_GE11[2];//projected position in GE11
+  float propgt_y_GE11[2];
+  float propgt_r_GE11[2];
+  float propinner_phi_GE11[2];//phi,eta from GE11 rechits
+  float propinner_eta_GE11[2];
+  float propinner_x_GE11[2];//projected position in GE11
+  float propinner_y_GE11[2];
+  float propinner_r_GE11[2];
+
   float prop_localx_GE11[2];//projected position in GE11
   float prop_localy_GE11[2];
   float prop_localx_center_GE11[2];//projected position in GE11
@@ -278,11 +285,16 @@ void MuonData::init()
     prop_localx_GE11[i] = 999999.0;
     prop_localy_GE11[i] = 999999.0;
     prop_r_GE11[i] = 999999.0;
-    propv2_phi_GE11[i] = -9.0;
-    propv2_eta_GE11[i] = -9.0;
-    propv2_x_GE11[i] = 999999.0;
-    propv2_y_GE11[i] = 999999.0;
-    propv2_r_GE11[i] = 999999.0;
+    propgt_phi_GE11[i] = -9.0;
+    propgt_eta_GE11[i] = -9.0;
+    propgt_x_GE11[i] = 999999.0;
+    propgt_y_GE11[i] = 999999.0;
+    propgt_r_GE11[i] = 999999.0;
+    propinner_phi_GE11[i] = -9.0;
+    propinner_eta_GE11[i] = -9.0;
+    propinner_x_GE11[i] = 999999.0;
+    propinner_y_GE11[i] = 999999.0;
+    propinner_r_GE11[i] = 999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
     rechit_prop_aligneddX_GE11[i] = 9999;
@@ -484,11 +496,16 @@ TTree* MuonData::book(TTree *t)
   t->Branch("prop_x_GE11", prop_x_GE11, "prop_x_GE11[2]/F");
   t->Branch("prop_y_GE11", prop_y_GE11, "prop_y_GE11[2]/F");
   t->Branch("prop_r_GE11", prop_r_GE11, "prop_r_GE11[2]/F");
-  t->Branch("propv2_phi_GE11", propv2_phi_GE11, "propv2_phi_GE11[2]/F");
-  t->Branch("propv2_eta_GE11", propv2_eta_GE11, "propv2_eta_GE11[2]/F");
-  t->Branch("propv2_x_GE11", propv2_x_GE11, "propv2_x_GE11[2]/F");
-  t->Branch("propv2_y_GE11", propv2_y_GE11, "propv2_y_GE11[2]/F");
-  t->Branch("propv2_r_GE11", propv2_r_GE11, "propv2_r_GE11[2]/F");
+  t->Branch("propgt_phi_GE11", propgt_phi_GE11, "propgt_phi_GE11[2]/F");
+  t->Branch("propgt_eta_GE11", propgt_eta_GE11, "propgt_eta_GE11[2]/F");
+  t->Branch("propgt_x_GE11",   propgt_x_GE11,   "propgt_x_GE11[2]/F");
+  t->Branch("propgt_y_GE11",   propgt_y_GE11,   "propgt_y_GE11[2]/F");
+  t->Branch("propgt_r_GE11",   propgt_r_GE11,   "propgt_r_GE11[2]/F");
+  t->Branch("propinner_phi_GE11", propinner_phi_GE11, "propinner_phi_GE11[2]/F");
+  t->Branch("propinner_eta_GE11", propinner_eta_GE11, "propinner_eta_GE11[2]/F");
+  t->Branch("propinner_x_GE11",   propinner_x_GE11,   "propinner_x_GE11[2]/F");
+  t->Branch("propinner_y_GE11",   propinner_y_GE11,   "propinner_y_GE11[2]/F");
+  t->Branch("propinner_r_GE11",   propinner_r_GE11,   "propinner_r_GE11[2]/F");
   t->Branch("prop_localx_GE11",prop_localx_GE11,"prop_localx_GE11[2]/F");
   t->Branch("prop_localy_GE11",prop_localy_GE11,"prop_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
@@ -743,6 +760,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if (not mu->standAloneMuon()) continue;//not standalone muon
     const reco::Track* standaloneMuon =  mu->standAloneMuon().get();
+    const reco::Track* innerTrack = mu->track().get();
 
     //focus on endcap muons
     //GEMs are installed on minus endcap, namly eta < 0
@@ -793,8 +811,9 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
 
-      reco::TransientTrack ttTrack_v2 = ttrackBuilder_->build(muonTrack);
+      reco::TransientTrack ttTrack_gt = ttrackBuilder_->build(muonTrack);
       reco::TransientTrack ttTrack = ttrackBuilder_->build(standaloneMuon);
+      reco::TransientTrack ttTrack_inner = ttrackBuilder_->build(innerTrack);
 
 
       /**** propagating track to GEM station and then associating gem reco hit to track ****/
@@ -803,27 +822,32 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	 if (ch->id().station() != 1) continue;
         //if ( !detLists.insert( ch->surface().position().z() ).second ) continue;
 
-        TrajectoryStateOnSurface tsos_v2 = propagator->propagate(ttTrack_v2.outermostMeasurementState(),ch->surface());
         TrajectoryStateOnSurface tsos = propagator->propagate(ttTrack.innermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos_gt = propagator->propagate(ttTrack_gt.outermostMeasurementState(),ch->surface());
+        TrajectoryStateOnSurface tsos_inner = propagator->propagate(ttTrack_inner.outermostMeasurementState(),ch->surface());
+
         if (!tsos.isValid()) continue;
-        if (!tsos_v2.isValid()) continue;
+        if (!tsos_gt.isValid()) continue;
+        if (!tsos_inner.isValid()) continue;
 
         GlobalPoint tsosGP = tsos.globalPosition();
-        GlobalPoint tsosGP_v2 = tsos_v2.globalPosition();
+        GlobalPoint tsosGP_gt = tsos_gt.globalPosition();
+        GlobalPoint tsosGP_inner = tsos_inner.globalPosition();
 	if (tsosGP.eta() * mu->eta() < 0.0) continue;
 
         const LocalPoint pos = ch->toLocal(tsosGP);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
         const BoundPlane& bps(ch->surface());
-        //cout << "tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
-	//cout <<"transientTrack using global track inner "<< ttTrack_v2.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack_v2.outermostMeasurementState().globalPosition().z() <<endl;
+        //cout << "transientTrack using standalone muon tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
+	//cout <<"transientTrack using global track inner "<< ttTrack_gt.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack_gt.outermostMeasurementState().globalPosition().z() <<endl;
+        //cout << "transientTrack using innertrack tsos gp   "<< tsosGP_inner << ch->id() <<" tttrack.innermost Z position "<< ttTrack_inner.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack_inner.outermostMeasurementState().globalPosition().z() <<endl;
 
         if (bps.bounds().inside(pos2D)) {
 	  //if (ch->id().station() == 1 and ch->id().ring() == 1 )
 	  //    cout << "projection to GEM, in chamber "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
           //     <<  bps.bounds().inside(pos2D) <<endl;
 	  if (ch->id().station() == 1 and ch->id().ring() == 1 ){
-		cout <<"chamber id " << ch->id() << " propagation using standalone muon  tsos gp   "<< tsosGP <<" using globaltrack "<< tsosGP_v2 << endl;
+		cout <<"chamber id " << ch->id() << " propagation using standalone muon  tsos gp   "<< tsosGP <<" using globaltrack "<< tsosGP_gt <<" using innerTrack "<< tsosGP_inner << endl;
 	        data_.has_propGE11[ch->id().layer()-1]= true;
 		data_.roll_propGE11[ch->id().layer()-1] = ch->id().roll();
 		data_.chamber_propGE11[ch->id().layer()-1] = ch->id().chamber();
@@ -832,11 +856,18 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_x_GE11[ch->id().layer()-1]   = tsosGP.x();
 		data_.prop_y_GE11[ch->id().layer()-1]   = tsosGP.y();
 		data_.prop_r_GE11[ch->id().layer()-1]   = tsosGP.mag();
-		data_.propv2_phi_GE11[ch->id().layer()-1] = tsosGP_v2.phi();
-		data_.propv2_eta_GE11[ch->id().layer()-1] = tsosGP_v2.eta();
-		data_.propv2_x_GE11[ch->id().layer()-1]   = tsosGP_v2.x();
-		data_.propv2_y_GE11[ch->id().layer()-1]   = tsosGP_v2.y();
-		data_.propv2_r_GE11[ch->id().layer()-1]   = tsosGP_v2.mag();
+		
+		data_.propgt_phi_GE11[ch->id().layer()-1] = tsosGP_gt.phi();
+		data_.propgt_eta_GE11[ch->id().layer()-1] = tsosGP_gt.eta();
+		data_.propgt_x_GE11[ch->id().layer()-1]   = tsosGP_gt.x();
+		data_.propgt_y_GE11[ch->id().layer()-1]   = tsosGP_gt.y();
+		data_.propgt_r_GE11[ch->id().layer()-1]   = tsosGP_gt.mag();
+		data_.propinner_phi_GE11[ch->id().layer()-1] = tsosGP_inner.phi();
+		data_.propinner_eta_GE11[ch->id().layer()-1] = tsosGP_inner.eta();
+		data_.propinner_x_GE11[ch->id().layer()-1]   = tsosGP_inner.x();
+		data_.propinner_y_GE11[ch->id().layer()-1]   = tsosGP_inner.y();
+		data_.propinner_r_GE11[ch->id().layer()-1]   = tsosGP_inner.mag();
+
 		data_.prop_localx_GE11[ch->id().layer()-1] = pos.x();
 		data_.prop_localy_GE11[ch->id().layer()-1] = pos.y();
                 const auto& etaPart = GEMGeometry_->etaPartition(ch->id());
