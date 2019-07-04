@@ -810,6 +810,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     }
 
     if (not mu->standAloneMuon()) continue;//not standalone muon
+    if (not mu->innerTrack()) continue;
     const reco::Track* standaloneMuon =  mu->standAloneMuon().get();
     const reco::Track* innerTrack = mu->track().get();
 
@@ -890,6 +891,8 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
         const LocalPoint pos_gt = ch->toLocal(tsosGP_gt);
         const LocalPoint pos_inner = ch->toLocal(tsosGP_inner);
         const LocalPoint pos2D(pos.x(), pos.y(), 0);
+	const LocalPoint pos2D_gt(pos_gt.x(), pos_gt.y(), 0); 
+	const LocalPoint pos2D_inner(pos_inner.x(), pos_inner.y(), 0); 
         const BoundPlane& bps(ch->surface());
         //cout << "transientTrack using standalone muon tsos gp   "<< tsosGP << ch->id() <<" tttrack.innermost Z position "<< ttTrack.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack.outermostMeasurementState().globalPosition().z() <<endl;
 	//cout <<"transientTrack using global track inner "<< ttTrack_gt.innermostMeasurementState().globalPosition().z() <<" outermost Z position "<< ttTrack_gt.outermostMeasurementState().globalPosition().z() <<endl;
@@ -937,14 +940,18 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		data_.prop_localx_center_GE11[ch->id().layer()-1] = lp_center.x();
 		data_.prop_strip_GE11[ch->id().layer()-1] = strip;
 
-		float strip_gt = etaPart->strip(pos_gt);
-		strip_gt =  getCenterStripNumber_float(strip_gt);
-		LocalPoint lp_center_gt = etaPart->centreOfStrip(strip_gt);
-		data_.propgt_localx_center_GE11[ch->id().layer()-1] = lp_center_gt.x();
-		float strip_inner = etaPart->strip(pos_inner);
-		strip_inner =  getCenterStripNumber_float(strip_inner);
-		LocalPoint lp_center_inner = etaPart->centreOfStrip(strip_inner);
-		data_.propinner_localx_center_GE11[ch->id().layer()-1] = lp_center_inner.x();
+		if (bps.bounds().inside(pos2D_gt)){
+		    float strip_gt = etaPart->strip(pos_gt);
+		    strip_gt =  getCenterStripNumber_float(strip_gt);
+		    LocalPoint lp_center_gt = etaPart->centreOfStrip(strip_gt);
+		    data_.propgt_localx_center_GE11[ch->id().layer()-1] = lp_center_gt.x();
+		}
+		if (bps.bounds().inside(pos2D_inner)){
+		    float strip_inner = etaPart->strip(pos_inner);
+		    strip_inner =  getCenterStripNumber_float(strip_inner);
+		    LocalPoint lp_center_inner = etaPart->centreOfStrip(strip_inner);
+		    data_.propinner_localx_center_GE11[ch->id().layer()-1] = lp_center_inner.x();
+		}
 
 
 	  }
