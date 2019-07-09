@@ -182,6 +182,7 @@ struct MuonData
   float rechit_x_GE11[2];//rechit position in GE11
   float rechit_y_GE11[2];
   float rechit_r_GE11[2];
+  float rechit_stripangle_GE11[2];
   float rechit_localx_GE11[2];//rechit position in GE11
   float rechit_alignedlocalx_GE11[2];//rechit position in GE11
   float rechit_localy_GE11[2];
@@ -223,6 +224,9 @@ struct MuonData
   float prop_strip_GE11[2];//projected position in GE11
   float rechit_prop_dR_GE11[2];
   float rechit_prop_dX_GE11[2]; // 99999
+  float rechit_prop_dX_GE11_foralignment[2]; // 99999
+  float rechit_propgt_dX_GE11_foralignment[2]; // 99999
+  float rechit_propinner_dX_GE11_foralignment[2]; // 99999
   float rechit_prop_aligneddX_GE11[2]; // 99999
   float rechit_prop_dphi_GE11[2];
   float rechit_prop_aligneddphi_GE11[2];
@@ -291,6 +295,7 @@ void MuonData::init()
     rechit_localx_GE11[i] = 99999.0;
     rechit_localy_GE11[i] = 99999.0;
     rechit_r_GE11[i] = 99999.0;
+    rechit_stripangle_GE11[i] = 99999.0;
     isGood_GE11[i] = 0;
     roll_GE11[i] = 0;
     chamber_GE11[i] = 0;
@@ -321,6 +326,9 @@ void MuonData::init()
     propinner_localx_center_GE11[i]=999999.0;
     rechit_prop_dR_GE11[i] = 9999;
     rechit_prop_dX_GE11[i] = 9999;
+    rechit_prop_dX_GE11_foralignment[i] = 9999;
+    rechit_propgt_dX_GE11_foralignment[i] = 9999;
+    rechit_propinner_dX_GE11_foralignment[i] = 9999;
     rechit_prop_aligneddX_GE11[i] = 9999;
     rechit_prop_dphi_GE11[i] = -9;
     rechit_prop_aligneddphi_GE11[i] = -9;
@@ -522,6 +530,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_x_GE11", rechit_x_GE11, "rechit_x_GE11[2]/F");
   t->Branch("rechit_y_GE11", rechit_y_GE11, "rechit_y_GE11[2]/F");
   t->Branch("rechit_r_GE11", rechit_r_GE11, "rechit_r_GE11[2]/F");
+  t->Branch("rechit_stripangle_GE11", rechit_stripangle_GE11, "rechit_stripangle_GE11[2]/F");
   t->Branch("rechit_localx_GE11",rechit_localx_GE11,"rechit_localx_GE11[2]/F");
   t->Branch("rechit_alignedlocalx_GE11",rechit_alignedlocalx_GE11,"rechit_alignedlocalx_GE11[2]/F");
   t->Branch("rechit_localy_GE11",rechit_localy_GE11,"rechit_localy_GE11[2]/F");
@@ -556,6 +565,9 @@ TTree* MuonData::book(TTree *t)
   t->Branch("propinner_localy_GE11",propinner_localy_GE11,"propinner_localy_GE11[2]/F");
   t->Branch("rechit_prop_dR_GE11", rechit_prop_dR_GE11, "rechit_prop_dR_GE11[2]/F");
   t->Branch("rechit_prop_dX_GE11", rechit_prop_dX_GE11, "rechit_prop_dX_GE11[2]/F");
+  t->Branch("rechit_prop_dX_GE11_foralignment", rechit_prop_dX_GE11_foralignment, "rechit_prop_dX_GE11_foralignment[2]/F");
+  t->Branch("rechit_propgt_dX_GE11_foralignment", rechit_propgt_dX_GE11_foralignment, "rechit_propgt_dX_GE11_foralignment[2]/F");
+  t->Branch("rechit_propinner_dX_GE11_foralignment", rechit_propinner_dX_GE11_foralignment, "rechit_propinner_dX_GE11_foralignment[2]/F");
   t->Branch("rechit_prop_aligneddX_GE11", rechit_prop_aligneddX_GE11, "rechit_prop_aligneddX_GE11[2]/F");
   t->Branch("rechit_prop_dphi_GE11", rechit_prop_dphi_GE11, "rechit_prop_dphi_GE11[2]/F");
   t->Branch("rechit_prop_aligneddphi_GE11", rechit_prop_aligneddphi_GE11, "rechit_prop_aligneddphi_GE11[2]/F");
@@ -903,7 +915,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  //    cout << "projection to GEM, in chamber "<< ch->id() << " pos = "<<pos<< " R = "<<pos.mag() <<" inside "
           //     <<  bps.bounds().inside(pos2D) <<endl;
 	  if (ch->id().station() == 1 and ch->id().ring() == 1 ){
-		cout <<"chamber id " << ch->id() << " propagation using standalone muon  tsos gp   "<< tsosGP <<" using globaltrack "<< tsosGP_gt <<" using innerTrack "<< tsosGP_inner << endl;
+		//cout <<"chamber id " << ch->id() << " propagation using standalone muon  tsos gp   "<< tsosGP <<" using globaltrack "<< tsosGP_gt <<" using innerTrack "<< tsosGP_inner << endl;
 	        data_.has_propGE11[ch->id().layer()-1]= true;
 		data_.roll_propGE11[ch->id().layer()-1] = ch->id().roll();
 		data_.chamber_propGE11[ch->id().layer()-1] = ch->id().chamber();
@@ -971,6 +983,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		else if (strip >= 256.0 and strip < 384.0) strip_flipped = 384.0-strip + 128*2.0;
 		else
 		    std::cout <<"error strip number from rechit hit : strip "<< strip <<" rechit "<< (*hit) << std::endl;
+		float stripAngle = etaPart->specificTopology().stripAngle(strip) - M_PI/2.;
+	        float stripAngle_flipped = etaPart->specificTopology().stripAngle(strip_flipped) - M_PI/2.;
+                //std::cout <<"strip "<< strip <<" stripAngle "<< etaPart->specificTopology().stripAngle(strip)<<" sin "<< sin(strip)<<" cos "<< cos(strip) <<" flippedstrip "<< strip_flipped <<" stripAngle "<<  etaPart->specificTopology().stripAngle(strip_flipped) <<" sin "<<sin(stripAngle_flipped)<<" cos "<< cos(stripAngle_flipped) << std::endl;
+        		
 		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
 		float deltaR_local = std::sqrt(std::pow((hit)->localPosition().x() -pos.x(), 2) + std::pow((hit)->localPosition().y() -pos.y(), 2));
 		float deltaX_local = (hit)->localPosition().x() -pos.x();
@@ -1035,6 +1051,12 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    if (flippedGEMStrip_){
 		      data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local_flipped;
 		      data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local_flipped;
+		      float sinAngle = sin(stripAngle_flipped);
+		      float cosAngle = cos(stripAngle_flipped);
+		      data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos.x() - lp_flipped.x()) + sinAngle * (pos.y());
+		      data_.rechit_propgt_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_gt.x() - lp_flipped.x()) + sinAngle * (pos_gt.y());
+		      data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_inner.x() - lp_flipped.x()) + sinAngle * (pos_inner.y());
+		      //std::cout << "dX "<< data_.rechit_prop_dX_GE11[gemid.layer()-1]<<" dX for alignment(ST) "<< data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1]<<" dX for alignment(Track) "<<data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] << std::endl;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
 		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).x();
@@ -1042,9 +1064,17 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		      data_.rechit_localx_GE11[gemid.layer()-1] = lp_flipped.x();
 		      data_.rechit_localy_GE11[gemid.layer()-1] = lp_flipped.y();
 		      data_.rechit_r_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).mag();
+		      data_.rechit_stripangle_GE11[gemid.layer()-1] = stripAngle_flipped;
 		    }else {
-		    data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local;
-		    data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local;
+		      data_.rechit_prop_dR_GE11[gemid.layer()-1] = deltaR_local;
+		      data_.rechit_prop_dX_GE11[gemid.layer()-1] = deltaX_local;
+		      float sinAngle = sin(stripAngle);
+		      float cosAngle = cos(stripAngle);
+		      data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos.x() - (hit)->localPosition().x()) + sinAngle * (pos.y());
+		      data_.rechit_propgt_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_gt.x() - (hit)->localPosition().x()) + sinAngle * (pos_gt.y());
+		      data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_inner.y());
+		      data_.rechit_stripangle_GE11[gemid.layer()-1] = stripAngle;
+		      //std::cout << "dX "<< data_.rechit_prop_dX_GE11[gemid.layer()-1]<<" dX for alignment(ST) "<< data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1]<<" dX for alignment(Track) "<<data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] << std::endl;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
 		      data_.rechit_x_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).x();
