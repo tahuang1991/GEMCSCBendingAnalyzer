@@ -150,6 +150,8 @@ struct MuonData
   float cscseg_r_st[4];
   float cscseg_prop_dR_st[4];
   float cscseg_prop_dphi_st[4];
+  float cscseg_strip_st[4];
+  float cscseg_stripangle_st[4];
   int cscseg_chamber_st[4];
   int cscseg_ring_st[4];
   int ncscseg;
@@ -230,7 +232,7 @@ struct MuonData
   float rechit_prop_aligneddX_GE11[2]; // 99999
   float rechit_prop_dphi_GE11[2];
   float rechit_prop_aligneddphi_GE11[2];
-  float rechit_flippedStrip_GE11[2];
+  float rechit_strip_GE11[2];
   
   //online
   float dphi_CSCL1_GE11L1[2];//average CSC phi - GEM phi for each GEM layer
@@ -332,7 +334,7 @@ void MuonData::init()
     rechit_prop_aligneddX_GE11[i] = 9999;
     rechit_prop_dphi_GE11[i] = -9;
     rechit_prop_aligneddphi_GE11[i] = -9;
-    rechit_flippedStrip_GE11[i] = -1.0;
+    rechit_strip_GE11[i] = -1.0;
     //dphi_CSC_GE11[i] = -9;
     //dphi_keyCSC_GE11[i] = -9;
     //dphi_fitCSC_GE11[i] =-9;
@@ -422,6 +424,8 @@ void MuonData::init()
     cscseg_x_st[i] = -99999.0;
     cscseg_y_st[i] = -99999.0;
     cscseg_r_st[i] = 0.0;
+    cscseg_strip_st[i] = -99999.0;
+    cscseg_stripangle_st[i] = -99999.0;
 
     cscseg_prop_dR_st[i] =  99999;
     cscseg_chamber_st[i] = -1;
@@ -537,7 +541,7 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_used_GE11", rechit_r_GE11, "rechit_used_GE11[2]/B");
   t->Branch("rechit_BX_GE11", rechit_BX_GE11, "rechit_BX_GE11[2]/I");
   t->Branch("rechit_firstClusterStrip_GE11", rechit_firstClusterStrip_GE11, "rechit_firstClusterStrip_GE11[2]/I");
-  t->Branch("rechit_flippedStrip_GE11", rechit_flippedStrip_GE11, "rechit_flippedStrip_GE11[2]/F");
+  t->Branch("rechit_strip_GE11", rechit_strip_GE11, "rechit_strip_GE11[2]/F");
   t->Branch("rechit_clusterSize_GE11", rechit_clusterSize_GE11, "rechit_clusterSize_GE11[2]/I");
   t->Branch("has_propGE11", has_propGE11, "has_propGE11[2]/B");
   t->Branch("roll_propGE11", roll_propGE11, "roll_propGE11[2]/I");
@@ -587,6 +591,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("cscseg_x_st", cscseg_x_st, "cscseg_x_st[4]/F");
   t->Branch("cscseg_y_st", cscseg_y_st, "cscseg_y_st[4]/F");
   t->Branch("cscseg_r_st", cscseg_r_st, "cscseg_r_st[4]/F");
+  t->Branch("cscseg_strip_st", cscseg_strip_st, "cscseg_strip_st[4]/F");
+  t->Branch("cscseg_stripangle_st", cscseg_stripangle_st, "cscseg_stripangle_st[4]/F");
   t->Branch("cscseg_prop_dR_st", cscseg_prop_dR_st, "cscseg_prop_dR_st[4]/F");
   t->Branch("cscseg_prop_dphi_st", cscseg_prop_dphi_st, "cscseg_prop_dphi_st[4]/F");
   t->Branch("cscseg_chamber_st", cscseg_chamber_st, "cscseg_chamber_st[4]/I");
@@ -983,8 +989,12 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		else if (strip >= 256.0 and strip < 384.0) strip_flipped = 384.0-strip + 128*2.0;
 		else
 		    std::cout <<"error strip number from rechit hit : strip "<< strip <<" rechit "<< (*hit) << std::endl;
-		float stripAngle = etaPart->specificTopology().stripAngle(strip) - M_PI/2.;
-	        float stripAngle_flipped = etaPart->specificTopology().stripAngle(strip_flipped) - M_PI/2.;
+		//CSC layer geometry redefined the strip angle here:
+		//https://github.com/cmssw-sw/cmssw/blob/from-CMSSW_10_5_X_2019-01-15-1100_ME0Trigger/Geometry/CSCGeometry/src/CSCLayerGeometry.cc
+		//M_PI_2 - theStripTopology->stripAngle(strip-0.5), strip is int strip number
+		//GEM geometry does not 
+		float stripAngle = M_PI_2 - etaPart->specificTopology().stripAngle(strip) - M_PI/2.;
+	        float stripAngle_flipped =  M_PI_2 - etaPart->specificTopology().stripAngle(strip_flipped) - M_PI/2.;
                 //std::cout <<"strip "<< strip <<" stripAngle "<< etaPart->specificTopology().stripAngle(strip)<<" sin "<< sin(strip)<<" cos "<< cos(strip) <<" flippedstrip "<< strip_flipped <<" stripAngle "<<  etaPart->specificTopology().stripAngle(strip_flipped) <<" sin "<<sin(stripAngle_flipped)<<" cos "<< cos(stripAngle_flipped) << std::endl;
         		
 		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
@@ -1043,7 +1053,6 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    data_.has_GE11[gemid.layer()-1] = 1;
 		    data_.roll_GE11[gemid.layer()-1] = ch->id().roll();
 		    data_.rechit_firstClusterStrip_GE11[gemid.layer()-1] = hit->firstClusterStrip();
-		    data_.rechit_flippedStrip_GE11[gemid.layer()-1] = strip_flipped;
 		    data_.rechit_clusterSize_GE11[gemid.layer()-1] = hit->clusterSize();
 		    data_.rechit_BX_GE11[gemid.layer()-1] = hit->BunchX();
 		    data_.rechit_used_GE11[gemid.layer()-1] = rechit_used;
@@ -1056,6 +1065,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		      data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos.x() - lp_flipped.x()) + sinAngle * (pos.y());
 		      data_.rechit_propgt_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_gt.x() - lp_flipped.x()) + sinAngle * (pos_gt.y());
 		      data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_inner.x() - lp_flipped.x()) + sinAngle * (pos_inner.y());
+		      data_.rechit_strip_GE11[gemid.layer()-1] = strip_flipped;
 		      //std::cout << "dX "<< data_.rechit_prop_dX_GE11[gemid.layer()-1]<<" dX for alignment(ST) "<< data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1]<<" dX for alignment(Track) "<<data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] << std::endl;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal(lp_flipped).eta();
@@ -1074,6 +1084,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		      data_.rechit_propgt_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_gt.x() - (hit)->localPosition().x()) + sinAngle * (pos_gt.y());
 		      data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] = cosAngle * (pos_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_inner.y());
 		      data_.rechit_stripangle_GE11[gemid.layer()-1] = stripAngle;
+		      data_.rechit_strip_GE11[gemid.layer()-1] = strip;
 		      //std::cout << "dX "<< data_.rechit_prop_dX_GE11[gemid.layer()-1]<<" dX for alignment(ST) "<< data_.rechit_prop_dX_GE11_foralignment[gemid.layer()-1]<<" dX for alignment(Track) "<<data_.rechit_propinner_dX_GE11_foralignment[gemid.layer()-1] << std::endl;
 		      data_.rechit_phi_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).phi();
 		      data_.rechit_eta_GE11[gemid.layer()-1] = etaPart->toGlobal((hit)->localPosition()).eta();
@@ -1193,7 +1204,11 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		  data_.cscseg_prop_dphi_st[ch->id().station() - 1] = reco::deltaPhi(tsosGP.phi(), data_.cscseg_phi_st[ch->id().station() - 1]);
 		  data_.cscseg_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 		  data_.cscseg_ring_st[ch->id().station() - 1] = ch->id().ring();
-		  std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg << std::endl;
+		  float strip = ch->geometry()->strip(matchedSeg.localPosition());
+		  float stripAngle = ch->geometry()->stripAngle(strip);
+		  data_.cscseg_strip_st[ch->id().station() - 1] = strip;
+		  data_.cscseg_stripangle_st[ch->id().station() - 1] = stripAngle-M_PI/2.0;
+		  //std::cout <<" CSCid " << ch->id() << " found matched CSCsegment, lp "<< matchedSeg.localPosition() <<" gp "<< ch->toGlobal(matchedSeg.localPosition()) <<" "<< matchedSeg <<" strip "<< strip <<" stripangle "<< stripAngle << std::endl;
 		  if (ch->id().station() == 1 and (ch->id().ring() == 1 or ch->id().ring() == 4)){
 		      for(unsigned int i=0; i<2; i++){
 			  if (data_.has_GE11[i]){
