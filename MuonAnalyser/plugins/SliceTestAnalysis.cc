@@ -123,12 +123,16 @@ struct MuonData
   float propgt_phi_ME11[6];
   float propgt_r_ME11[6];
   float propgt_perp_ME11[6];
+  float propgt_localx_ME11[6];//projected position in ME11
+  float propgt_localy_ME11[6];
   float propinner_x_ME11[6];//projected position in ME11
   float propinner_y_ME11[6];
   float propinner_eta_ME11[6];//projected position in ME11
   float propinner_phi_ME11[6];
   float propinner_r_ME11[6];
   float propinner_perp_ME11[6];
+  float propinner_localx_ME11[6];//projected position in ME11
+  float propinner_localy_ME11[6];
   float rechit_prop_dR_ME11[6];
   float rechit_prop_dphi_ME11[6];
   float rechit_prop_RdPhi_ME11[6]; // 99999
@@ -140,14 +144,32 @@ struct MuonData
   int ring_propME11[6];
 
   bool has_prop_st[4];
-  float prop_phi_st[4];
-  float prop_eta_st[4];
   int  prop_chamber_st[4];
   int  prop_ring_st[4];
+  float prop_phi_st[4];
+  float prop_eta_st[4];
   float prop_x_st[4];
   float prop_y_st[4];
   float prop_r_st[4];
   float prop_perp_st[4];
+  float prop_localx_st[4];
+  float prop_localy_st[4];
+  float propgt_phi_st[4];
+  float propgt_eta_st[4];
+  float propgt_x_st[4];
+  float propgt_y_st[4];
+  float propgt_r_st[4];
+  float propgt_perp_st[4];
+  float propgt_localx_st[4];
+  float propgt_localy_st[4];
+  float propinner_phi_st[4];
+  float propinner_eta_st[4];
+  float propinner_x_st[4];
+  float propinner_y_st[4];
+  float propinner_r_st[4];
+  float propinner_perp_st[4];
+  float propinner_localx_st[4];
+  float propinner_localy_st[4];
 
   //CSC segment matched to recoMuon
   bool has_cscseg_st[4];
@@ -412,12 +434,16 @@ void MuonData::init()
     propgt_eta_ME11[i] = 99999.0;
     propgt_r_ME11[i] = 99999.0;
     propgt_perp_ME11[i] = 99999.0;
+    propgt_localx_ME11[i] = 99999.0;
+    propgt_localy_ME11[i] = 99999.0;
     propinner_x_ME11[i] = 99999.0;
     propinner_y_ME11[i] = 99999.0;
     propinner_phi_ME11[i] = 99999.0;
     propinner_eta_ME11[i] = 99999.0;
     propinner_r_ME11[i] = 99999.0;
     propinner_perp_ME11[i] = 99999.0;
+    propinner_localx_ME11[i] = 99999.0;
+    propinner_localy_ME11[i] = 99999.0;
     rechit_prop_dR_ME11[i] = 9999;
     chamber_ME11[i] = -1;
     has_propME11[i] = false;
@@ -444,8 +470,26 @@ void MuonData::init()
     prop_eta_st[i] = -9;
     prop_x_st[i] = -99999.0;
     prop_y_st[i] = -99999.0;
+    prop_localx_st[i] = -99999.0;
+    prop_localy_st[i] = -99999.0;
     prop_r_st[i] = 0.0;
     prop_perp_st[i] = 0.0;
+    propgt_phi_st[i] = -9;
+    propgt_eta_st[i] = -9;
+    propgt_x_st[i] = -99999.0;
+    propgt_y_st[i] = -99999.0;
+    propgt_localx_st[i] = -99999.0;
+    propgt_localy_st[i] = -99999.0;
+    propgt_r_st[i] = 0.0;
+    propgt_perp_st[i] = 0.0;
+    propinner_phi_st[i] = -9;
+    propinner_eta_st[i] = -9;
+    propinner_x_st[i] = -99999.0;
+    propinner_y_st[i] = -99999.0;
+    propinner_localx_st[i] = -99999.0;
+    propinner_localy_st[i] = -99999.0;
+    propinner_r_st[i] = 0.0;
+    propinner_perp_st[i] = 0.0;
     prop_chamber_st[i] = -1;
     prop_ring_st[i] = -1;
 
@@ -559,6 +603,10 @@ TTree* MuonData::book(TTree *t)
   t->Branch("propinner_perp_ME11",   propinner_perp_ME11,   "propinner_perp_ME11[6]/F");
   t->Branch("prop_localx_ME11",prop_localx_ME11,"prop_localx_ME11[6]/F");
   t->Branch("prop_localy_ME11",prop_localy_ME11,"prop_localy_ME11[6]/F");
+  t->Branch("propgt_localx_ME11",propgt_localx_ME11,"propgt_localx_ME11[6]/F");
+  t->Branch("propgt_localy_ME11",propgt_localy_ME11,"propgt_localy_ME11[6]/F");
+  t->Branch("propinner_localx_ME11",propinner_localx_ME11,"propinner_localx_ME11[6]/F");
+  t->Branch("propinner_localy_ME11",propinner_localy_ME11,"propinner_localy_ME11[6]/F");
   t->Branch("rechit_prop_dR_ME11", rechit_prop_dR_ME11, "rechit_prop_dR_ME11[6]/F");
   t->Branch("rechit_prop_dphi_ME11", rechit_prop_dphi_ME11, "rechit_prop_dphi_ME11[6]/F");
   t->Branch("rechit_prop_RdPhi_ME11", rechit_prop_RdPhi_ME11, "rechit_prop_RdPhi_ME11[2]/F");
@@ -624,12 +672,30 @@ TTree* MuonData::book(TTree *t)
   t->Branch("rechit_prop_aligneddphi_GE11", rechit_prop_aligneddphi_GE11, "rechit_prop_aligneddphi_GE11[2]/F");
 
   t->Branch("has_prop_st", has_cscseg_st, "has_prop_st[4]/B");
-  t->Branch("prop_phi_st", prop_phi_st, "prop_phi_st[4]/F");
-  t->Branch("prop_eta_st", prop_eta_st, "prop_eta_st[4]/F");
-  t->Branch("prop_x_st", prop_x_st, "prop_x_st[4]/F");
-  t->Branch("prop_y_st", prop_y_st, "prop_y_st[4]/F");
-  t->Branch("prop_r_st", prop_r_st, "prop_r_st[4]/F");
-  t->Branch("prop_perp_st", prop_perp_st, "prop_perp_st[4]/F");
+  t->Branch("prop_phi_st",    prop_phi_st,     "prop_phi_st[4]/F");
+  t->Branch("prop_eta_st",    prop_eta_st,     "prop_eta_st[4]/F");
+  t->Branch("prop_x_st",      prop_x_st,       "prop_x_st[4]/F");
+  t->Branch("prop_y_st",      prop_y_st,       "prop_y_st[4]/F");
+  t->Branch("prop_r_st",      prop_r_st,       "prop_r_st[4]/F");
+  t->Branch("prop_localx_st", prop_localx_st,  "prop_localx_st[4]/F");
+  t->Branch("prop_localy_st", prop_localy_st,  "prop_localy_st[4]/F");
+  t->Branch("prop_perp_st",   prop_perp_st,    "prop_perp_st[4]/F");
+  t->Branch("propgt_phi_st",    propgt_phi_st,     "propgt_phi_st[4]/F");
+  t->Branch("propgt_eta_st",    propgt_eta_st,     "propgt_eta_st[4]/F");
+  t->Branch("propgt_x_st",      propgt_x_st,       "propgt_x_st[4]/F");
+  t->Branch("propgt_y_st",      propgt_y_st,       "propgt_y_st[4]/F");
+  t->Branch("propgt_r_st",      propgt_r_st,       "propgt_r_st[4]/F");
+  t->Branch("propgt_localx_st", propgt_localx_st,  "propgt_localx_st[4]/F");
+  t->Branch("propgt_localy_st", propgt_localy_st,  "propgt_localy_st[4]/F");
+  t->Branch("propgt_perp_st",   propgt_perp_st,    "propgt_perp_st[4]/F");
+  t->Branch("propinner_phi_st",    propinner_phi_st,     "propinner_phi_st[4]/F");
+  t->Branch("propinner_eta_st",    propinner_eta_st,     "propinner_eta_st[4]/F");
+  t->Branch("propinner_x_st",      propinner_x_st,       "propinner_x_st[4]/F");
+  t->Branch("propinner_y_st",      propinner_y_st,       "propinner_y_st[4]/F");
+  t->Branch("propinner_r_st",      propinner_r_st,       "propinner_r_st[4]/F");
+  t->Branch("propinner_localx_st", propinner_localx_st,  "propinner_localx_st[4]/F");
+  t->Branch("propinner_localy_st", propinner_localy_st,  "propinner_localy_st[4]/F");
+  t->Branch("propinner_perp_st",   propinner_perp_st,    "propinner_perp_st[4]/F");
   t->Branch("prop_ring_st", prop_ring_st, "prop_ring_st[4]/I");
   t->Branch("prop_chamber_st", prop_chamber_st, "prop_chamber_st[4]/I");
 
@@ -1236,6 +1302,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 	    data_.prop_localx_ME11[ch->id().layer()-1] = pos.x();
 	    data_.prop_localy_ME11[ch->id().layer()-1] = pos.y();
+	    data_.propgt_localx_ME11[ch->id().layer()-1] = pos_gt.x();
+	    data_.propgt_localy_ME11[ch->id().layer()-1] = pos_gt.y();
+	    data_.propinner_localx_ME11[ch->id().layer()-1] = pos_inner.x();
+	    data_.propinner_localy_ME11[ch->id().layer()-1] = pos_inner.y();
 	    if(ch->id().layer() == 3){
 		for (unsigned int i =0; i<2; i++){
 		    if (data_.has_propGE11[i]){
@@ -1258,6 +1328,24 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	      data_.prop_perp_st[ch->id().station() - 1]   = tsosGP.perp();
 	      data_.prop_chamber_st[ch->id().station() - 1] = ch->id().chamber();
 	      data_.prop_ring_st[ch->id().station() - 1] = ch->id().ring();
+	      data_.prop_localx_st[ch->id().station()-1] = pos.x();
+	      data_.prop_localy_st[ch->id().station()-1] = pos.y();
+	      data_.propgt_phi_st[ch->id().station() - 1]    = tsosGP_gt.phi();
+	      data_.propgt_eta_st[ch->id().station() - 1]    = tsosGP_gt.eta();
+	      data_.propgt_x_st[ch->id().station() - 1]      = tsosGP_gt.x();
+	      data_.propgt_y_st[ch->id().station() - 1]      = tsosGP_gt.y();
+	      data_.propgt_r_st[ch->id().station() - 1]      = tsosGP_gt.mag();
+	      data_.propgt_perp_st[ch->id().station() - 1]   = tsosGP_gt.perp();
+	      data_.propgt_localx_st[ch->id().station()-1] = pos_gt.x();
+	      data_.propgt_localy_st[ch->id().station()-1] = pos_gt.y();
+	      data_.propinner_phi_st[ch->id().station() - 1]    = tsosGP_inner.phi();
+	      data_.propinner_eta_st[ch->id().station() - 1]    = tsosGP_inner.eta();
+	      data_.propinner_x_st[ch->id().station() - 1]      = tsosGP_inner.x();
+	      data_.propinner_y_st[ch->id().station() - 1]      = tsosGP_inner.y();
+	      data_.propinner_r_st[ch->id().station() - 1]      = tsosGP_inner.mag();
+	      data_.propinner_perp_st[ch->id().station() - 1]   = tsosGP_inner.perp();
+	      data_.propinner_localx_st[ch->id().station()-1] = pos_inner.x();
+	      data_.propinner_localy_st[ch->id().station()-1] = pos_inner.y();
 
 	      CSCSegment matchedSeg;
 	      float mindR = 9999.0;
