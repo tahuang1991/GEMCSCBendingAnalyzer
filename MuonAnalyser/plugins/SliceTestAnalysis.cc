@@ -235,7 +235,8 @@ struct MuonData
   bool has_propGE11[2];
   int roll_propGE11[2];
   int chamber_propGE11[2];
-  float middle_perp_GE11[2];
+  float middle_perp_propGE11[2];
+  float middle_perp_rechitGE11[2];
   float prop_phi_GE11[2];//phi,eta from GE11 rechits
   float prop_eta_GE11[2];
   float prop_x_GE11[2];//projected position in GE11
@@ -331,7 +332,8 @@ void MuonData::init()
   for (int i=0; i<2; ++i){
     has_GE11[i] = 0;
     has_propGE11[i] = false;
-    middle_perp_GE11[i] = -999999;
+    middle_perp_propGE11[i] = -999999;
+    middle_perp_rechitGE11[i] = -999999;
     rechit_phi_GE11[i] = -9;
     rechit_alignedphi_GE11[i] = -9;
     rechit_eta_GE11[i] = -9;
@@ -622,7 +624,8 @@ TTree* MuonData::book(TTree *t)
   t->Branch("has_GE11", has_GE11, "has_GE11[2]/B");
   t->Branch("roll_rechitGE11", roll_rechitGE11, "roll_rechitGE11[2]/I");
   t->Branch("chamber_GE11", chamber_GE11, "chamber_GE11[2]/I");
-  t->Branch("middle_perp_GE11", middle_perp_GE11, "middle_perp_GE11[2]/F");  // Is this right?
+  t->Branch("middle_perp_propGE11", middle_perp_propGE11, "middle_perp_propGE11[2]/F");  // Is this right?
+  t->Branch("middle_perp_rechitGE11", middle_perp_rechitGE11, "middle_perp_rechitGE11[2]/F");  // Is this right?
   t->Branch("rechit_phi_GE11", rechit_phi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("rechit_alignedphi_GE11", rechit_alignedphi_GE11, "phi_GE11[2]/F");  // Is this right?
   t->Branch("rechit_eta_GE11", rechit_eta_GE11, "rechit_eta_GE11[2]/F");
@@ -1098,7 +1101,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	    //std::cout <<"prop muon lp "<< pos <<" center of strip lp "<< lp_center <<" strip "<< strip <<std::endl;
 	    data_.prop_localx_center_GE11[ch->id().layer()-1] = lp_center.x();
 	    data_.prop_strip_GE11[ch->id().layer()-1] = strip;
-	    data_.middle_perp_GE11[ch->id().layer()-1] = etaPart_ch->toGlobal(lp_middle).perp();//middle in the roll of prop
+	    data_.middle_perp_propGE11[ch->id().layer()-1] = etaPart_ch->toGlobal(lp_middle).perp();//middle in the roll of prop
 
 	    if (bps.bounds().inside(pos2D_gt)){
 		float strip_gt = etaPart_ch->strip(pos_gt);
@@ -1136,8 +1139,10 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		//https://github.com/cmssw-sw/cmssw/blob/from-CMSSW_10_5_X_2019-01-15-1100_ME0Trigger/Geometry/CSCGeometry/src/CSCLayerGeometry.cc
 		//M_PI_2 - theStripTopology->stripAngle(strip-0.5), strip is int strip number
 		//GEM geometry does not 
-		float stripAngle = M_PI_2 - etaPart->specificTopology().stripAngle(strip) - M_PI/2.;
-	        float stripAngle_flipped =  M_PI_2 - etaPart->specificTopology().stripAngle(strip_flipped) - M_PI/2.;
+		//float stripAngle = M_PI_2 - etaPart->specificTopology().stripAngle(strip) - M_PI/2.;
+	        //float stripAngle_flipped =  M_PI_2 - etaPart->specificTopology().stripAngle(strip_flipped) - M_PI/2.;
+		float stripAngle = etaPart->specificTopology().stripAngle(strip);
+	        float stripAngle_flipped =  etaPart->specificTopology().stripAngle(strip_flipped);
                 //std::cout <<"strip "<< strip <<" stripAngle "<< etaPart->specificTopology().stripAngle(strip)<<" sin "<< sin(strip)<<" cos "<< cos(strip) <<" flippedstrip "<< strip_flipped <<" stripAngle "<<  etaPart->specificTopology().stripAngle(strip_flipped) <<" sin "<<sin(stripAngle_flipped)<<" cos "<< cos(stripAngle_flipped) << std::endl;
         		
 		LocalPoint lp_flipped = etaPart->centreOfStrip(strip_flipped);
@@ -1196,6 +1201,7 @@ SliceTestAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 		    mindX = (flippedGEMStrip_) ? fabs(deltaX_local_flipped) : fabs(deltaX_local);
 		    data_.has_GE11[gemid.layer()-1] = 1;
 		    data_.roll_rechitGE11[gemid.layer()-1] = gemid.roll();
+	            data_.middle_perp_rechitGE11[gemid.layer()-1] = etaPart->toGlobal(lp_middle_hit).perp();//middle in the roll of prop
 		    data_.rechit_firstClusterStrip_GE11[gemid.layer()-1] = hit->firstClusterStrip();
 		    data_.rechit_clusterSize_GE11[gemid.layer()-1] = hit->clusterSize();
 		    data_.rechit_BX_GE11[gemid.layer()-1] = hit->BunchX();
