@@ -1059,6 +1059,7 @@ def plotGEMalignment(chain, cut, text, plotdir):
     #ybin= 15*8; ymin=-10.0; ymax= 25*7.0+15.0
     #ybin= 20; ymin=-10.0; ymax= 10.0
     ybin = 15*8+20; ymin = 120.0; ymax = 260;
+    ## make residual distribution for even or odd chamber
     for ich in [28,29]:
         for layer in range(0,2):
             plotname = os.path.join(plotdir, "GEMResidual_gemchamber%d_layer%d_drcut_pt30"%( ich, layer))
@@ -1078,7 +1079,7 @@ def plotGEMalignment(chain, cut, text, plotdir):
 	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(prop_localy_GE11[%d]+middle_perp_GE11[%d]-rechit_perp_GE11[%d])"%(layer, layer, layer, layer, layer, layer, layer)
 	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(prop_localy_GE11[%d])"%(layer, layer, layer, layer, layer)
 	    z = "(rechit_prop_RdPhi_GE11[%d])"%layer
-            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_Rdphi"+plotsuffix)
+            plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_Rdphi"+plotsuffix)
 	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
             #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_dXcosangle"+plotsuffix)
 	    x="propinner_localx_GE11[%d]"%(layer)
@@ -1088,7 +1089,8 @@ def plotGEMalignment(chain, cut, text, plotdir):
 	    z = "(rechit_propinner_RdPhi_GE11[%d])"%layer
             #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_Rdphi"+plotsuffix)
 	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(propinner_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
-            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_dXcosangle"+plotsuffix)
+            plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_dXcosangle"+plotsuffix)
+    ## make residual distribution for each chamber
     for endcap in (1,3):
 	for ich in range(1, 37):
 	    for layer in range(0, 2):
