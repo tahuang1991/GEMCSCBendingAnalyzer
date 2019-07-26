@@ -339,8 +339,8 @@ def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, 
 
     c1=ROOT.TCanvas("c1","New Graph",0,0,800,600);
 
-    c1.SetGridx()
-    c1.SetGridy()
+    #c1.SetGridx()
+    #c1.SetGridy()
     #c1.SetTickx()
     #c1.SetTicky()
     #h=F.Get("SliceTestAnalysis/MuonData");
@@ -350,7 +350,8 @@ def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, 
     ##cut = "muonpt>10"
     tree.Draw(todraw + ">> hist", cut, "colz");## plot hist with cut
     print "todraw ",todraw, " cut ",cut
-    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    #hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"Run2,MC")
     hist.SetStats(0)
     hist.GetXaxis().SetTitle(xtitle)
     hist.GetYaxis().SetTitle(ytitle)
@@ -365,29 +366,33 @@ def plot_tree_2D(tree, branch_name_x, branch_name_y, cut, xtitle, xnbins, xmin, 
     txt.SetNDC()
     txt.SetTextFont(42)
     txt.SetTextSize(.04)
-    txt.Draw("same")
+    #txt.Draw("same")
 
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
 
 
 
-def plot_tree_2D_alignment(tree, chamber, layer, cut, xnbins, xmin, xmax, ynbins, ymin, ymax, text, plotname):
+def plot_tree_2D_alignment(tree, chamber, layer, cut, branch_name_x, branch_name_y,z, xnbins, xmin, xmax, ynbins, ymin, ymax, text, plotname):
 
     c1=ROOT.TCanvas("c1","New Graph",0,0,1200,800);
     #h=F.Get("SliceTestAnalysis/MuonData");
     ##pad1
-    branch_name_x="prop_localx_GE11[%d]"%(layer)
+    #branch_name_x="prop_localx_GE11[%d]"%(layer)
     #branch_name_x="(rechit_prop_dphi_GE11[%d]*rechit_r_GE11[%d])"%(layer,layer)
     #branch_name_x = "rechit_flippedStrip_GE11[%d]"%(layer)
-    branch_name_y="(prop_localy_GE11[%d]+25.0*(roll_GE11[%d]-1))"%(layer, layer)
+    #branch_name_y="(prop_localy_GE11[%d]+25.0*(8-roll_GE11[%d]))"%(layer, layer)
     #branch_name_y="(prop_localy_GE11[%d])"%(layer)
     xtitle = branch_name_x
     ytitle = branch_name_y
     #z = "(prop_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
     #z = "(rechit_prop_dphi_GE11[%d]*rechit_r_GE11[%d])"%(layer, layer)
     #z = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
-    z = "(prop_localx_center_GE11[%d]-rechit_alignedlocalx_GE11[%d])"%(layer, layer)
+    #z = "(prop_localx_center_GE11[%d]-rechit_alignedlocalx_GE11[%d])"%(layer, layer)
+    #z = "(rechit_prop_dX_GE11_foralignment[%d])"%layer
+    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
+    #z = "(rechit_propinner_dX_GE11_foralignment[%d])"%layer
+    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(propinner_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
 
     
     hist_weight = ROOT.TH2F("hist_weight","hist_title", xnbins, xmin, xmax, ynbins, ymin, ymax)
@@ -414,8 +419,10 @@ def plot_tree_2D_alignment(tree, chamber, layer, cut, xnbins, xmin, xmax, ynbins
             else:
                 hist.SetBinContent(xbin+1, ybin+1, -999)
 
+    print "x ",branch_name_x," y ",branch_name_y," z ",z
     print " total weight ", total_all, " total events ", events_all," correction ", total_all/events_all
-    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    #hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"data, 2018C")
+    hist.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"Phase-2 Simulation")
     hist.SetStats(0)
     hist.GetXaxis().SetTitle(xtitle)
     hist.GetYaxis().SetTitle(ytitle)
@@ -423,7 +430,7 @@ def plot_tree_2D_alignment(tree, chamber, layer, cut, xnbins, xmin, xmax, ynbins
     hist.GetYaxis().SetTitleSize(0.04)
     hist.GetXaxis().CenterTitle()
     hist.GetYaxis().SetTitleOffset(1.2)
-    zmax=4.0
+    zmax=2.0
     hist.SetMaximum(zmax*(1.0+1.0/40))
     hist.SetMinimum(zmax*(-1.0))
     #hist.SetStat(0)
@@ -438,58 +445,105 @@ def plot_tree_2D_alignment(tree, chamber, layer, cut, xnbins, xmin, xmax, ynbins
     txt.SetTextSize(.04)
     txt.Draw("same")
 
+    c1.SaveAs(outplot + ".C")
     c1.SaveAs(outplot + ".png")
     c1.SaveAs(outplot + ".pdf")
+
+    c2=ROOT.TCanvas("c2","New Graph",0,0,1200,800);
+    ROOT.gStyle.SetPaintTextFormat("4.0f")
+    hist_entry.SetTitle( " #scale[1.4]{#font[61]{CMS}} #font[42]{Internal} "+"  "*24+"Phase-2 Simulation")
+    hist_entry.SetStats(0)
+    hist_entry.GetXaxis().SetTitle(xtitle)
+    hist_entry.GetYaxis().SetTitle(ytitle)
+    hist_entry.GetXaxis().SetTitleSize(0.04)
+    hist_entry.GetYaxis().SetTitleSize(0.04)
+    hist_entry.GetXaxis().CenterTitle()
+    hist_entry.GetYaxis().SetTitleOffset(1.2)
+    hist_entry.RebinX(4)
+    hist_entry.RebinY(4)
+    hist_entry.Draw("colztext")
+    txt.Draw("same")
+
+    c2.SaveAs(outplot + "_occupancy.C")
+    c2.SaveAs(outplot + "_occupancy.png")
+    c2.SaveAs(outplot + "_occupancy.pdf")
 
 
 def plot_residual_1D(tree, cut, xtitle, nbins, xmin, xmax, text, plotname):
 
    
     color = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kOrange, ROOT.kMagenta+2,ROOT.kCyan+2, 5,6,7,8,9, ROOT.kBlack]
+    doFit = True
     #for ch in [27, 28, 29, 30]
     for ch in [28, 29]:
         for layer in range(0, 2):
-            c1=ROOT.TCanvas("c1","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+            #c1=ROOT.TCanvas("c1","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,600);
+            c1=ROOT.TCanvas("c1","Alignment of GEM ch%d layer%d"%(ch, layer+1),0,0, 800,400);
             c1.Clear()
             c1.Divide(4, 2)
-            todraw = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
-            layercut = "has_propGE11[%d]>0 && chamber_propGE11[%d] == %d "%(layer, layer, ch)## 
-            boundarycut = "abs(prop_y_center_GE11[%d])<15.0"
-            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02 && rechit_clusterSize_GE11[%d]<=5"%(layer, layer)
+            ## standalone muon
+            #todraw = "rechit_propinner_dX_GE11_foralignment[%d]"%layer
+            todraw = "(rechit_prop_RdPhi_GE11[%d])"%layer
+            #todraw = "(prop_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+            ## inner track
+            #todraw = "(propinner_localx_center_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer)
+            #layercut = "has_propGE11[%d]>0 && chamber_propGE11[%d] == %d "%(layer, layer, ch)## 
+	    ##MC case
+            layercut = "has_propGE11[%d]>0 && chamber_propGE11[%d]%%2 == %d "%(layer, layer, ch%2)## 
+            #boundarycut = "abs(prop_y_center_GE11[%d])<15.0"
+            boundarycut = "&& abs(prop_localy_GE11[%d])<6.0 && abs(prop_localx_center_GE11[%d])<15.0"%(layer, layer)
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02 && rechit_clusterSize_GE11[%d]<=6"%(layer, layer)
             hs_list = []
             legend_list = []
             for roll in range(1, 9):
                 c1.cd(roll)
 
                 detidcut = layercut +"&& roll_propGE11[%d] == %d"%(layer, roll)
-                thiscut = cut +"&& "+detidcut + dRcut
+                #thiscut = cut +"&& "+detidcut + dRcut
+                thiscut = cut +"&& "+detidcut+boundarycut
                 hs_list.append( ROOT.THStack("hs_roll%d"%roll, "GEM ch%d layer%d roll%d"%(ch, layer+1, roll)) )
-                legend_list.append( ROOT.TLegend(0.63,0.7,0.91,0.8))
+                legend_list.append( ROOT.TLegend(0.63,0.7,1.0,0.8))
                 legend_list[roll -1].SetFillColor(ROOT.kWhite)
                 legend_list[roll-1].SetTextFont(42)
                 legend_list[roll-1].SetTextSize(.035)
                 #legend.SetHeader("%s"%legheader)
                 hist_list = []
                 fit_list = []
-                for vfat in range(0, 3):
+                #for vfat in range(0, 3):
+                for vfat in range(0, 1):
                     hist_list.append( ROOT.TH1F("hist_eta%d_vfat%d"%(roll, vfat), "GEM ch%d layer%d roll%d VFAT%d"%(ch, layer+1, roll, vfat), nbins, xmin, xmax) )
                     vfatcut_1 = "rechit_flippedStrip_GE11[%d]>=%d && rechit_flippedStrip_GE11[%d]< %d"%(layer, vfat*128, layer, (vfat+1)*128)
-                    tree.Draw(todraw +" >> hist_eta%d_vfat%d"%(roll, vfat), thiscut +" && "+vfatcut_1)
+                    #tree.Draw(todraw +" >> hist_eta%d_vfat%d"%(roll, vfat), thiscut +" && "+vfatcut_1)
+                    tree.Draw(todraw +" >> hist_eta%d_vfat%d"%(roll, vfat), thiscut)
                     #hist_list[vfat].Scale(1.0/hist_list[vfat].Integral())
-                    hist_list[vfat].Fit("gaus","S","",-1.0, 1.0)
-                    fit_list.append(hist_list[vfat].GetFunction("gaus"))
-                    mean = fit_list[vfat].GetParameter(1)
-                    std =  fit_list[vfat].GetParameter(2)
+		    if doFit:
+			hist_list[vfat].Fit("gaus","S","",-1.0, 1.0)
+			fit_list.append(hist_list[vfat].GetFunction("gaus"))
+			fit_list[vfat].SetLineColor(ROOT.kRed)
+			mean = fit_list[vfat].GetParameter(1)
+			std =  fit_list[vfat].GetParameter(2)
+			meanerr = fit_list[vfat].GetParError(1)
+			stderr =  fit_list[vfat].GetParError(2)
+			legend_list[roll-1].AddEntry(hist_list[vfat], "#splitline{#mu: %.3f +/- %.3f}{#sigma: %.3f +/- %.3f}"%(mean,meanerr, std, stderr),'')
+                    else:
+			mean = hist_list[vfat].GetMean()
+			std =  hist_list[vfat].GetStdDev()
+			legend_list[roll-1].AddEntry(hist_list[vfat], "#splitline{#mu: %.3f}{#sigma: %.3f}"%(mean, std),'')
+			#meanerr = hist_list[vfat].GetParError(1)
+			#stderr =  hist_list[vfat].GetParError(2)
                     #mean = 0.0; std = 1.0
                     #legend_list[roll-1].AddEntry(hist_list[vfat], "mean: %.2f, std:%.1f"%(mean, std))
-                    legend_list[roll-1].AddEntry(hist_list[vfat], "#mu: %.2f, #sigma:%.1f"%(mean, std))
+                    legend_list[roll-1].SetTextColor(ROOT.kRed)
                     hs_list[roll-1].Add(hist_list[vfat])
-                    hist_list[vfat].SetLineColor(color[vfat])
-                    fit_list[vfat].SetLineColor(color[vfat])
-                hs_list[roll-1].Draw("nostacke")
+                    #hist_list[vfat].SetLineColor(color[vfat])
+                    #fit_list[vfat].SetLineColor(color[vfat])
+                    hist_list[vfat].SetLineColor(ROOT.kBlack)
+                #hs_list[roll-1].Draw("nostacke")
+                hs_list[roll-1].Draw("nostackhist")
                 legend_list[roll-1].Draw("same")
-                for fit in fit_list:
-                    fit.Draw("same")
+		#if doFit:
+		#    for fit in fit_list:
+		#	fit.Draw("same")
                 hs_list[roll-1].GetHistogram().GetXaxis().SetTitle("residual [cm]")
                 c1.Update()
             c1.cd()
@@ -505,7 +559,7 @@ def plot_residual_1D(tree, cut, xtitle, nbins, xmin, xmax, text, plotname):
             #txt0.SetTextSize(.04)
             #txt0.Draw("same")
             
-            picname_layer = plotname+"_ch%d_layer%d_dphi02"%(ch, layer)
+            picname_layer = plotname+"_ch%d_layer%d_NOdphicutv3_boundary"%(ch, layer)
             c1.SaveAs(picname_layer+ ".png")
             c1.SaveAs(picname_layer+ ".pdf")
 
@@ -725,14 +779,24 @@ chain = ROOT.TChain("SliceTestAnalysis/MuonData")
 #chain.Add("slicetest_ana.root")
 #chain.Add("2018C_out_ana_v2.root")
 #chain.Add("out_ana_all_2018C.root")
-chain.Add("GEMCSCBending_2018C_v11.root")
+#chain.Add("GEMCSCBending_2018C_v11.root")
+#chain.Add("GEMCSCAan_crab_SingleMuPt30_MC_1M_20190621_RecoMuNoGEM/*root")
 #chain.Add("GEMCSCAan_Run2018D_ZMu_323470-323470_all.root")
 #chain.Add("GEMCSCBending_doublemuon_2018C_v1.root")
+#filedir = '/eos/uscms/store/group/lpcgem/SingleMuon_Pt30_Eta0To2p5_Extended2023D17_phase2_realistic_1M/GEMCSCAan_crab_SingleMuPt30_MC_1M_20190718_RecoMuNoGEM/190718_202517/0000/'
+#filedir = '/eos/uscms/store/group/lpcgem/SingleMuon_Pt30_Eta0To2p5_Extended2023D17_phase2_realistic_1M/GEMCSCAan_crab_SingleMuPt30_MC_1M_20190718_RecoMuNoGEM_xshift/190718_211110/0000/'
+#filedir = '/eos/uscms/store/group/lpcgem/SingleMuon_Pt30_Eta0To2p5_Extended2023D17_phase2_realistic_1M/GEMCSCAan_crab_SingleMuPt30_MC_1M_20190719_RecoMuNoGEM_xshiftv2/190719_215803/0000/'
+#filedir = '/eos/uscms/store/group/lpcgem/SingleMuon_Pt30_Eta0To2p5_Extended2023D17_phase2_realistic_1M/GEMCSCAan_crab_SingleMuPt30_MC_1M_20190719_RecoMuNoGEM_yshiftv2/190720_033627/0000/'
+filedir = '/eos/uscms/store/group/lpcgem/SingleMuon_Pt30_Eta0To2p5_Extended2023D17_phase2_realistic_1M/GEMCSCAan_crab_SingleMuPt30_MC_1M_20190719_RecoMuNoGEM_xyshiftv2/190720_033553/0000/'
+chain.Add(filedir+'*.root')
 #plotdir = "GEMCSCBending_2018C_doubleMuon_singlemuon_plots/"
 #plotdir = "GEMCSCBending_2018C_doubleMuon_singlemuon_plots_alignment/"
 #plotdir = "GEMCSCBending_2018C_v11_plots_prop_rechit_dphi_normalized/"
 #plotdir = "GEMCSCAan_Run2018D_ZMu_323470_324200_prop_rechit_dphi_normalized/"
-plotdir = "GEMCSCBending_2018C_singlemuon_plots_residual_wholechamber/"
+#plotdir = "GEMCSCBending_2018C_singlemuon_plots_residual_20190125/"
+
+plotdir = "GEMCSCBending_MC_SingleMuon_fixedPt30_GEMReview_20190719_RdPhi_xyshift/"
+#plotdir = "GEMCSCBending_MC_SingleMuon_fixedPt100_GEMReview_20190705/"
 os.system("mkdir -p "+plotdir)
 def plotmuons(chain, cut, plotdir):
     text = "reco muon"
@@ -809,7 +873,7 @@ def plotdPhiGEMMuon(chain, cut, text, plotdir):
             plotname = os.path.join(plotdir, "2018D_Zmu_GEMCSCbending_rechit_prop_dphi_GE11_GEMlayer%d_chamber%d"%(i, chamber))
             #plot_tree_1D(chain, todraw, thiscut, "#Delta phi between GEM rechit and propagated muon", 100, -0.10, 0.10, text,plotname)
             plot_tree_1D(chain, todraw, thiscut, "Residual [rad]", 80, -0.020, 0.020, text,plotname)
-plotdPhiGEMMuon(chain, "has_MediumID && muonpt>20", "RecoMuon: Medium ID, p_{T}>20 GeV", plotdir)
+#plotdPhiGEMMuon(chain, "has_MediumID && muonpt>20", "RecoMuon: Medium ID, p_{T}>20 GeV", plotdir)
 
 def plotGEMHitsVsChamber(chain, cut, text, plotdir):
     todraws = ["chamber_GE11", "chamber_propGE11"]
@@ -865,18 +929,41 @@ def plotGEMHits(chain, cut, text, plotdir):
     for i in range(0, 2):
 	todrawX = todrawX_gem + "[%d]"%i
 	todrawY = todrawY_gem + "[%d]"%i
-	plotname = os.path.join(plotdir, "2018C_GEMCSCbending_GEMRechit_x_y_gemlayer%d"%i)
+	plotname = os.path.join(plotdir, "Run2MC_GEMCSCbending_GEMRechit_x_y_gemlayer%d"%i)
 	thiscut = cut + " && has_GE11[%d]>0 && rechit_prop_dR_GE11[%d] < 5.0"%(i, i) 
         plot_tree_2D(chain, todrawX, todrawY, thiscut, "GEM Rechit X", 100, -600.0, 600.0,  "GEM Rechit Y", 100, -600.0, 600.0, text, plotname)
     todrawlist = ["rechit_clusterSize_GE11"]
     xbins = [[20, 0,20]]
     xtitles = ["cluster size, GE11"]
-    for itodraw, todraw in enumerate(todrawlist):
-        for chamber in [27, 28, 29, 30]:
-            for i in range(0, 2):
-                thistodraw = todrawlist+"[%d]"%i
-                thiscut = cut +" && has_GE11[%d]>0 && rechit_prop_dX_GE11[%d] < 2.0 && chamber_GE11[%d]==%d"%(i,i, i, chamber)
-                plot_tree_1D(chain, thistodraw, thiscut, xtiles[itodraw], xbins[itodraw][0], xbins[itodraw][1], xbins[itodraw][2], text, plotname)
+    #for itodraw, todraw in enumerate(todrawlist):
+    #    for chamber in [27, 28, 29, 30]:
+    #        for i in range(0, 2):
+    #            thistodraw = todrawlist+"[%d]"%i
+    #            thiscut = cut +" && has_GE11[%d]>0 && rechit_prop_dX_GE11[%d] < 2.0 && chamber_GE11[%d]==%d"%(i,i, i, chamber)
+    #            plot_tree_1D(chain, thistodraw, thiscut, xtiles[itodraw], xbins[itodraw][0], xbins[itodraw][1], xbins[itodraw][2], text, plotname)
+
+def plotGEMPropagation(chain, cut, text, plotdir):
+    todrawX_gem = "prop_x_GE11"
+    todrawY_gem = "prop_y_GE11"
+    MaxX = 280.0
+    for i in range(0, 2):
+	todrawX = todrawX_gem + "[%d]"%i
+	todrawY = todrawY_gem + "[%d]"%i
+	plotname = os.path.join(plotdir, "Run2MC_GEMCSCbending_GEM_prop_x_y_gemlayer%d"%i)
+        thiscut = cut
+        plot_tree_2D(chain, todrawX, todrawY, thiscut, "X [cm]", 100, -1*MaxX, MaxX,  "Y [cm]", 100, -1*MaxX, MaxX, text, plotname)
+	plotname2 = os.path.join(plotdir, "Run2MC_GEMCSCbending_GEM_prop_x_y_gemlayer%d_hasGEMhits"%i)
+	thiscut2 = cut + " && has_GE11[%d]>0 && abs(rechit_x_GE11[%d]-prop_x_GE11[%d]) < 5.0"%(i, i, i) 
+        plot_tree_2D(chain, todrawX, todrawY, thiscut2, "X [cm]", 100, -1*MaxX, MaxX,  "Y [cm]", 100, -1*MaxX, MaxX, text, plotname2)
+	plotname3 = os.path.join(plotdir, "Run2MC_GEMCSCbending_GEM_prop_x_y_gemlayer%d_hasGEMhitsOR"%i)
+	#thiscut3 = cut + " && ((has_GE11[0]>0 && rechit_prop_dX_GE11[0] < 5.0)|| (has_GE11[1]>0 && rechit_prop_dX_GE11[1] < 5.0))"
+	thiscut3 = cut + "&& (abs(rechit_x_GE11[0]-prop_x_GE11[0]) < 5.0 || abs(rechit_x_GE11[1]-prop_x_GE11[1]) < 5.0)"
+        plot_tree_2D(chain, todrawX, todrawY, thiscut3, "X [cm]", 100, -1*MaxX, MaxX,  "Y [cm]", 100, -1*MaxX, MaxX, text, plotname3)
+
+
+
+#plotGEMPropagation(chain, "has_TightID && muonpt>20 && prop_x_GE11 < 999.0", "muon p_{T} = 30 GeV, tight ID",plotdir)
+
 
 def plotGEMdXVsRoll(chain, cut, text, plotdir):
     todrawX_0 = "rechit_prop_dX_GE11"
@@ -967,19 +1054,83 @@ def plotdeltaPhiVspt(chain, cut, text, plotdir):
 #plotdeltaPhiVspt(chain, "has_TightID ", "muon tight ID", plotdir)
 
 def plotGEMalignment(chain, cut, text, plotdir):
-    xbin = 40; xmin=-24.0; xmax = 24.0
+    xbin = 80; xmin=-24.0; xmax = 24.0
     #xbin =384/6; xmin=0; xmax = 384
-    ybin= 15*8; ymin=-10.0; ymax= 25*7.0+15.0
+    #ybin= 15*8; ymin=-10.0; ymax= 25*7.0+15.0
     #ybin= 20; ymin=-10.0; ymax= 10.0
-    for ich in range(27, 31):
+    ybin = 15*8+20; ymin = 120.0; ymax = 260;
+    for ich in [28,29]:
         for layer in range(0,2):
-            plotname = os.path.join(plotdir, "2018C_GEMCSCbending_GEMalignment_gemchamber%d_layer%d_drcut_alignedlocalx"%( ich, layer))
-            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.02"%(layer)
-            thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0"%(layer, layer) +" && chamber_GE11[%d]==%d"%(layer, ich)+dRcut
-            thistext = text+" GEM chamber %d, layer %d"%(ich, layer+1)
-            plot_tree_2D_alignment(chain, ich, layer, thiscut,  xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname)
+            plotname = os.path.join(plotdir, "GEMResidual_gemchamber%d_layer%d_drcut_pt30"%( ich, layer))
+	    ## same roll
+            #dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.2 && roll_propGE11[%d] == roll_rechitGE11[%d]"%(layer, layer, layer)
+            dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.2 "%(layer) 
+	    chambercut = "&& chamber_GE11[%d] == chamber_propGE11[%d]"%(layer, layer)
+            thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0"%(layer, layer) +" && chamber_GE11[%d]%%2==%d"%(layer, ich%2)+dRcut+chambercut
+            #thistext = text+" GEM chamber %d, layer %d"%(ich, layer+1)
+            #thistext = "GEM chamber %d, layer %d"%(ich, layer+1)
+	    evenodd = "odd" if ich%2 == 1 else "even"
+            thistext = "GEM %s chamber, layer %d"%(evenodd, layer+1)
+	    x="prop_localx_GE11[%d]"%(layer)
+	    #y="(prop_localy_GE11[%d]+25.0*(8-roll_GE11[%d]))"%(layer, layer)
+	    plotsuffix = "chambercut"
+	    y="(prop_localy_GE11[%d]+middle_perp_propGE11[%d])"%(layer, layer)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(prop_localy_GE11[%d]+middle_perp_GE11[%d]-rechit_perp_GE11[%d])"%(layer, layer, layer, layer, layer, layer, layer)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(prop_localy_GE11[%d])"%(layer, layer, layer, layer, layer)
+	    z = "(rechit_prop_RdPhi_GE11[%d])"%layer
+            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_Rdphi"+plotsuffix)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(prop_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
+            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_dXcosangle"+plotsuffix)
+	    x="propinner_localx_GE11[%d]"%(layer)
+	    y="(propinner_localy_GE11[%d]+middle_perp_propGE11[%d])"%(layer, layer)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(propinner_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(propinner_localy_GE11[%d]+middle_perp_GE11[%d]-rechit_perp_GE11[%d])"%(layer, layer, layer, layer, layer, layer, layer)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(propinner_localx_GE11[%d]-rechit_localx_GE11[%d]) - TMath::Sin(rechit_stripangle_GE11[%d])*(propinner_localy_GE11[%d])"%(layer, layer, layer, layer, layer)
+	    z = "(rechit_propinner_RdPhi_GE11[%d])"%layer
+            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_Rdphi"+plotsuffix)
+	    #z = "TMath::Cos(rechit_stripangle_GE11[%d])*(propinner_localx_GE11[%d]-rechit_localx_GE11[%d])"%(layer, layer, layer)
+            #plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_dXcosangle"+plotsuffix)
+    for endcap in (1,3):
+	for ich in range(1, 37):
+	    for layer in range(0, 2):
+		plotname = os.path.join(plotdir, "GEMResidual_endcap%d_gemchamber%d_layer%d_drcut_pt30"%(endcap, ich, layer))
+		encapcut = "&& muoneta > 0 " if endcap == 1 else "&& muoneta < 0"
+		chambercut = "&& chamber_GE11[%d] == chamber_propGE11[%d] && chamber_GE11[%d] == %d"%(layer, layer, layer, ich)
+		dRcut = "&& abs(rechit_prop_dphi_GE11[%d])<.2 "%(layer)
+		thiscut = cut + " &&  has_GE11[%d]>0 && has_propGE11[%d]>0"%(layer, layer) + encapcut + chambercut + dRcut
+		thistext = "GEM chamber %d, layer %d"%(ich, layer+1)
+		plotsuffix=""
 
-#plotGEMalignment(chain, "has_MediumID && muonpt>25", "medium ID",plotdir)
+		x="prop_localx_GE11[%d]"%(layer)
+		y="(prop_localy_GE11[%d]+middle_perp_propGE11[%d])"%(layer, layer)
+		z = "(rechit_prop_RdPhi_GE11[%d])"%layer
+		plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_Rdphi"+plotsuffix)
+		x="propinner_localx_GE11[%d]"%(layer)
+		y="(propinner_localy_GE11[%d]+middle_perp_propGE11[%d])"%(layer, layer)
+		z = "(rechit_propinner_RdPhi_GE11[%d])"%layer
+		plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_Rdphi"+plotsuffix)
+
+def plotME11alignment(chain, cut, text, plotdir):
+    xbin = 60; xmin = -60.0; xmax = 60
+    ybin = 100; ymin = -100.0; ymax = 100.0
+    for ich in [1,2]:
+        for layer in range(0, 6):
+            plotname = os.path.join(plotdir, "GEMResidual_ME11chamber%d_layer%d_drcut_pt30"%( ich, layer))
+            dRcut = "&& abs(rechit_prop_dphi_ME11[%d])<.2"%(layer)
+            thiscut = cut + " &&  has_ME11[%d]>0 && has_propME11[%d]>0"%(layer, layer) +" && chamber_ME11[%d]%%2==%d"%(layer, ich%2)+dRcut
+            thistext = "ME11 chamber %d, layer %d"%(ich, layer+1)
+	    x="prop_localx_ME11[%d]"%(layer)
+	    y="prop_localy_ME11[%d]"%(layer)
+	    z = "(rechit_prop_RdPhi_ME11[%d])"%layer
+            plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_ST_Rdphi")
+	    x="propinner_localx_ME11[%d]"%(layer)
+	    y="propinner_localy_ME11[%d]"%(layer)
+	    z = "(rechit_propinner_RdPhi_ME11[%d])"%layer
+            plot_tree_2D_alignment(chain, ich, layer, thiscut, x,y,z, xbin, xmin, xmax, ybin, ymin, ymax, thistext, plotname+"_inner_Rdphi")
+
+	    
+
+plotGEMalignment(chain, "has_MediumID && muonpt>25", "medium ID",plotdir)
+#plotME11alignment(chain, "has_MediumID && muonpt>25", "medium ID",plotdir)
 
 ptbin = [10.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 80.0, 100.0, 150.0, 200.0]
 myptbin = np.asarray(ptbin)
@@ -995,5 +1146,6 @@ def plotGEMHitEff_ptbin(chain, dencut, text, plotdir):
 #plotME11CSCHitEff(chain, "chamber_propME11", "has_TightID && muonpt>=25 && muoneta < 0", 36, 1.0, 37.0,  "ME11, chamber", "Muon tight ID, p_{T}^{reco}>25",  os.path.join(plotdir, "ME11Rechit_eff_chamberbin_pt25_"))
 #plotCSCSegmentEff(chain, "prop_chamber_st", "has_TightID && muonpt>=25 && muoneta < 0", 36, 1.0, 37.0, "MEX1, chamber", "Muon tight ID, p_{T}^{reco}>25", os.path.join(plotdir, "CSCsegment_eff_chamberbin_pt25_"))
 
-#plot_residual_1D(chain, "has_TightID && muonpt>=25", "residual [cm]", 50, -5.0, 5.0, "tight ID, p_{T}^{reco}>25", os.path.join(plotdir, "GEMalignment_residual_1D"))
+#plot_residual_1D(chain, "has_TightID && muonpt>=25", "residual [cm]", 60, -2.0, 2.0, "tight ID, p_{T}^{reco}>25", os.path.join(plotdir, "GEMalignment_residual_1D_StandaloneMu_fit"))
+#plot_residual_1D(chain, "has_TightID && muonpt>=25", "residual [cm]", 60, -2.0, 2.0, "tight ID, p_{T}^{reco}>25", os.path.join(plotdir, "GEMalignment_residualRdphi_1D_inner_fit"))
 #plot_residual_1D_v2(chain, "has_TightID && muonpt>=15", "residual [cm]", 50, -5.0, 5.0, "tight ID, p_{T}^{reco}>15", os.path.join(plotdir, "GEMalignment_residual_vfat6"))
